@@ -1,0 +1,353 @@
+{% extends 'Employee_App/base.html' %}
+{% load static %}
+{% block title %}Team Members{% endblock %}
+{% block content %}
+{% include 'Employee_App/componest.html' %}
+
+<!-- Team Members Grid -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+    {% for employee in team_members %}
+    {% if employee.username != employee_dets.username %}
+    <div class="member-card bg-gray-800 rounded-xl p-6 transition hover:bg-gray-700/50 group"
+        data-status="{% if employee.is_active %}online{% else %}offline{% endif %}"
+        data-name="{{ employee.username|lower }}" data-role="{{ employee.role|lower }}">
+        <div class="flex flex-col items-center">
+            <!-- Profile -->
+            <div class="relative mb-4">
+                {% if employee.image %}
+                <img src="{{ employee.image.url }}" alt="{{ employee.username }}"
+                    class="w-16 h-16 rounded-full object-cover border-2 border-gray-600 group-hover:border-primary">
+                {% else %}
+                <div
+                    class="w-16 h-16 flex items-center justify-center bg-gray-700 text-gray-400 rounded-full border-2 border-gray-600  group-hover:border-primary">
+                    <i class="ri-user-line text-2xl"></i>
+                </div>
+                {% endif %}
+                <span
+                    class="absolute bottom-0 right-0 w-4 h-4 rounded-full border-2 border-gray-800 {% if employee.is_active %}bg-green-500{% else %}bg-gray-500{% endif %}"></span>
+            </div>
+
+            <!-- Info -->
+            <h3 class="text-white font-semibold">{{ employee.full_name }}</h3>
+            <p class="text-gray-400 text-sm">{{ employee.role }}</p>
+
+            <!-- Actions -->
+            <div class="mt-4 flex gap-2">
+                <button class="action-btn hover:text-blue-400 hover:bg-blue-500/10 p-2 rounded-full transition"
+                    title="Message">
+                    <i class="ri-message-2-line text-lg"></i>
+                </button>
+                <button class="action-btn hover:text-green-400 hover:bg-green-500/10 p-2 rounded-full transition"
+                    title="Call">
+                    <i class="ri-phone-line text-lg"></i>
+                </button>
+                <button
+                    class="action-btn hover:text-purple-400 hover:bg-purple-500/10 p-2 rounded-full transition Profile"
+                    title="Profile" data-name="{{ employee.full_name }}" data-role="{{ employee.role }}"
+                    data-status="{% if employee.is_active %}online{% else %}offline{% endif %}"
+                    data-image="{% if employee.image %}{{ employee.image.url }}{% endif %}"
+                    data-email="{{ employee.email }}" data-phone="{{ employee.phone_number }}"
+                    data-department="{{ employee.department }}" data-joindate="{{ employee.joining_date|date:'F j, Y' }}">
+                    <i class="ri-profile-line text-lg pointer-events-none"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    {% endfor %}
+</div>
+
+<!-- No Members Found -->
+<div class="no-results hidden text-center mt-8">
+    <img src="{% static 'Employee_App/Static_Imgs/outline.svg' %}" alt="No Results" class="mx-auto mb-4">
+    <h2 class="text-xl font-semibold text-white">No Members Found</h2>
+    <p class="text-gray-400">Try adjusting your search or filter options.</p>
+</div>
+
+<!-- Chat Modal -->
+<div id="chatModal" class="fixed inset-0 z-50 hidden flex items-center justify-center backdrop-glass">
+    <div class="bg-dark-700 rounded-card w-full max-w-md mx-4 overflow-hidden shadow-xl border border-dark-600">
+        <!-- Modal Header -->
+        <div class="flex justify-between items-center p-5 border-b border-dark-600">
+            <div class="flex items-center gap-3">
+                <div class="relative">
+                    <img src="https://randomuser.me/api/portraits/women/44.jpg"
+                        class="w-12 h-12 rounded-full object-cover border-2 border-primary-500">
+                    <span class="status-badge bg-green-500"></span>
+                </div>
+                <div>
+                    <h3 class="font-semibold text-white">Emma Thompson</h3>
+                    <p class="text-xs text-green-500 flex items-center">
+                        <span class="w-2 h-2 rounded-full bg-green-500 mr-2"></span>
+                        Active now
+                    </p>
+                </div>
+            </div>
+            <button id="closeChat"
+                class="text-gray-400 hover:text-white p-2 rounded-full hover:bg-dark-600 transition-smooth">
+                <i class="ri-close-line text-xl"></i>
+            </button>
+        </div>
+
+        <!-- Chat Messages -->
+        <div class="p-5 h-80 overflow-y-auto scrollbar-custom space-y-4" id="chatMessages">
+            <!-- Sample messages -->
+            <div class="flex items-start gap-3">
+                <img src="https://randomuser.me/api/portraits/women/44.jpg" class="w-9 h-9 rounded-full flex-shrink-0">
+                <div>
+                    <div class="bg-dark-600 px-4 py-3 rounded-2xl rounded-tl-none text-sm text-white max-w-xs">
+                        Hi there! Do you have a moment to discuss the new design system?
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1.5 ml-1">10:32 AM</p>
+                </div>
+            </div>
+
+            <div class="flex justify-end">
+                <div class="max-w-xs">
+                    <div class="bg-primary-500/30 px-4 py-3 rounded-2xl rounded-tr-none text-sm text-white">
+                        Sure, I'm available. What specific aspects do you want to discuss?
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1.5 mr-1 text-right">10:34 AM</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Message Input -->
+        <div class="p-4 border-t border-dark-600">
+            <div class="flex items-center gap-3">
+                <button
+                    class="w-10 h-10 rounded-full bg-dark-600 hover:bg-dark-500 flex items-center justify-center text-gray-400 hover:text-primary-500 transition-smooth">
+                    <i class="ri-add-line"></i>
+                </button>
+                <input type="text" placeholder="Type your message..."
+                    class="flex-1 px-4 py-3 rounded-full bg-dark-600 border border-dark-500 text-sm text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-smooth placeholder-gray-500">
+                <button
+                    class="w-10 h-10 rounded-full bg-primary-500 hover:bg-primary-600 flex items-center justify-center text-white transition-smooth shadow-button">
+                    <i class="ri-send-plane-fill"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Profile model -->
+<div id="profileModal"
+    class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm bg-black/50">
+    <div class="bg-gray-800 rounded-xl w-full max-w-md mx-4 overflow-hidden shadow-2xl border border-gray-700">
+        <!-- Modal Header -->
+        <div class="flex justify-between items-center p-5 border-b border-gray-700">
+            <h3 class="text-xl font-semibold text-white">Member Profile</h3>
+            <button id="closeProfile"
+                class="text-gray-400 hover:text-white p-1 rounded-full group hover:bg-primary transition">
+                <i class="ri-close-line text-2xl text-primary group-hover:text-gray-200 transition-discrete duration-150 ease-in"></i>
+            </button>
+        </div>
+
+        <!-- Profile Content -->
+        <div class="p-6">
+            <div class="flex flex-col items-center mb-6">
+                <div class="relative mb-4">
+                    <img src="" id="profileImage" alt="Profile Image"
+                        class="w-16 h-16 rounded-full object-cover border-2 border-gray-600 group-hover:border-primary">
+                    <div id="NoImage"
+                        class="w-16 h-16 hidden items-center justify-center bg-gray-700 text-gray-400 rounded-full border-2 border-gray-600  group-hover:border-primary">
+                        <i class="ri-user-line text-2xl"></i>
+                    </div>
+                    <span id="profileStatus"
+                        class="absolute bottom-2 right-2 w-4 h-4 rounded-full border-2 border-gray-800"></span>
+                </div>
+                <h3 id="profileName" class="text-white font-semibold text-xl"></h3>
+                <p id="profileRole" class="text-gray-400 text-sm"></p>
+            </div>
+
+            <div class="space-y-4">
+                <div class="flex items-center gap-4">
+                    <div class="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center text-primary-500">
+                        <i class="ri-mail-line"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500">Email</p>
+                        <p id="profileEmail" class="text-white text-sm"></p>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-4">
+                    <div class="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center text-primary-500">
+                        <i class="ri-phone-line"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500">Phone</p>
+                        <p id="profilePhone" class="text-white text-sm"></p>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-4">
+                    <div class="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center text-primary-500">
+                        <i class="ri-building-line"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500">Department</p>
+                        <p id="profileDepartment" class="text-white text-sm"></p>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-4">
+                    <div class="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center text-primary-500">
+                        <i class="ri-calendar-line"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500">Joined</p>
+                        <p id="profileJoinDate" class="text-white text-sm"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="p-4 border-t border-gray-700 flex justify-end gap-3">
+            <button class="px-4 py-2 rounded-lg text-sm text-white bg-gray-700 hover:bg-gray-600 transition">
+                Message
+            </button>
+            <button class="px-4 py-2 rounded-lg text-sm text-white bg-primary-500 hover:bg-primary-600 transition">
+                Contact
+            </button>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Search functionality
+        const searchInput = document.getElementById('memberSearch');
+        searchInput.addEventListener('input', function (e) {
+            const searchTerm = e.target.value.toLowerCase();
+            let found = false;
+
+            document.querySelectorAll('.member-card').forEach(card => {
+                const name = card.getAttribute('data-name');
+                const role = card.getAttribute('data-role');
+                const matches = name.includes(searchTerm) || role.includes(searchTerm);
+                card.style.display = matches ? 'block' : 'none';
+                if (matches) found = true;
+            });
+
+            // Show or hide the no-results message
+            const noResults = document.querySelector('.no-results');
+            noResults.classList.toggle('hidden', found);
+        });
+
+
+        // Filter functionality
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                // Update active state
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active', 'bg-primary-500', 'hover:bg-primary-600', 'shadow-button'));
+                this.classList.add('active', 'bg-primary-500', 'hover:bg-primary-600', 'shadow-button');
+
+                // Filter cards
+                const filter = this.getAttribute('data-filter');
+                
+                document.querySelectorAll('.member-card').forEach(card => {
+                    const status = card.getAttribute('data-status');                   
+                    card.style.display = (filter === 'all' || status === filter) ? 'block' : 'none';
+                });
+            });
+        });
+
+        // Chat modal functionality
+        const chatModal = document.getElementById('chatModal');
+        document.querySelectorAll('[title="Send Message"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                chatModal.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            });
+        });
+
+        document.getElementById('closeChat').addEventListener('click', () => {
+            chatModal.classList.add('hidden');
+            document.body.style.overflow = '';
+        });
+
+        // Close modal when clicking outside
+        chatModal.addEventListener('click', (e) => {
+            if (e.target === chatModal) {
+                chatModal.classList.add('hidden');
+                document.body.style.overflow = '';
+            }
+        });
+
+        // Profile modal functionality
+        const profileModal = document.getElementById('profileModal');
+        const profileButtons = document.querySelectorAll('.Profile');
+        const closeProfileButton = document.getElementById('closeProfile');
+        const navbar = document.querySelector('Nav');
+        const noprofile = document.getElementById('NoImage');
+
+        profileButtons.forEach(button => {
+            button.addEventListener('click', function () {
+                // Get the parent member card
+                const memberCard = this.closest('.member-card');
+
+                // Get all data attributes
+                const name = this.getAttribute('data-name');
+                const role = this.getAttribute('data-role');
+                const status = this.getAttribute('data-status') === 'online';
+                const image = this.getAttribute('data-image');
+                const email = this.getAttribute('data-email');
+                const phone = this.getAttribute('data-phone');
+                const department = this.getAttribute('data-department');
+                const joinDate = this.getAttribute('data-joindate');
+
+                // Set the modal content
+                document.getElementById('profileName').textContent = name;
+                document.getElementById('profileRole').textContent = role;
+
+                // Set image or default avatar
+                const profileImage = document.getElementById('profileImage');
+                if (image) {
+                    profileImage.src = image;
+                    profileImage.style.display = 'block';
+                    noprofile.style.display = 'none';
+                } else {
+                    noprofile.style.display = 'flex';
+                    profileImage.style.display = 'none';
+                }
+
+                // Set status indicator
+                const statusBadge = document.getElementById('profileStatus');
+                statusBadge.className = 'absolute bottom-2 right-2 w-4 h-4 rounded-full border-2 border-gray-800 ' +
+                    (status ? 'bg-green-500' : 'bg-gray-500');
+
+                // Set other profile details
+                document.getElementById('profileEmail').textContent = email || 'Not available';
+                document.getElementById('profilePhone').textContent = phone || 'Not available';
+                document.getElementById('profileDepartment').textContent = department || 'Not specified';
+                document.getElementById('profileJoinDate').textContent = joinDate || 'Unknown';
+
+                // Show the modal
+                profileModal.classList.remove('hidden');
+                navbar.classList.add('hidden');
+                document.body.style.overflow = 'hidden';
+            });
+        });
+
+        // Close profile modal
+        closeProfileButton.addEventListener('click', () => {
+            profileModal.classList.add('hidden');
+            navbar.classList.remove('hidden');
+            document.body.style.overflow = '';
+        });
+
+        // Close modal when clicking outside
+        profileModal.addEventListener('click', (e) => {
+            if (e.target === profileModal) {
+                profileModal.classList.add('hidden');
+                document.body.style.overflow = '';
+            }
+        });
+    });
+</script>
+
+{% endblock %}

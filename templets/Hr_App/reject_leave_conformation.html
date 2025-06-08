@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reject Leave Request</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+        ::-webkit-scrollbar-track {
+            background-color: #1F2937;
+            border-radius: 6px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background-color: #8E6FF7;
+            border-radius: 6px;
+            border: 2px solid #1F2937;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background-color: #7A5BD6;
+        }
+        * {
+            scrollbar-width: medium;
+            scrollbar-color: #8E6FF7 #1F2937;
+        }
+        .danger{
+            background-color: #DC2626;
+        }
+
+        .danger:hover{
+            background-color: #B91C1C;
+        }
+
+        .success{
+            background-color: #6366F1;
+        }
+
+        .success:hover{
+            background-color: #4338CA;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-100 h-screen flex items-center justify-center p-4">
+    <div class="w-full max-w-3xl">
+        <div class="bg-[#374151] rounded-xl shadow-xl overflow-hidden">
+            <!-- Header -->
+            <div class="{% if 'TeamLead/modify_leave' in request.path %}bg-blue-700/80{% else %}bg-red-700/80{% endif %} px-6 py-4">
+                <h2 class="text-2xl font-bold text-white flex items-center">
+                    <i class="ri-close-circle-line mr-2"></i>
+                    {{ title }} {{ employee.full_name }}
+                </h2>
+            </div>
+            
+            <!-- Leave Details -->
+            <div class="p-6">
+                <div class="mb-6 p-4 rounded-lg border {% if 'TeamLead/modify_leave' in request.path %}border-blue-700 bg-blue-900/20{% else %}border-red-700 bg-red-900/20{% endif %}">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="text-lg font-semibold">{{ leave.leave_type }}</h3>
+                            <p class="text-gray-300 mt-1">{{ leave.reason }}</p>
+                        </div>
+                        <span class="px-3 py-1 text-xs rounded-full
+                            {% if leave.status == 'Pending' %}bg-yellow-800 text-yellow-300
+                            {% elif leave.status == 'Approved' %}bg-green-800 text-green-300
+                            {% elif leave.status == 'Rejected' %}bg-red-800 text-red-300
+                            {% elif leave.status == 'Modified' %}bg-blue-800 text-blue-300
+                            {% elif leave.status == 'Reconsidered' %}bg-purple-800 text-purple-300
+                            {% else %}bg-gray-700 text-gray-300
+                            {% endif %}">
+                            {{ leave.status|capfirst }}
+                        </span>
+                    
+                    </div>
+                    <div class="mt-4 grid grid-cols-2 gap-2 text-sm">
+                        <div class="flex items-center text-gray-400">
+                            <i class="ri-user-line mr-2"></i>
+                            <span>Requested by: {{ leave.user }}</span>
+                        </div>
+                        <div class="flex items-center text-gray-400">
+                            <i class="ri-calendar-line mr-2"></i>
+                            <div class="flex flex-col">
+                                <span>Start Date: {{ leave.start_date|date:"M d, Y" }}</span>
+                                <span>End Date: {{ leave.end_date|date:"M d, Y" }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Rejection Form -->
+                <form method="POST" class="space-y-4">
+                    {% csrf_token %}
+                    <div>
+                        <label for="opposition_note" class="block text-base font-medium text-gray-300 mb-2">
+                            <i class="ri-edit-line mr-1"></i> {{ note_title }} <strong>(required)</strong>
+                        </label>
+                        {% if 'TeamLead/modify_leave' in request.path %}
+                        <p class="text-sm font-medium text-gray-300 mt-4">Updated dates</p>
+                            <div class="grid grid-cols-2 gap-4 mt-4">
+                                <span>
+                                    <p class="text-xs mb-2 text-gray-400">Start Date <i class="ri-calendar-line mr-2"></i></p>
+                                    <input type="date" name="new_start_date" class="w-full bg-gray-900 text-white p-2"
+                                        value="{{ leave.start_date|date:'Y-m-d' }}">
+                                </span>
+                                <span>
+                                    <p class="text-xs mb-2 text-gray-400">End Date <i class="ri-calendar-line mr-2"></i></p>
+                                    <input type="date" name="new_end_date" class="w-full bg-gray-900 text-white p-2"
+                                        value="{{ leave.end_date|date:'Y-m-d' }}">
+                                </span>
+                            </div>
+                        {% endif %}
+                        <p class="text-sm font-medium text-gray-300 mt-4">Note for the update</p>
+                        <textarea name="opposition_note" id="rejection_note" rows="3"
+                            class="mt-2 w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg 
+                                   {% if 'TeamLead/modify_leave' in request.path %}focus:ring-2 focus:ring-blue-500 focus:border-blue-500{% else %}focus:ring-2 focus:ring-red-500 focus:border-red-500{% endif %}
+                                   text-white placeholder-gray-500 transition resize-none"
+                            placeholder="Reason for rejecting the leave request..." required></textarea>
+                    </div> 
+
+                    <div class="flex justify-end space-x-3 pt-2">
+                        <a href="{% if back_url %}{{ back_url }}{% else %}{% url 'HrApp:employees_on_leave' %}{% endif %}" 
+                           class="px-5 py-2.5 border border-gray-600 rounded-lg text-gray-300 
+                                  hover:bg-gray-700/50 transition flex items-center">
+                            <i class="ri-arrow-left-line mr-1"></i> Cancel
+                        </a>
+                        <button type="submit" 
+                                class="px-5 py-2.5 text-white {{ button_class }} rounded-lg transition flex items-center">
+                                {% if 'TeamLead/reconsider_leave' in request.path %}<i class="ri-check-line mr-1"></i>{% else %}<i class="ri-close-line mr-1"></i>{% endif %} {{ button }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    {% if messages %}
+    <div id="alert-container" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div id="alert-box" class="p-6 rounded-lg shadow-lg text-center w-80 bg-gray-700">
+            {% for message in messages %}
+            <p class="text-lg">{{ message|safe }}</p>
+            <button id="alert-ok-btn" class="mt-4 px-6 py-2 rounded shadow cursor-pointer
+                {% if message.tags == 'success' %} bg-green-500 text-white
+                {% elif message.tags == 'warning' %} bg-yellow-500 text-black
+                {% elif message.tags == 'error' %} bg-red-500 text-white
+                {% elif message.tags == 'info' %} bg-blue-500 text-white
+                {% else %} bg-gray-500 text-white
+                {% endif %}">
+                OK
+            </button>
+            {% endfor %}
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const alertOkBtn = document.getElementById("alert-ok-btn");
+            const alertContainer = document.getElementById("alert-container");
+
+            function closeAlert() {
+                alertContainer.remove();
+            }
+
+            alertOkBtn.addEventListener("click", closeAlert);
+            document.addEventListener("keydown", function (event) {
+                if (event.key === "Enter") {
+                    closeAlert();
+                }
+            });
+
+            alertOkBtn.focus();
+        });
+    </script>
+{% endif %}
+</body>
+</html>

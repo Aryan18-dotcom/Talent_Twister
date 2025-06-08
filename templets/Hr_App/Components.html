@@ -1,0 +1,533 @@
+<!-- page_header -->
+<header class="{% if searchFilterBar %}mb-8{% else %}mb-6{% endif %} pt-4">
+    <div class="flex items-center gap-4">
+        {% if not pending_tasks %}
+        <a href="{% if 'TeamLead/view_employee' in request.path %}/TeamLead/Manage_Team/{% else %}{{ back_url|default:'#' }}{% endif %}"
+            class="flex items-center justify-center w-10 h-10 rounded-full bg-gray-800 hover:bg-primary transition-smooth group">
+            <i
+                class="ri-arrow-left-line text-xl text-primary group-hover:text-gray-200 transition-discrete duration-150 ease-in"></i>
+        </a>
+        {% else %}
+        <a href="{{ back_url|default:'#' }}"
+            class="flex items-center justify-center w-10 h-10 rounded-full bg-gray-800 hover:bg-primary transition-smooth group">
+            <i
+                class="ri-arrow-left-line text-xl text-primary group-hover:text-gray-200 transition-discrete duration-150 ease-in"></i>
+        </a>
+        {% endif %}
+        <div>
+            <h1 class="text-2xl sm:text-3xl font-bold text-white">{{ page_title }}</h1>
+            {% if page_subTitle %}
+            <p class="text-xl font-bold text-gray-500">{{ page_subTitle }}</h3>
+                {% endif %}
+            <p class="text-gray-400 mt-1">
+                {{ subtitle }} • <span class="text-primary/80 font-bold">{{ count }}</span> {{ unit }}
+            </p>
+        </div>
+    </div>
+</header>
+
+
+{{ searchFilter_on_base|json_script:"searchData" }}
+{{ filters|json_script:"filterData" }}
+{{ defaultFilter|json_script:"defaultFilter" }}
+
+<!-- Search and Filter Bar -->
+{% if searchFilterBar %}
+<div class="flex flex-wrap md:flex-nowrap gap-4 mb-8 items-center justify-between">
+    <!-- Search Input -->
+    <div class="flex-grow basis-[300px] relative">
+        <i class="ri-search-line absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg"></i>
+        <input type="text" id="{{ search_id|default:'searchInput' }}"
+            placeholder="{{ search_placeholder|default:'Search...' }}"
+            class="w-full pl-10 pr-4 py-2 rounded-lg bg-gray-800 border border-gray-700 text-sm text-white focus:outline-none focus:ring-2 focus:ring-primary">
+    </div>
+
+    <!-- Filter Buttons -->
+    <div class="flex flex-wrap gap-2 items-center justify-end">
+        {% for filter in filters %}
+        {% if filter.dropdown %}
+        <div class="relative">
+            <select id="statusFilter"
+                class="bg-gray-800 text-white text-sm border border-gray-700 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-purple-700">
+                {% if filter.label %}
+                <option value="all">{{ filter.label }}</option>
+                {% else %}
+                <option value="all">Status Filter</option>
+                {% endif %}
+                {% for option in filter.options %}
+                <option value="{{ option.value }}">{{ option.label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        {% else %}
+        <button
+            class="filter-btn {% if forloop.first %}active bg-purple-700 hover:bg-purple-700{% else %}bg-gray-700 hover:bg-purple-700{% endif %} px-4 py-2 text-sm font-medium rounded-lg text-white shadow-purple-500/20 shadow-lg transition-all duration-200"
+            data-filter="{{ filter.value }}" data-url="{{ filter.url }}">
+            {{ filter.label }}
+        </button>
+        {% endif %}
+        {% endfor %}
+        <button
+            class="resetFilter bg-gray-700 hover:bg-purple-700 px-4 py-2 text-sm font-medium rounded-lg text-white shadow-purple-500/20 shadow-lg transition-all duration-200">
+            Reset
+        </button>
+    </div>
+</div>
+{% else %}
+<div class="h-1 w-full bg-gradient-to-r from-purple-400/60 via-gray-700/60 to-purple-400/60 rounded-lg mb-8 shadow-lg shadow-purple-400/20 transition-all duration-300 hover:scale-[1.01]"></div>
+{% endif %}
+
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const searchInput = document.getElementById(`{{ search_id|default:'searchInput' }}`);
+        const filterButtons = document.querySelectorAll('.filter-btn');
+        const taskCards = document.querySelectorAll('.task-row');
+        const noResults = document.getElementById('noResults');
+        const taskModal = document.getElementById('taskDetailModal');
+        const taskContent = document.getElementById('taskDetailModalContent');
+        const closeTaskModal = document.getElementById('closeTaskDetail');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const noData = document.querySelector('.noData');
+        const NoTaskRowData = document.querySelector('.NoTaskRowData');
+        const resetFilter = document.querySelectorAll('.resetFilter');
+        const statusFilter = document.getElementById('statusFilter');
+
+        // alert("This page is under development, please check back later for updates.");
+
+
+        if (!statusFilter) {
+            DroupDown = false;
+        }
+
+
+        let searchFilter_baseOn = [];
+        let Filters = [];
+
+        const defaultFilter = JSON.parse(document.getElementById('defaultFilter').textContent);
+        if (defaultFilter) {
+            currentFilter = defaultFilter || 'all'; // Default to 'all' if no value is found
+        }
+
+        const dataSearch = JSON.parse(document.getElementById('searchData').textContent);
+        for (let i of dataSearch) {
+            searchFilter_baseOn.push(i);
+        }
+
+        const dataFilters = JSON.parse(document.getElementById('filterData').textContent);
+        for (let i of dataFilters) {
+            Filters.push(i);
+        }
+        const filterValues = Filters.map(item => item.value).filter(value => value !== undefined);
+
+        const filterDropdown = Filters.filter(item => item.dropdown === true).map(item => item.options).flat();
+
+        const dropdownValues = filterDropdown.map(option => option.value).filter(value => value !== undefined);
+        
+
+
+        // Calculate current week number
+        function getWeekNumber(date) {
+            const firstJan = new Date(date.getFullYear(), 0, 1);
+            const days = Math.floor((date - firstJan) / (24 * 60 * 60 * 1000));
+            return Math.ceil((days + firstJan.getDay() + 1) / 7);
+        }
+
+        // Main filter & search logic
+        function applyFilterAndSearch() {
+            const now = new Date();
+            const currentMonth = now.getMonth() + 1;
+            const currentYear = now.getFullYear();
+            const currentWeek = getWeekNumber(now);
+            const searchTerm = searchInput.value.toLowerCase();
+            const selectedFilterValue = statusFilter ? statusFilter.value.toLowerCase() : 'all';
+
+            let hasResults = false;
+
+            document.querySelectorAll('.task-row').forEach(row => {
+                const dataDueDate = row.getAttribute('data-duedate');
+                const dataCreatedDate = row.getAttribute('data-created');
+
+                let isThisWeek = false;
+                let isThisMonth = false;
+                let isThisYear = false;
+
+                if (!window.location.href.includes("/TeamLead/team_members/") && dataDueDate) {
+                    const [yearStr, monthStr, dayStr] = dataDueDate.split('-');
+                    const dueDate = new Date(yearStr, monthStr - 1, dayStr);
+                    const taskWeek = getWeekNumber(dueDate);
+                    const taskMonth = parseInt(monthStr);
+                    const taskYear = parseInt(yearStr);
+
+                    isThisWeek = taskWeek === currentWeek && taskYear === currentYear;
+                    isThisMonth = taskMonth === currentMonth && taskYear === currentYear;
+                    isThisYear = taskYear === currentYear;
+                }
+
+
+
+                let passFilter = false;
+
+                const filterValues = Filters.map(item => item.value).filter(value => value !== undefined);
+                
+
+                const rowStatus = row.getAttribute('data-status');
+
+
+
+                const filterBehaviors = {
+                    all: () => true,
+                    month: () => isThisMonth,
+                    year: () => isThisYear,
+                    week: () => isThisWeek,
+                    Pending: () => rowStatus === 'pending',
+                    Accepted: () => rowStatus === 'accepted',
+                    Completed: () => rowStatus === 'completed',
+                    online: () => rowStatus === 'Online',
+                    offline: () => rowStatus === 'Offline',
+                };
+                if (filterValues.includes(currentFilter) && filterBehaviors[currentFilter]) {
+                    passFilter = filterBehaviors[currentFilter]();
+                    
+                }
+
+                // Dropdown-based status filter
+                if (dropdownValues.includes(selectedFilterValue)) {
+                    const matchesPriority = row.getAttribute('data-priority').toLowerCase() === selectedFilterValue;
+                    const matchesStatus = row.getAttribute('data-status').toLowerCase() === selectedFilterValue;
+
+                    console.log(`Row Status: ${rowStatus}, Selected Filter: ${selectedFilterValue}, Matches Priority: ${matchesPriority}, Matches Status: ${matchesStatus}`);
+                    
+                    
+                    
+                    passFilter = passFilter && (matchesPriority || matchesStatus);
+                    
+                }
+
+
+                // Search logic
+                // Get task data from data attributes
+                const name = row.getAttribute('data-name')?.toLowerCase() || '';
+                const username = row.getAttribute('data-usernName')?.toLowerCase() || '';
+                const assignedBy = row.getAttribute('data-assignedto')?.toLowerCase() || '';
+                const priority = row.getAttribute('data-priority')?.toLowerCase() || '';
+                const role = row.getAttribute('data-role')?.toLowerCase() || '';
+
+                const dueDateObj = new Date(dataDueDate);
+                const dueDay = dueDateObj.getDate();
+                const dueDayPadded = String(dueDay).padStart(2, '0');
+                const dueMonth = dueDateObj.getMonth() + 1;
+                const dueMonthPadded = String(dueMonth).padStart(2, '0');
+                const dueYear = dueDateObj.getFullYear();
+                const dueMonthName = dueDateObj.toLocaleString('default', { month: 'long' }).toLowerCase();
+
+                const CreateddueDateObj = new Date(dataCreatedDate);
+                const CreateddueDay = CreateddueDateObj.getDate();
+                const CreateddueDayPadded = String(CreateddueDay).padStart(2, '0');
+                const CreateddueMonth = CreateddueDateObj.getMonth() + 1;
+                const CreateddueMonthPadded = String(CreateddueMonth).padStart(2, '0');
+                const CreateddueYear = CreateddueDateObj.getFullYear();
+                const CreateddueMonthName = CreateddueDateObj.toLocaleString('default', { month: 'long' }).toLowerCase();
+
+                const possibleDueSearches = [
+                    // Due dates
+                    `${dueDay}-${dueMonth}-${dueYear}`,
+                    `${dueDayPadded}-${dueMonthPadded}-${dueYear}`,
+                    `${dueMonth}-${dueDay}-${dueYear}`,
+                    `${dueMonthPadded}-${dueDayPadded}-${dueYear}`,
+                    `${dueMonthName} ${dueDay} ${dueYear}`,
+                    `${dueMonthName} ${dueDayPadded} ${dueYear}`,
+                    `${dueMonthName}-${dueDay}-${dueYear}`,
+                    `${dueMonthName}-${dueDayPadded}-${dueYear}`,
+
+                    // Created dates
+                    `${CreateddueDay}-${CreateddueMonth}-${CreateddueYear}`,
+                    `${CreateddueDayPadded}-${CreateddueMonthPadded}-${CreateddueYear}`,
+                    `${CreateddueMonth}-${CreateddueDay}-${CreateddueYear}`,
+                    `${CreateddueMonthPadded}-${CreateddueDayPadded}-${CreateddueYear}`,
+                    `${CreateddueMonthName} ${CreateddueDay} ${CreateddueYear}`,
+                    `${CreateddueMonthName} ${CreateddueDayPadded} ${CreateddueYear}`,
+                    `${CreateddueMonthName}-${CreateddueDay}-${CreateddueYear}`,
+                    `${CreateddueMonthName}-${CreateddueDayPadded}-${CreateddueYear}`
+                ].map(item => item.toLowerCase());
+
+                const matchesSearch =
+                    name.includes(searchTerm) ||
+                    username.includes(searchTerm) ||
+                    assignedBy.includes(searchTerm) ||
+                    priority.includes(searchTerm) ||
+                    role.includes(searchTerm) ||
+                    possibleDueSearches.some(dateStr => dateStr.includes(searchTerm));
+
+                const showRow = passFilter && matchesSearch;
+
+                row.style.display = showRow ? '' : 'none';
+                if (showRow) hasResults = true;
+            });
+
+            if (noData) {
+                noResults.classList.add('hidden');
+            } else {
+                if (noResults) noResults.classList.toggle('hidden', hasResults);
+            }
+        }
+
+        // Search handler
+        if (searchInput) {
+            searchInput.addEventListener('input', applyFilterAndSearch);
+        }
+
+        // Filter button click
+        filterButtons.forEach(btn => {
+            btn.addEventListener('click', function () {
+                currentFilter = this.getAttribute('data-filter');
+
+                filterButtons.forEach(b => {
+                    b.classList.remove('active', 'bg-purple-700', 'hover:bg-primary-700');
+                    b.classList.add('bg-gray-700');
+                });
+                this.classList.add('active', 'bg-purple-700', 'hover:bg-primary-700');
+                this.classList.remove('bg-gray-700');
+
+                applyFilterAndSearch();
+            });
+        });
+
+        // Dropdown status filter
+        if (statusFilter) {
+            statusFilter.addEventListener('change', applyFilterAndSearch);
+        }
+
+        // Reset
+        resetFilter.forEach(btn => {
+            btn.addEventListener("click", () => {
+                if (searchInput) searchInput.value = "";
+                currentFilter = defaultFilter || 'all'; // Default to 'all' if no value is found
+
+                if (statusFilter) statusFilter.selectedIndex = 0;
+
+                // Reset buttons
+                filterButtons.forEach(btn => {
+                    btn.classList.remove('active', 'bg-purple-700', 'hover:bg-purple-700', 'shadow-purple-500/20', 'shadow-lg');
+                    btn.classList.add('bg-gray-700', 'hover:bg-gray-600/40');
+                });
+
+                const defaultBtn = document.querySelector(`[data-filter="${defaultFilter}"]`);
+                if (defaultBtn) {
+                    defaultBtn.classList.add('active', 'bg-purple-700', 'hover:bg-purple-700', 'shadow-purple-500/20', 'shadow-lg');
+                    defaultBtn.classList.remove('bg-gray-700', 'hover:bg-gray-600/40');
+                }
+
+                applyFilterAndSearch();
+            });
+        });
+
+
+        // ✅ Trigger default filter on page load
+        const defaultBtn = document.querySelector(`[data-filter="${defaultFilter}"]`);
+        if (defaultBtn) defaultBtn.click();
+
+        document.querySelectorAll('.view-task-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                // Get task data from data attributes
+                const taskId = this.getAttribute('data-task-id');
+                const title = this.getAttribute('data-task-title');
+                const description = this.getAttribute('data-task-description');
+                const assignedBy = this.getAttribute('data-task-assigned-by');
+                const assignedDate = this.getAttribute('data-task-assigned-date');
+                const dueDate = this.getAttribute('data-task-due-date');
+                const priority = this.getAttribute('data-task-priority');
+                const status = this.getAttribute('data-task-status') ?? '';
+                const completion = this.getAttribute('data-task-completion-date');
+                const completion_type = this.getAttribute('data-task-completion-type');
+                const days_difference = this.getAttribute('data-task-days-difference');
+                
+
+
+                // Populate modal content
+                document.getElementById('taskModalTitle').textContent = title;
+                document.getElementById('taskModalDescription').textContent = description;
+                document.getElementById('taskModalAssignedBy').textContent = assignedBy;
+                document.getElementById('taskModalAssignedDate').textContent = assignedDate;
+                document.getElementById('taskModalDueDate').textContent = dueDate;
+                document.getElementById('taskModalcompletionDate').textContent = completion;
+                const taskStatus = document.getElementById('taskModalStatus');
+
+                taskStatus.classList.remove(
+                    "bg-amber-500/20", "text-amber-400",
+                    "bg-green-500/20", "text-green-400"
+                );
+
+                taskStatus.textContent = status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
+
+                if (status === "Accepted") {
+                    taskStatus.classList.add("bg-amber-500/20", "text-amber-400");
+                } else if (status === "Pending") {
+                    taskStatus.classList.add("bg-amber-500/20", "text-amber-400");
+                } else if (status === "accepted") {
+                    taskStatus.classList.add("bg-blue-500/20", "text-blue-400");
+                } else {
+                    taskStatus.classList.add("bg-green-500/20", "text-green-400");
+                }
+
+
+                // Define elements to modify
+                const container = document.getElementById('taskModalExcellentWorkContainer');
+                const icon = document.getElementById('taskModalExcellentWorkIcon');
+                const heading = document.getElementById('taskModalExcellentWorkHeading');
+                const completionType = document.getElementById('taskModalExcellentWorkType');
+                const daysDiffer = document.getElementById('taskModalExcellentDays');
+                const message = document.getElementById('taskModalExcellentWork');
+
+                const containerPending = document.getElementById('taskModalExcellentWorkContainerPending');
+                const iconPending = document.getElementById('taskModalExcellentWorkIconPending');
+                const headingPending = document.getElementById('taskModalExcellentWorkHeadingPending');
+                const completionTypePending = document.getElementById('taskModalExcellentWorkPending');
+                const daysDifferPending = document.getElementById('taskModalExcellentWorkTypePending');
+                const messagePending = document.getElementById('taskModalExcellentDaysPending');
+
+                // Reset old classes
+                container.className = "flex items-center gap-4 p-4 rounded-lg bg-gradient-to-r shadow-lg";
+                icon.className = "w-10 h-10 rounded-full flex items-center justify-center text-white";
+                heading.className = "text-xs";
+                completionType.className = "text-xs";
+                daysDiffer.className = "font-semibold text-sm";
+
+                let BgColor, iconBg, textColor, label, typeLabel;
+
+                // Set new styles and text based on completion_type
+
+                if (completion_type == "late") {
+                    BgColor = "from-red-500/20 via-red-400/20 to-red-500/20";
+                    iconBg = "bg-red-600";
+                    textColor = "text-red-300";
+                    label = "Needs Improvement";
+                    typeLabel = "Delayed";
+                    container.classList.remove("hidden");
+                } else if (completion_type == "ontime") {
+                    BgColor = "from-yellow-500/20 via-yellow-400/20 to-yellow-500/20";
+                    iconBg = "bg-yellow-600";
+                    textColor = "text-yellow-300";
+                    label = "Can Be Better";
+                    typeLabel = "On Time";
+                    container.classList.remove("hidden");
+                } else if (completion_type == "early") {
+                    BgColor = "from-green-500/20 via-green-400/20 to-green-500/20";
+                    iconBg = "bg-green-600";
+                    textColor = "text-green-300";
+                    label = "Excellent Work!";
+                    typeLabel = "Early Completion";
+                    container.classList.remove("hidden");
+                } else {
+                    document.getElementById('taskModalCompletionDateContainer').classList.add("hidden");
+                    if (days_difference.includes('Overdue')) {
+                        BgColor = "from-red-500/20 via-red-400/20 to-red-500/20";
+                        iconBg = "bg-red-600";
+                        textColor = "text-red-300";
+                        label = "Needs Improvements!";
+                        typeLabel = "Task Overdue";
+                        container.classList.add("hidden");
+                        containerPending.classList.remove("hidden");
+
+                        iconPending.classList.add(iconBg);
+                        headingPending.classList.add(textColor);
+                        completionTypePending.classList.add(textColor);
+                        daysDifferPending.classList.add(textColor);
+
+                        messagePending.innerText = label;
+                        completionTypePending.innerText = typeLabel;
+                        daysDifferPending.innerText = days_difference;
+                    } else if(days_difference.includes('left')){
+                        BgColor = "from-green-500/20 via-green-400/20 to-green-500/20";
+                        iconBg = "bg-green-600";
+                        textColor = "text-green-300";
+                        label = "Excellent Work!";
+                        typeLabel = "Task UnderDue";
+                        container.classList.add("hidden");
+                        containerPending.classList.remove("hidden");
+
+                        iconPending.classList.add(iconBg);
+                        headingPending.classList.add(textColor);
+                        completionTypePending.classList.add(textColor);
+                        daysDifferPending.classList.add(textColor);
+
+                        messagePending.innerText = label;
+                        completionTypePending.innerText = typeLabel;
+                        daysDifferPending.innerText = days_difference;
+                    } else {
+                        BgColor = "from-gray-500/20 via-gray-400/20 to-gray-500/20";
+                        iconBg = "bg-gray-600";
+                        textColor = "text-gray-300";
+                        label = "Can be Better!";
+                        typeLabel = "Task Due's Today";
+                        container.classList.add("hidden");
+                        containerPending.classList.remove("hidden");
+
+                        iconPending.classList.add(iconBg);
+                        headingPending.classList.add(textColor);
+                        completionTypePending.classList.add(textColor);
+                        daysDifferPending.classList.add(textColor);
+
+                        messagePending.innerText = label;
+                        completionTypePending.innerText = typeLabel;
+                        daysDifferPending.innerText = days_difference;
+                    }
+                }
+                
+                // Apply new styles and values
+                if (BgColor) {
+                    container.classList.add(...BgColor.split(" "));
+                }
+                
+                icon.classList.add(iconBg);
+                heading.classList.add(textColor);
+                completionType.classList.add(textColor);
+                daysDiffer.classList.add(textColor);
+                
+
+                message.innerText = label;
+                completionType.innerText = typeLabel;
+                daysDiffer.innerText = days_difference;
+                
+
+                // Set priority badge
+                const priorityBadge = document.getElementById('taskModalPriority');
+                priorityBadge.textContent = priority;
+                priorityBadge.className = 'px-2 py-1 rounded-full text-xs ' +
+                    (priority === 'High' ? 'bg-red-500/20 text-red-400' :
+                        priority === 'Medium' ? 'bg-yellow-500/20 text-yellow-400' :
+                            'bg-green-500/20 text-green-400');
+
+                const openModal = () => {
+                    taskModal.classList.remove('hidden');
+                    document.body.style.overflow = 'hidden';
+
+                    // Delay to ensure element is visible before scaling
+                    setTimeout(() => {
+                        taskContent.classList.remove('scale-0');
+                        taskContent.classList.add('scale-100');
+                    }, 10); // small delay to trigger animation
+                };
+                openModal();
+            });
+
+            const closeModal = () => {
+                // Animate scale to 0
+                taskContent.classList.remove('scale-100');
+                taskContent.classList.add('scale-0');
+
+                // Wait for the animation to complete before hiding
+                setTimeout(() => {
+                    taskModal.classList.add('hidden');
+                    document.body.style.overflow = 'auto';
+                }, 300); // Match duration-300
+            };
+
+            closeTaskModal.addEventListener('click', closeModal);
+            closeModalBtn.addEventListener('click', closeModal);
+            taskModal.addEventListener('click', closeModal);
+        });
+
+    });
+</script>

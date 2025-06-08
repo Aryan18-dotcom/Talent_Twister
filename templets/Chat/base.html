@@ -1,0 +1,22 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{% block title %}Chat App{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <nav>
+        {% if user.is_authenticated %}
+            <a href="{% url 'Myapp:chat_list' %}">Chats</a> |
+            <span>Hello, {{ user.username }}</span> |
+            <a href="{% url 'Myapp:Hr_Pannel' %}">Back</a>
+        {% else %}
+            <a href="{% url 'login' %}">Login</a> | <a href="{% url 'signup' %}">Signup</a>
+        {% endif %}
+    </nav>
+    <hr>
+    {% block content %}
+    {% endblock %}
+</body>
+</html>

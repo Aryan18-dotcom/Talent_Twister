@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>JobSeeker | Find Your Dream Job</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link
+            href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap"
+            rel="stylesheet">
+        <link
+            href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css"
+            rel="stylesheet">
+        <style>
+        :where([class^="ri-"])::before {
+            content: "\f3c2";
+        }
+
+        * {
+            scrollbar-color: #7C3AED #1F2937;
+        }
+        
+        .search-input:focus {
+            outline: none;
+        }
+
+        .dropdown-content {
+            display: none;
+        }
+
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+
+        .dropdown-content:hover {
+            display: block;
+        }
+
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        input {
+            border: none;
+        }
+
+        input:focus {
+            border: none;
+            outline: none;
+        }
+    </style>
+        <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#8B5CF6',
+                        secondary: '#4B5563'
+                    },
+                    borderRadius: {
+                        'none': '0px',
+                        'sm': '4px',
+                        DEFAULT: '8px',
+                        'md': '12px',
+                        'lg': '16px',
+                        'xl': '20px',
+                        '2xl': '24px',
+                        '3xl': '32px',
+                        'full': '9999px',
+                        'button': '8px'
+                    }
+                }
+            }
+        }
+    </script>
+    </head>
+
+    <body class="bg-[#0F172A] min-h-screen text-white">
+        <div class="flex">
+            <aside
+                class="w-64 h-screen bg-[#1E293B] fixed top-0 left-0 border-r border-gray-700 flex flex-col">
+                <div class="p-4 border-b border-gray-700">
+                    <h1 class="text-2xl font-['Pacifico'] text-primary">Tallent
+                        Twister</h1>
+                </div>
+                <nav class="flex-1 p-4 space-y-2 text-white">
+                    <a href="{% url 'dashboard' %}"
+                        class="flex items-center px-4 py-2 text-sm font-medium rounded-button hover:bg-primary/5 hover:text-primary">
+                        <div class="w-5 h-5 flex items-center justify-center mr-3">
+                            <i class="ri-home-line"></i>
+                        </div>
+                        Dashboard
+                    </a>
+                    <a href="{% url 'find_job' %}"
+                        class="flex items-center px-4 py-2 text-sm font-medium text-gray-300 border border-white bg-primary/5 text-primary hover:bg-primary/5 hover:text-primary rounded-button">
+                        <div class="w-5 h-5 flex items-center justify-center mr-3">
+                            <i class="ri-briefcase-line"></i>
+                        </div>
+                        Find Jobs
+                    </a>
+                    <a href="{% url 'saved_jobs' %}"
+                        class="flex items-center px-4 py-2 text-sm font-medium text-gray-300 hover:bg-primary/5 hover:text-primary rounded-button">
+                        <div class="w-5 h-5 flex items-center justify-center mr-3">
+                            <i class="ri-user-line"></i>
+                        </div>
+                        Saved Jobs
+                    </a>
+                    <a href="{% url 'resume' %}"
+                        class="flex items-center px-4 py-2 text-sm font-medium text-gray-300 hover:bg-primary/5 hover:text-primary rounded-button">
+                        <div class="w-5 h-5 flex items-center justify-center mr-3">
+                            <i class="ri-file-list-line"></i>
+                        </div>
+                        Resume
+                    </a>
+                    <a href="{% url 'ai_chat_bot' %}"
+                        class="flex items-center px-4 py-2 text-sm font-medium text-gray-300 hover:bg-primary/5 hover:text-primary rounded-button">
+                        <div class="w-5 h-5 flex items-center justify-center mr-3">
+                            <i class="ri-message-3-line"></i>
+                        </div>
+                        AI Chat
+                    </a>
+                    <a href="{% url 'messages' %}"
+                        class="flex items-center px-4 py-2 text-sm font-medium text-gray-300 hover:bg-primary/5 hover:text-primary rounded-button">
+                        <div class="w-5 h-5 flex items-center justify-center mr-3">
+                            <i class="ri-chat-1-line"></i>
+                        </div>
+                        Messages
+                    </a>
+                </nav>
+                <div class="p-4 border-t border-gray-700">
+                    <div class="flex items-center">
+                        <img
+                            src="https://public.readdy.ai/ai/img_res/f2dbcd780dbf0bdab5d64d406dc5063d.jpg"
+                            class="w-10 h-10 rounded-full object-cover"
+                            alt="Profile">
+                        <div class="ml-3">
+                            <p class="text-sm font-medium text-gray-100">Michael
+                                Anderson</p>
+                            <p
+                                class="text-xs text-gray-400">michael@example.com</p>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+            <div class="w-64 bg-[#1E293B]"></div>
+            <main>
+                <div class="min-h-screen">
+                    <div class="max-w-6xl mx-auto px-8 py-12">
+                        <div class="text-center mb-8">
+                            <h1 class="text-4xl font-bold mb-4">Find
+                                Your Dream Job Today</h1>
+                            <p class="text-lg">Search through
+                                millions of jobs and find the right fit for
+                                you</p>
+                        </div>
+                        <div class="relative max-w-3xl mx-auto mb-12">
+                            <div class="flex items-center bg-[#232A34] rounded-lg relative">
+                                <div class="w-12 h-12 flex items-center justify-center">
+                                    <i class="ri-search-line text-gray-400 text-xl"></i>
+                                </div>
+                                <input 
+                                    type="text"
+                                    id="searchInput"
+                                    placeholder="Search jobs, companies, or keywords"
+                                    spellcheck="true"
+                                    class="flex-1 py-3 px-4 bg-[#232A34] placeholder-gray-500 focus:ring-0 border-none text-sm capitalize"
+                                    oninput="showSuggestions()"
+                                    onkeydown="handleEnter(event)"
+                                >
+                                <button 
+                                    class="m-2 px-6 py-2 bg-primary text-white rounded-button hover:bg-blue-600 transition-colors duration-200 cursor-pointer whitespace-nowrap"
+                                    onclick="searchJobs()">
+                                    Search
+                                </button>
+                                
+                                <!-- Suggestion Box -->
+                                <div id="suggestionsBox" class="absolute top-full left-0 mt-3 w-full bg-[#232A34] border border-gray-600 rounded-lg shadow-lg hidden">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="w-full">
+
+                            <div class="mb-12">
+                                <div
+                                    class="flex justify-between items-center mb-6">
+                                    <h2 class="text-2xl font-bold">Recent
+                                        Jobs</h2>
+                                </div>
+                                <div class="space-y-6">
+                                    <div
+                                        class="bg-[#1E293B] p-6 rounded-lg shadow-sm border hover:shadow-md transition-shadow duration-200">
+                                        <div
+                                            class="flex items-center justify-between">
+                                            <div
+                                                class="flex items-center space-x-4">
+                                                <img
+                                                    src="https://public.readdy.ai/ai/img_res/9415b4391b8b710b435f386f3ef35a18.jpg"
+                                                    alt="Company logo"
+                                                    class="w-12 h-12 rounded object-cover">
+                                                <div>
+                                                    <h3
+                                                        class="text-lg font-semibold text-gray-200">Business
+                                                        Development Manager
+                                                    </h3>
+                                                    <p
+                                                        class="text-gray-400">Global
+                                                        Consulting Group</p>
+                                                </div>
+                                            </div>
+                                            <button
+                                                class="text-gray-400 hover:text-primary">
+                                                <i
+                                                    class="ri-bookmark-line text-xl save"></i>
+                                            </button>
+                                        </div>
+                                        <div class="mt-4">
+                                            <div
+                                                class="flex items-center space-x-4 text-sm text-gray-500">
+                                                <span class="flex items-center">
+                                                    <i
+                                                        class="ri-map-pin-line mr-1"></i>
+                                                    Sydney, Australia
+                                                </span>
+                                                <span class="flex items-center">
+                                                    <i
+                                                        class="ri-money-dollar-circle-line mr-1"></i>
+                                                    $100k - $130k
+                                                </span>
+                                                <span class="flex items-center">
+                                                    <i
+                                                        class="ri-time-line mr-1"></i>
+                                                    Full Time
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div
+                                            class="mt-4 flex items-center justify-between">
+                                            <div class="flex flex-wrap gap-2">
+                                                <span
+                                                    class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">Sales</span>
+                                                <span
+                                                    class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">Management</span>
+                                                <span
+                                                    class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">Business
+                                                    Development</span>
+                                            </div>
+                                            <button
+                                                class="bg-primary text-white px-4 py-2 rounded-button hover:bg-blue-600 transition-colors duration-200 cursor-pointer whitespace-nowrap">Apply
+                                                Now</button>
+                                        </div>
+                                    </div>
+                                    <div
+                                        class="bg-[#1E293B] p-6 rounded-lg shadow-sm border hover:shadow-md transition-shadow duration-200">
+                                        <div
+                                            class="flex items-center justify-between">
+                                            <div
+                                                class="flex items-center space-x-4">
+                                                <img
+                                                    src="https://public.readdy.ai/ai/img_res/e9451b20f005169a261f886a11a586c2.jpg"
+                                                    alt="Company logo"
+                                                    class="w-12 h-12 rounded object-cover">
+                                                <div>
+                                                    <h3
+                                                        class="text-lg font-semibold text-gr2y-900">Data
+                                                        Scientist</h3>
+                                                    <p
+                                                        class="text-gray-400">HealthTech
+                                                        Solutions</p>
+                                                </div>
+                                            </div>
+                                            <button
+                                                class="text-gray-400 hover:text-primary">
+                                                <i
+                                                    class="ri-bookmark-line text-xl save"></i>
+                                            </button>
+                                        </div>
+                                        <div class="mt-4">
+                                            <div
+                                                class="flex items-center space-x-4 text-sm text-gray-500">
+                                                <span class="flex items-center">
+                                                    <i
+                                                        class="ri-map-pin-line mr-1"></i>
+                                                    Boston, MA
+                                                </span>
+                                                <span class="flex items-center">
+                                                    <i
+                                                        class="ri-money-dollar-circle-line mr-1"></i>
+                                                    $130k - $160k
+                                                </span>
+                                                <span class="flex items-center">
+                                                    <i
+                                                        class="ri-time-line mr-1"></i>
+                                                    Full Time
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div
+                                            class="mt-4 flex items-center justify-between">
+                                            <div class="flex flex-wrap gap-2">
+                                                <span
+                                                    class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">Python</span>
+                                                <span
+                                                    class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">Machine
+                                                    Learning</span>
+                                                <span
+                                                    class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">Healthcare</span>
+                                            </div>
+                                            <button
+                                                class="bg-primary text-white px-4 py-2 rounded-button hover:bg-blue-600 transition-colors duration-200 cursor-pointer whitespace-nowrap">Apply
+                                                Now</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mt-6 min-h-screen border-t border-gray-700 pt-8 container mb-12">
+                                <h2 class="text-2xl font-bold mb-12">Find Your
+                                    Dream Job</h2>
+
+
+                                <!-- Filters Section -->
+                                <div
+                                    class="flex items-center space-x-4 mb-8 py-2 dropdown-container">
+                                    <div class="relative dropdown">
+                                        <button
+                                            class="px-4 py-2 text-gray-200 bg-[#1E293B] border rounded flex items-center space-x-2 cursor-pointer">
+                                            <span>Location</span>
+                                            <i class="ri-arrow-down-s-line"></i>
+                                        </button>
+                                        <div
+                                            class="dropdown-content absolute left-0 hidden">
+                                            <div
+                                                class="p-2 location-dropdown bg-[#1E293B] border rounded-lg shadow-lg mt-2 w-56"></div>
+                                        </div>
+                                    </div>
+
+                                    <div class="relative dropdown">
+                                        <button
+                                            class="px-4 py-2 text-gray-200 bg-[#1E293B] border rounded flex items-center space-x-2 cursor-pointer">
+                                            <span>Job Type</span>
+                                            <i class="ri-arrow-down-s-line"></i>
+                                        </button>
+                                        <div
+                                            class="dropdown-content absolute left-0 hidden">
+                                            <div
+                                                class="p-2 jobType-dropdown bg-[#1E293B] border rounded-lg shadow-lg mt-2 w-56"></div>
+                                        </div>
+                                    </div>
+
+                                    <div class="relative dropdown">
+                                        <button
+                                            class="px-4 py-2 text-gray-200 bg-[#1E293B] border rounded flex items-center space-x-2 cursor-pointer">
+                                            <span>Experience Level</span>
+                                            <i class="ri-arrow-down-s-line"></i>
+                                        </button>
+                                        <div
+                                            class="dropdown-content absolute left-0 hidden">
+                                            <div
+                                                class="p-2 experience-dropdown bg-[#1E293B] border rounded-lg shadow-lg mt-2 w-56"></div>
+                                        </div>
+                                    </div>
+
+                                    <button
+                                        class="clearFilters hidden bg-red-500 text-white px-4 py-2 rounded-lg" onclick="clearFilters()">Clear
+                                        Filters</button>
+                                </div>
+
+                                <!-- Job Listings Container -->
+                                <div
+                                    class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 searchShowCardContainer">
+                                </div>
+                            </div>
+
+                            <div class="mb-12">
+                                <h2 class="text-2xl font-bold mb-6">Success
+                                    Stories</h2>
+                                <div
+                                    class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div
+                                        class="bg-[#1E293B] p-6 rounded-lg shadow-sm border">
+                                        <div
+                                            class="flex items-center space-x-4 mb-4">
+                                            <img
+                                                src="https://public.readdy.ai/ai/img_res/b3028c1224e5ac1f930f6321f6a29631.jpg"
+                                                alt="User photo"
+                                                class="w-12 h-12 rounded-full object-cover">
+                                            <div>
+                                                <h4
+                                                    class="font-semibold text-white">Sarah
+                                                    Thompson</h4>
+                                                <p
+                                                    class="text-gray-300 text-sm">Senior
+                                                    Product Designer at
+                                                    TechCorp</p>
+                                            </div>
+                                        </div>
+                                        <p class="text-gray-400 italic">"Finding
+                                            my
+                                            dream job was easier than I thought.
+                                            The
+                                            platform's intuitive interface and
+                                            powerful search features helped me
+                                            connect with the
+                                            perfect opportunity."</p>
+                                    </div>
+                                    <div
+                                        class="bg-[#1E293B] p-6 rounded-lg shadow-sm border">
+                                        <div
+                                            class="flex items-center space-x-4 mb-4">
+                                            <img
+                                                src="https://public.readdy.ai/ai/img_res/e3e9fce7d50fa07ceb5ee055f23362a6.jpg"
+                                                alt="User photo"
+                                                class="w-12 h-12 rounded-full object-cover">
+                                            <div>
+                                                <h4
+                                                    class="font-semibold text-white">Michael
+                                                    Chen</h4>
+                                                <p
+                                                    class="text-gray-300 text-sm">Software
+                                                    Engineer at Global
+                                                    Finance</p>
+                                            </div>
+                                        </div>
+                                        <p class="text-gray-400 italic">"The job
+                                            matching algorithm is impressive. I
+                                            found a
+                                            position that perfectly aligned with
+                                            my
+                                            skills and career goals within
+                                            weeks."</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+        <script src="findjob.js"></script>
+    </body>
+
+</html>

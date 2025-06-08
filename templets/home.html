@@ -1,0 +1,172 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <nav class="bg-light border-bottom border-dark shadow-sm py-3">
+        <div class="container d-flex justify-content-between align-items-center">
+            <div>
+                <h3 class="text-success fw-bold mb-0">Talent Twister</h3>
+                {% if request.session.username %}
+                <p class="text-muted small mb-0">Welcome Back, {{ request.session.username }} 👋</p>
+                {% endif %}
+                {% if hr_company %}
+                    <h5 class="text-muted mb-0">Company: {{ hr_company.name }}</h5>
+                {% endif %}
+            </div>
+            <a href="{% url 'Myapp:logout' %}" class="btn btn-danger px-4 py-2 fw-semibold shadow-sm">Logout</a>
+            <div class="conatainer mt-5">
+                <div class="profileDivPhoto">
+                  <a href="{% url 'Myapp:upload_profile_pic' %}" class="profile">
+                    {% if profile.image %}
+                      <img src="{{ profile.image.url }}" alt="ProfileImg" style="height: 100%; width: 100%; object-fit: cover; object-position: center;">
+                    {% else %}
+                      <i class="ri-user-3-fill"></i>
+                    {% endif %}
+                  </a>
+                  <h1>{{request.session.username }}</h1>
+                </div>
+              </div>
+        </div>
+    </nav>
+
+    <form method="POST" class="border border-2 p-4 rounded shadow-lg w-75 bg-light m-auto mt-4">
+        {% csrf_token %}
+        <h3 class="text-center mb-3">Register Employees</h3>
+
+        <!-- Company Details (Fixed and auto-filled) -->
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label class="form-label fw-bold">Company Name</label>
+                <input type="text" class="form-control text-secondary" value="{{ hr_company.name }}" disabled>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label fw-bold">Company Domain</label>
+                <input type="text" class="form-control text-secondary" value="{{ hr_company.domain }}" disabled>
+            </div>
+        </div>
+
+        <!-- Employee Section -->
+        <h5 class="text-center">Employee Details</h5>
+        <div id="employee-container">
+            <div class="row employee-row border p-3 rounded mb-3 bg-white align-items-center">
+                <div class="col-md-3">
+                    <label class="form-label">Username</label>
+                    <input type="text" name="username[]" class="form-control" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Full Name</label>
+                    <input type="text" name="full_name[]" class="form-control" required>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Password</label>
+                    <input type="password" name="password[]" class="form-control" required>
+                </div>
+                <div class="col-md-2 d-flex justify-content-center">
+                    <button type="button" class="btn btn-danger btn-sm remove-employee mt-4">Remove</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add More Employees Button -->
+        <button type="button" id="add-employee" class="btn btn-success w-100">+ Add More Employees</button>
+
+        <!-- Submit Button -->
+        <div class="text-center mt-3">
+            <button type="submit" class="btn btn-primary w-100">Register Employees</button>
+        </div>
+        <a href="{% url 'Myapp:employees_by_company' %}" class="text-decoration-none text-light text-center mt-3 btn btn-primary w-100">
+            View All Employees
+        </a>
+    </form>
+    <a href="{% url 'Myapp:add_task' %}" class="btn btn-success px-4 mb-4 py-2 fw-semibold shadow-sm">Post Task</a>
+
+</div>
+
+{% if not company_link %}
+<!-- Company Creation Modal - Tailwind Version -->
+<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+    <div class="w-full max-w-md mx-4">
+        <div class="bg-gray-800/90 backdrop-blur-lg rounded-xl shadow-2xl overflow-hidden border border-gray-700/50">
+            <!-- Modal Header -->
+            <div class="p-6 border-b border-gray-700/50">
+                <h3 class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-blue-500">
+                    Create Your Company
+                </h3>
+                <div class="w-16 h-1 bg-gradient-to-r from-purple-500 to-blue-600 mt-2 rounded-full"></div>
+            </div>
+            
+            <!-- Modal Body -->
+            <form method="POST" action="{% url 'Myapp:CreateCompany' %}" class="p-6">
+                {% csrf_token %}
+                <input type="hidden" name="create_company" value="true">
+                
+                <p class="text-gray-300 mb-6">You need to create a company before you can add employees.</p>
+                
+                <div class="space-y-5">
+                    <!-- Company Name Field -->
+                    <div class="bg-gray-700/50 p-4 rounded-lg border border-gray-600/30 hover:border-purple-500/30 transition-all duration-300">
+                        <label class="block text-sm font-medium text-gray-300 mb-2">Company Name</label>
+                        <input type="text" id="new_company_name" name="new_company_name" 
+                            class="w-full px-4 py-2.5 bg-gray-800/70 border border-gray-600/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/50 text-white placeholder-gray-500 transition-all duration-300" 
+                            placeholder="Enter company name" required>
+                    </div>
+                    
+                    <!-- Company Domain Field -->
+                    <div class="bg-gray-700/50 p-4 rounded-lg border border-gray-600/30 hover:border-blue-500/30 transition-all duration-300">
+                        <label class="block text-sm font-medium text-gray-300 mb-2">Company Domain</label>
+                        <input type="text" id="new_company_domain" name="new_company_domain" 
+                            class="w-full px-4 py-2.5 bg-gray-800/70 border border-gray-600/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-white placeholder-gray-500 transition-all duration-300" 
+                            placeholder="example.com" required>
+                        <p class="mt-1 text-xs text-gray-400">This will be used for employee emails (username@domain)</p>
+                    </div>
+                </div>
+                
+                <!-- Modal Footer -->
+                <div class="mt-6 pt-4 border-t border-gray-700/50 flex justify-end">
+                    <button type="submit" 
+                        class="px-6 py-2.5 bg-gradient-to-br from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-300 font-medium flex items-center shadow-lg hover:shadow-xl">
+                        <i class="ri-building-2-line mr-2"></i> Create Company
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- JavaScript for Adding More Employee Rows -->
+<script>
+    document.getElementById("add-employee")?.addEventListener("click", function() {
+        let container = document.getElementById("employee-container");
+
+        let newRow = document.createElement("div");
+        newRow.classList.add("row", "employee-row", "border", "p-3", "rounded", "mb-3", "bg-white", "align-items-center");
+        newRow.innerHTML = `
+            <div class="col-md-3">
+                <label class="form-label">Username</label>
+                <input type="text" name="username[]" class="form-control" required>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Full Name</label>
+                <input type="text" name="full_name[]" class="form-control" required>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Password</label>
+                <input type="password" name="password[]" class="form-control" required>
+            </div>
+            <div class="col-md-2 d-flex justify-content-center">
+                <button type="button" class="btn btn-danger btn-sm remove-employee mt-4">Remove</button>
+            </div>
+        `;
+
+        container.appendChild(newRow);
+    });
+
+    // Remove Employee Row
+    document.addEventListener("click", function(event) {
+        if (event.target.classList.contains("remove-employee")) {
+            event.target.closest(".employee-row").remove();
+        }
+    });
+</script>
+{% endblock %}

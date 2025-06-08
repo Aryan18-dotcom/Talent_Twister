@@ -1,0 +1,216 @@
+{% extends 'Hr_App/base.html' %}
+{% load static %}
+{% url 'HrApp:pending_task' as pending_task_url %}
+{% url 'HrApp:all_tasks' as all_tasks_url %}
+
+
+
+{% block title %}
+Completed Tasks
+{% endblock %}
+
+{% block content %}
+{% include 'Hr_App/Components.html' %}
+<!-- Main Content -->
+<main class="flex-grow">
+    <div class="container mx-auto px-4 py-6">
+        <!-- Employee Cards Container -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-6">
+            <!-- Employee Card -->
+            {% for employee in employee_dets %}
+            <div class="task-row bg-gray-800 rounded-lg overflow-hidden shadow-lg mb-4 shadow-lg shadow-gray-600/50 hover:shadow-gray-700/50"
+                data-name="{{ employee.user.full_name }}" data-assignedto="{{ employee.user.username }}"
+                data-duedate="{{ employee.start_date|date:'Y-m-d' }}" data-priority="{{ employee.leave_type }}"
+                data-week="{% if employee.start_date|date:'Y-W' == current_week %}true{% else %}false{% endif %}"
+                data-month="{% if employee.start_date|date:'Y-m' == current_month %}true{% else %}false{% endif %}"
+                data-year="{% if employee.start_date|date:'Y' == current_year %}true{% else %}false{% endif %}"
+                data-description="{{ employee.reason }}" data-assigneddate="{{ employee.end_date }}"
+                data-status="{{ employee.status }}">
+                <div class="p-5">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <h3 class="text-xl font-semibold">{{ employee.user.full_name }}</h3>
+                            <p class="text-gray-400 text-sm">Username: {{ employee.user.username }}</p>
+                        </div>
+                        <span
+                            class="text-xs font-bold px-2 py-1 rounded-full {% if employee.status == 'Pending' %}bg-amber-600/20 text-amber-500{% elif employee.status == 'Approved' %}bg-green-500/20 text-green-400{% elif employee.status == 'Rejected' %}bg-red-500/20 text-red-400{% elif employee.status == 'Modified' %}bg-blue-500/20 text-blue-400{% elif employee.status == 'Reconsidered' %}bg-yellow-500/20 text-yellow-400{% else %}bg-amber-600/20 text-amber-500{% endif %}">
+                            {{ employee.status }}
+                        </span>
+
+                    </div>
+
+                    <div class="space-y-2 mb-4">
+                        <div class="flex items-center">
+                            <div class="w-5 h-5 flex items-center justify-center text-gray-400">
+                                <i class="ri-mail-line"></i>
+                            </div>
+                            <span class="ml-2 text-sm">{{ employee.user.email }}</span>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="w-5 h-5 flex items-center justify-center text-gray-400">
+                                <i class="ri-building-line"></i>
+                            </div>
+                            <span class="ml-2 text-sm">Department: {{ employee.user.department }}</span>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="w-5 h-5 flex items-center justify-center text-gray-400">
+                                <i class="ri-user-settings-line"></i>
+                            </div>
+                            <span class="ml-2 text-sm">Role: {{ employee.user.role }}</span>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="w-5 h-5 flex items-center justify-center text-gray-400">
+                                <i class="ri-calendar-line"></i>
+                            </div>
+                            <span class="ml-2 text-sm">Days worked: {{ employee.user.days_worked }}</span>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-sm mb-1">
+                                <span>Completed tasks</span>
+                                <span>{{ employee.task_completed }} / {{ employee.task_count }}
+                                    </span>
+                            </div>
+                            <div class="w-full bg-gray-700 rounded-full h-2">
+                                <div class="bg-primary h-2 rounded-full" style="width: 100%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="border-t border-gray-700 pt-4 mb-4">
+                        <h4 class="font-medium mb-2">Leave Details</h4>
+                        <div class="bg-gray-900 rounded p-3 mb-3">
+                            <div class="flex justify-between mb-2">
+                                <div>
+                                    <div class="text-xs text-gray-400">Start Date</div>
+                                    <div class="font-medium">{{ employee.start_date }}</div>
+                                </div>
+                                <div>
+                                    <div class="text-xs text-gray-400">End Date</div>
+                                    <div class="font-medium">{{ employee.end_date }}</div>
+                                </div>
+                                <div>
+                                    <div class="text-xs text-gray-400">Total Days</div>
+                                    <div class="font-medium">{{ employee.total_days }} days</div>
+                                </div>
+                            </div>
+                            <div class="text-xs text-gray-400 mb-1">Leave Type</div>
+                            <div class="flex items-center">
+                                <span class="inline-block w-3 h-3 rounded-full bg-blue-500 mr-2"></span>
+                                <span>{{ employee.leave_type }}</span>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="text-xs text-gray-400 mb-1">Leave Note</div>
+                            <p class="text-sm">{{ employee.reason }}</p>
+                        </div>
+                    </div>
+
+                    <div class="border-t border-gray-700 pt-4">
+                        <h4 class="font-medium mb-3">Adjust Leave Duration</h4>
+                        {% if employee.is_modified %}
+                        <div class="grid grid-cols-2 gap-3 mb-2">
+                            <div>
+                                <label class="block text-xs text-gray-400 mb-1">New Modified Start Date</label>
+                                <input type="date" class="w-full bg-gray-900 border-none rounded p-2 text-sm"
+                                    value="{{ employee.start_date|date:'Y-m-d' }}" disabled>
+                            </div>
+                            <div>
+                                <label class="block text-xs text-gray-400 mb-1">New Modified End Date</label>
+                                <input type="date" class="w-full bg-gray-900 border-none rounded p-2 text-sm"
+                                    value="{{ employee.end_date|date:'Y-m-d' }}" disabled>
+                            </div>
+                        </div>
+                        <div class="mb-8">
+                            <label class="block text-xs text-gray-400 mb-2">Modification Note</label>
+                            <sapn class="w-full bg-gray-900 border-none rounded p-2 px-4 text-sm">{{ employee.modification_note }}</sapn>
+                        </div>
+                        {% else %}
+                        <div>
+                            <div data-tooltip="No modified start date. Click 'Modify' to change it.">
+                                <label class="block text-xs text-gray-400 mb-1">New Start Date</label>
+                                <input type="date" class="w-full bg-gray-900 border-none rounded p-2 text-sm" disabled>
+                            </div>
+                            <div>
+                                <label class="block text-xs text-gray-400 mb-1">New End Date</label>
+                                <input type="date" class="w-full bg-gray-900 border-none rounded p-2 text-sm" disabled>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% if not employee.is_responded %}
+                        <div class="flex flex-col gap-4">
+                            <div class="flex space-x-2">
+                                <!-- Accept Button -->
+                                <form method="POST" action="{% url 'HrApp:accept_leave' employee.user.id %}" class="flex-1">
+                                    {% csrf_token %}
+                                    <button type="submit"
+                                        class="w-full flex-1 bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-button whitespace-nowrap">
+                                        <i class="ri-check-line mr-1"></i> Accept
+                                    </button>
+                                </form>
+                                <a href="{% url 'HrApp:reject_leave' employee.user.id %}" class="text-center flex-1 bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-button whitespace-nowrap w-1/2">
+                                    <i class="ri-close-line mr-1"></i> Reject
+                                </a>
+                            </div>
+                        </div>
+                        {% else %}
+                        {% if not employee.is_rejected %}
+                        <div class="flex space-x-2">
+                            <!-- Modify Button (only if not responded yet) -->
+                            <a href="{% url 'HrApp:modify_leave' employee.user.id %}"
+                                class="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded-button whitespace-nowrap">
+                                <i class="ri-edit-line mr-1"></i> Modify
+                            </a>
+                            <a href="{% url 'HrApp:reject_leave' employee.user.id %}" class="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-button whitespace-nowrap">
+                                <i class="ri-close-line mr-1"></i> Revoke
+                            </a>
+                        </div>
+                        {% else %}
+                        <div class="flex space-x-2">
+                            <!-- Reconsider Button (only if rejected) -->
+                            <a href="{% url 'HrApp:reconsider_leave' employee.user.id %}">
+                                {% csrf_token %}
+                                <button type="submit"
+                                    class="flex-1 bg-primary hover:bg-primary/90 text-white py-2 px-4 rounded-button whitespace-nowrap">
+                                    <i class="ri-refresh-line mr-1"></i> Reconsider
+                                </button>
+                            </a>
+                            <button
+                                class="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded-button whitespace-nowrap">
+                                <i class="ri-message-3-line mr-1"></i> Message
+                            </button>
+                        </div>
+                        {% endif %}
+                        {% endif %}
+
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="bg-gray-800 rounded-lg overflow-hidden shadow-lg">
+                <div colspan="6" class="noData py-8 text-center text-gray-400">
+                    <img src="{% static 'Employee_App/Static_Imgs/outline.svg' %}" alt="No leave requests"
+                        class="w-32 mx-auto mb-4">
+                    <p>No employee leave requests found</p>
+                    <p class="mt-4 text-sm text-gray-500">Leaves help track employee availability and wellbeing.</p>
+                    <a href="{% url 'HrApp:team_members' %}"
+                        class="text-purple-500 hover:text-purple-700 font-semibold transition duration-300 ease-in-out">
+                        View all employees
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+            <!-- No Results Message -->
+            <div id="noResults"
+                class="bg-gray-800 rounded-lg overflow-hidden shadow-lg hidden py-8 text-center text-gray-400">
+                <img src="{% static 'Employee_App/Static_Imgs/outline.svg' %}" alt="No Results"
+                    class="w-32 mx-auto mb-4">
+                <h2>No Tasks Found</h2>
+                <p class="mt-4 text-sm text-gray-500">Try adjusting your search or filter options.</p>
+                <button
+                    class="text-purple-500 hover:text-purple-700 font-semibold transition duration-300 ease-in-out resetFilter">Reset
+                    Filters</button>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}

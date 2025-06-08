@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirm Task Completion</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom scrollbar styles */
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+        ::-webkit-scrollbar-track {
+            background-color: #1F2937;
+            border-radius: 6px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background-color: #8E6FF7;
+            border-radius: 6px;
+            border: 2px solid #1F2937;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background-color: #7A5BD6;
+        }
+        * {
+            scrollbar-width: medium;
+            scrollbar-color: #8E6FF7 #1F2937;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-100 h-screen flex items-center justify-center p-4">
+    <div class="w-full max-w-3xl">
+        <div class="bg-[#374151] rounded-xl shadow-xl overflow-hidden">
+            <!-- Header -->
+            <div class="bg-[#8E6FF7] px-6 py-4">
+                <h2 class="text-2xl font-bold text-white flex items-center">
+                    <i class="ri-checkbox-circle-line mr-2"></i>
+                    Confirm Task Completion
+                </h2>
+            </div>
+            
+            <!-- Task Details -->
+            <div class="p-6">
+                <div class="mb-6 p-4 rounded-lg border 
+                    {% if is_late %}border-red-700 bg-red-900/20{% else %}border-green-700 bg-green-900/20{% endif %}">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="text-lg font-semibold">{{ task.task }}</h3>
+                            <p class="text-gray-300 mt-1">{{ task.task.description }}</p>
+                        </div>
+                        <span class="px-3 py-1 text-xs rounded-full 
+                            {% if task.task.task_priority == 'High' %}bg-red-900 text-red-300
+                            {% elif task.task.task_priority == 'Medium' %}bg-yellow-900 text-yellow-300
+                            {% else %}bg-blue-900/30 text-blue-300{% endif %}">
+                            {{ task.task.task_priority }}
+                        </span>
+                    </div>
+                    
+                    <div class="mt-4 grid grid-cols-2 gap-2 text-sm">
+                        <div class="flex items-center text-gray-400">
+                            <i class="ri-user-line mr-2"></i>
+                            <span>Assigned by: {{ task.task.assigned_by }}</span>
+                        </div>
+                        <div class="flex items-center text-gray-400">
+                            <i class="ri-calendar-line mr-2"></i>
+                            <span>Due: {{ task.task.due_date|date:"M d, Y" }}</span>
+                        </div>
+                        {% if is_late %}
+                        <div class="col-span-2 flex items-center text-red-300">
+                            <i class="ri-alarm-warning-line mr-2"></i>
+                            <span>{{ days_late }} day{{ days_late|pluralize }} overdue</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Completion Form -->
+                <form method="post" class="space-y-4">
+                    {% csrf_token %}
+                    <div>
+                        {% if is_late %}
+                        <label for="completion_notes" class="block text-sm font-medium text-gray-300 mb-2">
+                            <i class="ri-edit-line mr-1"></i> Completion Notes <strong>(Reasion to be late)</strong>
+                        </label>
+                        <textarea name="completion_notes" id="completion_notes" rows="3"
+                        class="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg 
+                               focus:ring-2 focus:ring-[#8E6FF7] focus:border-[#8E6FF7] 
+                               text-white placeholder-gray-500 transition resize-none"
+                        placeholder="Add any notes about the task completion..." required></textarea>
+                        {% else %}
+                        <label for="completion_notes" class="block text-sm font-medium text-gray-300 mb-2">
+                            <i class="ri-edit-line mr-1"></i> Completion Notes (Optional)
+                        </label>
+                        <textarea name="completion_notes" id="completion_notes" rows="3"
+                            class="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg 
+                                   focus:ring-2 focus:ring-[#8E6FF7] focus:border-[#8E6FF7] 
+                                   text-white placeholder-gray-500 transition resize-none"
+                            placeholder="Add any notes about the task completion..."></textarea>
+                        {% endif %}
+                    </div> 
+
+                    <div class="flex justify-end space-x-3 pt-2">
+                        <a href="{% if back_url %}{{ back_url }}{% else %}{% url 'EmployeeApp:dashboard' %}{% endif %}" 
+                           class="px-5 py-2.5 border border-gray-600 rounded-lg text-gray-300 
+                                  hover:bg-gray-700/50 transition flex items-center">
+                            <i class="ri-arrow-left-line mr-1"></i> Cancel
+                        </a>
+                        <button type="submit" 
+                                class="px-5 py-2.5 bg-[#8E6FF7] hover:bg-[#7A5BD6] text-white 
+                                       rounded-lg transition flex items-center">
+                            <i class="ri-check-line mr-1"></i> Confirm Completion
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% if messages %}
+        <div id="alert-container" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div id="alert-box" class="p-6 rounded-lg shadow-lg text-center w-80 bg-gray-700">
+                {% for message in messages %}
+                <p class="text-lg">{{ message }}</p>
+                <button id="alert-ok-btn" class="mt-4 px-6 py-2 rounded shadow cursor-pointer
+                    {% for message in messages %}
+                        {% if message.tags == 'success' %} bg-green-500 text-white
+                            {% elif message.tags == 'warning' %} bg-yellow-500 text-black
+                            {% elif message.tags == 'error' %} bg-red-500 text-white
+                            {% elif message.tags == 'info' %} bg-blue-500 text-white
+                            {% else %} bg-gray-500 text-white
+                        {% endif %}
+                    {% endfor %}
+                    ">
+                    OK
+                </button>
+                {% endfor %}
+            </div>
+        </div>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const alertBox = document.getElementById("alert-box");
+                const alertOkBtn = document.getElementById("alert-ok-btn");
+                const alertContainer = document.getElementById("alert-container");
+
+                function closeAlert() {
+                    alertContainer.remove();
+                }
+
+                // Close alert on button click
+                alertOkBtn.addEventListener("click", closeAlert);
+
+                // Close alert when pressing Enter key
+                document.addEventListener("keydown", function (event) {
+                    if (event.key === "Enter") {
+                        closeAlert();
+                    }
+                });
+
+                // Auto-focus the OK button so Enter key works immediately
+                alertOkBtn.focus();
+            });
+        </script>
+        {% endif %}
+</body>
+</html>

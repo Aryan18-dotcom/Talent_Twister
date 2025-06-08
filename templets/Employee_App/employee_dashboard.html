@@ -1,0 +1,565 @@
+{% extends 'Employee_App/base.html' %}
+{% block title %}Employee Dashboard{% endblock %}
+{% block content %}
+
+        <div class="grid grid-cols-4 gap-6 mt-8 font-medium h-40">
+            <!-- Tasks Due Today (Primary Action Item) -->
+            <a href="{% url 'EmployeeApp:dashboard' %}" class="tooltip bg-gray-800 p-6 rounded-lg cursor-pointer shadow-lg transition-all transform hover:scale-[1.025] hover:-translate-y-2 hover:border-2 border-primary" title="Displays tasks assigned for today that are due by end of the day"
+                data-tooltip="Browse all tasks in one place">
+                <div class="flex items-center justify-between">
+                    <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                        <i class="ri-alarm-warning-line text-2xl text-primary"></i>
+                    </div>
+                    <span class="text-4xl font-semibold text-primary">{{ task_due_today }}</span>
+                </div>
+                <div class="mt-3">
+                    <h3 class="text-gray-200 font-medium">Tasks Due Today</h3>
+                    <p class="text-xs text-gray-400 mt-1">{% if task_due_today > 0 %}Prioritize these{% else %}All clear!{% endif %}</p>
+                </div>
+            </a>
+        
+            <a href="{% url 'EmployeeApp:completed_task' %}" class="bg-gray-800 p-6 rounded-lg cursor-pointer shadow-lg transition-all transform hover:scale-[1.025] hover:-translate-y-2 hover:border-2 border-green-500" title="Only shows tasks assigned today that have been completed" data-tooltip="View all tasks that have been completed successfully">
+                <div class="flex items-center justify-between">
+                    <div class="w-12 h-12 rounded-full bg-green-500/10 flex items-center justify-center">
+                        <i class="ri-checkbox-circle-line text-2xl text-green-500"></i>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-4xl font-semibold text-green-500">{{ completed_task_count }}</span>
+                        <span class="text-xl text-gray-400">of {{ task_count }}</span>
+                        <div class="text-xs text-green-400 mt-1">
+                            {% if task_count > 0 %}
+                                {% widthratio completed_task_count task_count 100 as completion_pct %}
+                                {{ completion_pct|floatformat:0 }}% completion
+                            {% else %}
+                                No tasks assigned
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <h3 class="text-gray-200 font-medium">Completed Tasks</h3>
+                    {% if task_count > 0 %}
+                        <p class="text-xs text-gray-400 mt-1">
+                            {% if remaining_pct < 0 %}0{% else %}{{ remaining_pct }}{% endif %}% remaining
+                        </p>
+                    {% endif %}
+                </div>
+            </a>
+        
+            <!-- Pending Tasks -->
+            <a href="{% url 'EmployeeApp:pending_task' %}" class="bg-gray-800 p-6 rounded-lg cursor-pointer shadow-lg transition-all transform hover:scale-[1.025] hover:-translate-y-2 hover:border-2 border-amber-500" title="Only shows tasks assigned today that are still pending" data-tooltip="View all tasks that are still pending and waiting for completion">
+                <div class="flex items-center justify-between">
+                    <div class="w-12 h-12 rounded-full bg-amber-500/10 flex items-center justify-center">
+                        <i class="ri-time-line text-2xl text-amber-500"></i>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-4xl font-semibold text-amber-500">{{ pending_task_count }}</span>
+                        <span class="text-xl text-gray-400">of {{ task_count }}</span>
+                        <div class="text-xs text-amber-400 mt-1">
+                            {% widthratio pending_task_count|default:0 task_count 100 as percentage %}
+                            {% if task_count == 0 %}
+                                <span class="text-green-400">No Tasks Assigned</span>
+                            {% elif percentage|floatformat:0 == "0" %}
+                                <span class="text-green-400">All Tasks Completed!</span>
+                            {% else %}
+                                <span class="text-amber-500">{{ percentage|floatformat:0 }}% pending</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <h3 class="text-gray-200 font-medium">Pending Tasks</h3>
+                </div>
+            </a>
+        
+            <!-- Team Members -->
+            <a href="{% url 'EmployeeApp:team_members' %}" class="bg-gray-800 p-6 rounded-lg cursor-pointer shadow-lg transition-all transform hover:scale-[1.025] hover:-translate-y-2 hover:border-2 border-blue-500 " title="all team members currently working with you"
+                data-tooltip="All team members you're working with">
+                <div class="flex items-center justify-between">
+                    <div class="w-12 h-12 rounded-full bg-blue-500/10 flex items-center justify-center">
+                        <i class="ri-user-3-line text-2xl text-blue-500"></i>
+                    </div>
+                    <span class="text-4xl font-semibold text-blue-400">{{ team_members }}</span>
+                </div>
+                <div class="mt-3">
+                    <h3 class="text-gray-200 font-medium">Team Members</h3>
+                    <p class="text-xs text-gray-400 mt-1">Active this week</p>
+                </div>
+            </a>
+        </div>
+        
+
+        <div class="mt-8 bg-gray-800 rounded-lg p-6">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-[2.8vw] font-semibold">New Tasks Today</h2>
+                <div class="flex items-center space-x-2">
+                    <span class="text-sm text-gray-400">Today: {{ today }}</span>
+                    <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                </div>
+            </div>
+            <div id="newTask">
+                {% if new_tasks %}
+                    {% for task in new_tasks %}
+
+                    <div class="task-card relative bg-gray-700/70 hover:bg-gray-700/90 p-5 rounded-lg shadow-lg border border-gray-600 mb-6 transition-all duration-200">
+                        {% if task.is_new %}<div class="absolute top-3 right-3 w-3 h-3 rounded-full bg-blue-500 animate-pulse"></div>{% endif %}
+                        
+                        <div class="flex justify-between items-start gap-4">
+                            <!-- Task Details -->
+                            <div class="flex-1">
+                                <p class="text-sm text-gray-400">
+                                    New task assigned by <span class="text-gray-100 font-semibold">{{ task.assigned_by }}</span>
+                                </p>
+                                <h3 class="text-lg font-semibold mt-1 text-gray-100">{{ task.title }}</h3>
+                                <p class="text-gray-400 mt-1 line-clamp-2">{{ task.description }}</p>
+                            </div>
+                    
+                            <!-- Priority Badge -->
+                            <span class="px-3 py-1 text-xs font-semibold rounded-full 
+                                       {% if task.task_priority == 'High' %}bg-red-500/20 text-red-500
+                                       {% elif task.task_priority == 'Medium' %}bg-amber-500/20 text-amber-500
+                                       {% else %}bg-green-500/20 text-green-500{% endif %}">
+                                {{ task.task_priority }}
+                            </span>
+                        </div>
+                    
+                        <!-- Due Date & Actions -->
+                        <div class="mt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-sm">
+                            <div class="flex flex-wrap items-center gap-x-4 gap-y-2">
+                                <div class="flex items-center space-x-2">
+                                    <i class="ri-calendar-line text-gray-400"></i>
+                                    <span>Due: <span class="{% if task.is_overdue %}text-red-400{% else %}text-gray-100{% endif %} font-semibold">
+                                        {{ task.due_date|date:"M d, Y" }}
+                                        {% if task.is_overdue %}(Overdue){% endif %}
+                                    </span></span>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <i class="ri-time-line text-gray-400"></i>
+                                    <span>Assigned: <span class="text-gray-300 font-medium">{{ task.created_at|date:"M d, Y" }}</span></span>
+                                </div>
+                            </div>
+                    
+                            <!-- Accept Button -->
+                            <form action="{% url 'EmployeeApp:accept_task' task.id %}" method="POST" class="accept-form"
+                                data-task-id="{{ task.id }}">
+                                {% csrf_token %}
+                                <button class="px-4 py-2 bg-primary text-white rounded-md shadow-md transition-all 
+                                             hover:bg-primary/70 active:scale-95 focus:ring-2 focus:ring-primary/50
+                                             flex items-center space-x-2 w-full sm:w-auto justify-center">
+                                    <i class="ri-check-line"></i>
+                                    <span>Accept Task</span>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    {% endfor %}
+                {% else %}
+                
+                <div class="task-card bg-gray-700/70 w-full p-8 rounded-lg shadow-md border-2 border-gray-500/50 mb-6 flex flex-col items-center justify-center transition-all hover:bg-gray-700/90">
+                    <div class="text-center max-w-md mx-auto">
+                        <!-- Main Icon -->
+                        <div class="w-20 h-20 rounded-full bg-gray-600/30 flex items-center justify-center mx-auto mb-4">
+                            <i class="ri-checkbox-circle-line text-4xl text-gray-400"></i>
+                        </div>
+                        
+                        <!-- Primary Message -->
+                        <h3 class="text-xl font-semibold text-gray-200 mb-2">No new tasks assigned today</h3>
+                        <p class="text-gray-400 mb-6">You're all caught up with your work!</p>
+                        
+                        <!-- Accepted Tasks Summary -->
+                        {% if accepted_task_count %}
+                        <div class="bg-gray-800/50 p-4 rounded-lg border border-gray-700">
+                            <div class="flex items-center justify-center space-x-3">
+                                <span class="w-10 h-10 rounded-full bg-green-500/10 flex items-center justify-center">
+                                    <i class="ri-check-line text-green-500"></i>
+                                </span>
+                                <div>
+                                    <h4 class="text-sm font-medium text-gray-300">Accepted Tasks</h4>
+                                    <p class="text-lg font-semibold text-gray-100">
+                                        {{ accepted_task_count }} task today
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Optional Action Button -->
+                        <button onclick="window.location.reload()" class="px-5 py-2 bg-gray-600/50 hover:bg-gray-600/70 border border-gray-500/30 text-gray-300 rounded-lg transition-all flex items-center space-x-2 mx-auto hover:shadow-md hover:translate-y-[-2px]">
+                            <i class="ri-refresh-line"></i>
+                            <span>Check for New Tasks</span>
+                        </button>
+                    </div>
+                </div>
+
+                {% endif %}
+            </div>
+
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-[2.8vw] font-semibold">My Tasks</h2>
+                <div class="flex bg-gray-700 rounded-full p-1">
+                    <div class="flex bg-gray-700 rounded-full p-1">
+                        <a href="{% url 'EmployeeApp:dashboard' %}"
+                            class="px-4 py-1 rounded-full {% if request.path == '/Employee/dashboard/completed/' %}text-gray-400{% else %}bg-primary text-white{% endif %}">
+                            Today
+                        </a>
+                        <a href="{% url 'EmployeeApp:complete_task_dashboard' %}"
+                            class="px-4 py-1 rounded-full {% if request.path == '/Employee/dashboard/completed/' %}bg-primary text-white{% else %}text-gray-400{% endif %}">
+                            Completed
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="space-y-4" id="myTask">
+                {% if completed %}
+                    {% if accepted_tasks %}
+                        {% for Accepted in accepted_tasks %}
+
+                            <div class="task-card bg-gray-700/70 p-6 rounded-lg shadow-lg border border-gray-600 hover:border-gray-500 mb-6 transition-all duration-200">
+                                <!-- Task Header -->
+                                <div class="flex items-start justify-between gap-3">
+                                    <div class="flex-1 min-w-0">
+                                        <h3 class="text-xl font-semibold text-white truncate">{{ Accepted.task.title }}</h3>
+                                        <!-- Priority Badge -->
+                                        <div class="mt-2">
+                                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium 
+                                                    {% if Accepted.task.task_priority == 'High' %}bg-red-500/20 text-red-400
+                                                    {% elif Accepted.task.task_priority == 'Medium' %}bg-amber-500/20 text-amber-400
+                                                    {% else %}bg-green-500/20 text-green-400{% endif %}">
+                                                {{ Accepted.task.task_priority }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Assigned By Avatar -->
+                                    <div class="flex-shrink-0 relative group">
+                                        <div class="w-10 h-10 rounded-full bg-gray-600 flex items-center justify-center text-gray-200 font-medium text-sm"
+                                            data-tooltip="{{ Accepted.task.assigned_by.username }}">
+                                            {{ Accepted.task.assigned_by.username|slice:":2"|upper }}
+                                        </div>
+                                        <span class="absolute -bottom-6 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                                            {{ Accepted.task.assigned_by.username }}
+                                        </span>
+                                    </div>
+                                </div>
+                            
+                                <!-- Task Description -->
+                                <p class="text-gray-300 mt-3 line-clamp-2">
+                                    {{ Accepted.task.description }}
+                                </p>
+                            
+                                <!-- Metadata -->
+                                <div class="mt-4 space-y-2 text-sm">
+                                    <div class="mt-4 mb-[-.4vw] space-y-2 text-sm">
+                                        <div class="flex items-center text-gray-400">
+                                            <i class="ri-user-line mr-2"></i>
+                                            <span>Assigned by <span class="text-gray-200">{{ Accepted.task.assigned_by }}</span></span>
+                                        </div>
+                                        <div class="flex items-center text-gray-400">
+                                            <i class="ri-calendar-line mr-2"></i>
+                                            <span>Assigned on <span class="text-gray-200">{{ Accepted.task.created_at|date:"M d, Y" }}</span></span>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center {% if Accepted.task.is_due_soon and not Accepted.task.is_due_today %}text-amber-400{% else %}text-gray-400{% endif %}">
+                                        <i class="ri-calendar-event-line mr-2"></i>
+                                        <span>
+                                            Due <span class="font-medium {% if Accepted.task.is_due_soon %}text-white{% else %}text-gray-200{% endif %}">
+                                                {{ Accepted.task.due_date|date:"M j, Y" }}
+                                                {% if Accepted.task.is_due_soon and not Accepted.task.is_due_today %}
+                                                    <span class="ml-1 text-xs">(in {{ Accepted.task.due_date|timeuntil }})</span>
+                                                {% endif %}
+                                            </span>
+                                        </span>
+                                    </div>
+                                </div>
+                            
+                                <!-- Due Date Status -->
+                                <div class="mt-4">
+                                    {% if Accepted.task.is_due_today %}
+                                        <div class="flex items-center justify-between px-4 py-2 bg-yellow-500/20 rounded-lg">
+                                            <div class="flex items-center text-yellow-400">
+                                                <i class="ri-alarm-warning-line mr-2"></i>
+                                                <span>Due today</span>
+                                            </div>
+                                            <span class="text-yellow-300 text-xs">{{ Accepted.task.due_date|timeuntil }} left</span>
+                                        </div>
+                                    {% elif Accepted.task.is_overdue %}
+                                        <div class="flex items-center justify-between px-4 py-2 bg-red-500/20 rounded-lg">
+                                            <div class="flex items-center text-red-400">
+                                                <i class="ri-alarm-warning-line mr-2"></i>
+                                                <span>Overdue by {{ Accepted.task.days_remaining }} day{{ Accepted.task.days_remaining|pluralize }}</span>
+                                            </div>
+                                        </div>
+                                    {% else %}
+                                        <!-- Progress Bar -->
+                                        {% if not Accepted.task.is_overdue and not Accepted.task.is_due_today %}
+                                            <div class="mt-4">
+                                                <div class="flex items-center justify-between text-xs mb-1">
+                                                    <span class="text-gray-400">Progress</span>
+                                                    <span class="font-medium {% if Accepted.task.progress_date < 50 %}text-amber-400{% else %}text-green-400{% endif %}">
+                                                        {{ Accepted.task.progress_date }}%
+                                                    </span>
+                                                </div>
+                                                <div class="relative h-2.5 bg-gray-600 rounded-full overflow-hidden">
+                                                    <div class="absolute top-0 left-0 h-full {% if Accepted.task.progress_date < 50 %}bg-amber-500{% else %}bg-green-500{% endif %} rounded-full" 
+                                                        style="width: {{ Accepted.task.progress_date }}%">
+                                                    </div>
+                                                </div>
+                                                <div class="mt-1 flex justify-between text-xs">
+                                                    <span class="text-gray-500">Assigned</span>
+                                                    <span class="{% if Accepted.task.days_remaining < 3 %}text-amber-400 font-medium{% else %}text-gray-400{% endif %}">
+                                                        {{ Accepted.task.days_remaining }} day{{ Accepted.task.days_remaining|pluralize }} left for
+                                                    </span>
+                                                    <span class="text-gray-300">{{ Accepted.task.due_date|date:"M j" }}</span>
+                                                </div>
+                                            </div>
+                                        {% endif %}
+                                    {% endif %}
+                                </div>
+                                <!-- Action Button -->
+                                <div class="mt-6">
+                                    <a href="{% url 'EmployeeApp:complete_task' Accepted.id %}"
+                                    class="block w-full py-2.5 px-4 text-center bg-green-600/80 hover:bg-green-600 text-white rounded-lg transition-all duration-200
+                                            flex items-center justify-center space-x-2 hover:shadow-lg hover:shadow-green-500/10">
+                                        <i class="ri-check-line"></i>
+                                        <span>Mark as Completed</span>
+                                    </a>
+                                </div>
+                            </div>
+
+                        {% endfor %}
+                    {% else %}
+
+                        <div class="task-card bg-gradient-to-br from-gray-700/40 to-gray-800/60 w-full py-16 rounded-xl shadow-lg border-2 border-gray-500/50 mb-6 flex flex-col items-center justify-center transition-all hover:border-gray-400/70 group">
+                            <!-- Animated Icon Container -->
+                            <div class="relative mb-5">
+                                <div class="w-20 h-20 rounded-full bg-gray-600/30 flex items-center justify-center 
+                                            group-hover:bg-gray-600/50 transition-all duration-300">
+                                    <i class="ri-inbox-line text-4xl text-gray-400 group-hover:text-gray-300 transition-all"></i>
+                                </div>
+                                <!-- Subtle floating animation -->
+                                <div class="absolute -inset-2 rounded-full border-2 border-gray-500/20 group-hover:border-gray-500/40 
+                                            animate-pulse opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                            </div>
+                        
+                            <!-- Text Content -->
+                            <div class="text-center px-6">
+                                <h3 class="text-xl font-medium text-gray-300 mb-1">All Caught Up!</h3>
+                                <p class="text-gray-400/90 mb-6 max-w-md mx-auto">
+                                    You don't have any active tasks right now. Enjoy your free time!
+                                </p>
+                            </div>
+                        </div>
+
+                    {% endif %}
+                {% else %}
+                    {% if complete_task %}
+                        {% for completion in complete_task %}
+
+                            <div class="task-card bg-gray-700/70 p-6 rounded-lg shadow-md border border-gray-700 mb-6 transition-all hover:shadow-lg hover:border-gray-600 hover:bg-gray-700/90">
+                                <!-- Header Section -->
+                                <div class="flex items-start justify-between gap-4">
+                                    <div class="flex-1 min-w-0">
+                                        <div class="flex items-center gap-2 mb-1">
+                                            <h3 class="text-lg font-semibold text-gray-100 truncate">{{ completion.task.title }}</h3>
+                                            <span class="px-2 py-0.5 text-xs font-medium rounded-full bg-green-500/20 text-green-400 flex items-center gap-1">
+                                                <i class="ri-checkbox-circle-line text-xs"></i> Completed
+                                            </span>
+                                        </div>
+                                        
+                                        <p class="text-sm text-gray-400 mt-1 line-clamp-2">
+                                            {{ completion.task.description }}
+                                        </p>
+                                        
+                                        <div class="flex items-center gap-3 mt-3 text-xs text-gray-500">
+                                            <span class="flex items-center">
+                                                <i class="ri-user-line mr-1"></i>
+                                                {{ completion.task.assigned_by }}
+                                            </span>
+                                            <span class="flex items-center">
+                                                <i class="ri-calendar-line mr-1"></i>
+                                                {{ completion.task.created_at|date:"M d, Y" }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            
+                                <!-- Completion Timeline -->
+                                <div class="mt-4 relative">
+                                    <div class="absolute left-4 top-3 h-[calc(100%-28px)] w-px bg-gray-600"></div>
+                                    
+                                    <!-- Due Date -->
+                                    <div class="flex items-start pl-6 mb-4 relative">
+                                        <div class="w-2 h-2 rounded-full bg-amber-400 absolute left-3.5 top-1.5"></div>
+                                        <div>
+                                            <p class="text-xs text-gray-400">Original Due Date</p>
+                                            <p class="text-sm text-gray-200 font-medium">{{ completion.task.due_date|date:"M d, Y" }}</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Completion Date -->
+                                    <div class="flex items-start pl-6 relative">
+                                        <div class="w-2 h-2 rounded-full {% if completion.task.completed_on > completion.task.due_date %}bg-red-400{% else %}bg-green-400{% endif %} absolute left-3.5 top-1.5"></div>
+                                        <div>
+                                            <p class="text-xs text-gray-400">Completed On</p>
+                                            <p class="text-sm text-gray-200 font-medium">{{ completion.completion_date|date:"M d, Y" }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            
+                                <!-- Performance Metrics -->
+                                <div class="mt-5 grid grid-cols-2 gap-3 text-sm">
+                                    <!-- Time Taken -->
+                                    <div class="bg-gray-800/40 p-3 rounded-lg">
+                                        <p class="text-gray-400 mb-1">Completion Time</p>
+                                        <p class="text-blue-400 font-medium flex items-center gap-1">
+                                            <i class="ri-timer-line"></i>
+                                            {{ completion.time_taken_display }}
+                                        </p>
+                                    </div>
+                                    
+                                    <!-- Status -->
+                                    <div class="bg-gray-800/40 p-3 rounded-lg border 
+                                    {% if completion.completion_type == 'late' %}border-red-500/20
+                                    {% elif completion.completion_type == 'ontime' %}border-amber-500/20
+                                    {% else %}border-green-500/20{% endif %}">
+                                        <p class="font-medium text-gray-400 mb-1.5">Completion Status</p>
+                                        <div class="flex items-center gap-2">
+                                            {% if completion.completion_type == 'late' %}
+                                            <div class="p-1.5 rounded-full bg-red-500/20">
+                                                <i class="ri-alarm-warning-line text-red-400 text-sm"></i>
+                                            </div>
+                                            <div>
+                                                <p class="text-sm font-medium text-red-400">Delayed</p>
+                                                <p class="text-xs text-red-300/80 mt-0.5">
+                                                    {{ completion.days_difference }} day{{ completion.days_difference|pluralize }} of overdue
+                                                </p>
+                                            </div>
+                                            
+                                            {% elif completion.completion_type == 'ontime' %}
+                                            <div class="p-1.5 rounded-full bg-amber-500/20">
+                                                <i class="ri-checkbox-circle-line text-amber-400 text-sm"></i>
+                                            </div>
+                                            <div>
+                                                <p class="text-sm font-medium text-amber-400">On Time</p>
+                                                <p class="text-xs text-amber-300/80 mt-0.5">
+                                                    Completed on deadline
+                                                </p>
+                                            </div>
+                                            
+                                            {% else %}
+                                            <div class="p-1.5 rounded-full bg-green-500/20">
+                                                <i class="ri-flag-2-line text-green-400 text-sm"></i>
+                                            </div>
+                                            <div>
+                                                <p class="text-sm font-medium text-green-400">Early Completion</p>
+                                                <p class="text-xs text-green-300/80 mt-0.5">
+                                                    {{ completion.days_difference }} day{{ completion.days_difference|pluralize }} ahead
+                                                </p>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            
+                                <!-- Efficiency Rating (Optional) -->
+                                <div class="mt-4">
+                                    <div class="flex items-center justify-between text-xs text-gray-400 mb-1">
+                                        <span>Task Efficiency</span>
+                                        <span>{% if completion.completion_type == 'late' %}Needs Improvement{% elif completion.completion_type == 'early' %}Excellent Work.{% else %}Can Be Better.{% endif %}</span>
+                                    </div>
+                                    <div class="w-full bg-gray-600 rounded-full h-1.5">
+                                        <div class="bg-{% if completion.completion_type == 'late' %}red-500{% elif completion.completion_type == 'early' %}green-500{% else %}yellow-500{% endif %} h-1.5 rounded-full" 
+                                            style="width:100%">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        {% endfor %}
+                    {% else %}
+
+                        <div class="task-card bg-gray-700/70 w-full py-12 rounded-lg shadow-md border border-gray-600 mb-6">
+                            <div class="text-gray-400 text-center">
+                                <i class="ri-checkbox-circle-line text-5xl mb-3 text-gray-300"></i>
+                                <p class="text-lg font-medium text-gray-300">No tasks completed</p>
+                            </div>
+                        </div>
+
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-6 mt-8 mb-[20vh] font-medium h-40">
+            <!-- Request New Leave -->
+            <a href="{% url 'EmployeeApp:leave_request' %}" class="bg-gray-800 p-6 rounded-lg cursor-pointer shadow-lg transition-all transform hover:scale-[1.025] hover:-translate-y-2 hover:border-2 border-purple-500" data-tooltip="Apply for a new leave">
+                <div class="flex items-center justify-between">
+                    <div class="w-12 h-12 rounded-full bg-purple-500/10 flex items-center justify-center">
+                        <i class="ri-plane-line text-2xl text-purple-500"></i>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-4xl font-semibold text-purple-500">{{ current_leave_balance }}</span>
+                        <span class="text-xl text-gray-400">of 20</span>
+
+                        <div class="text-xs mt-1">
+                            {% if leave_bar_width <= 25 %}
+                                <span class="text-red-400">Low Balance</span>
+                            {% elif leave_bar_width <= 60 %}
+                                <span class="text-yellow-400">Moderate Balance</span>
+                            {% else %}
+                                <span class="text-green-400">Healthy Balance</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <h3 class="text-gray-200 font-medium">Request Leave</h3>
+                    <p class="text-xs text-gray-400 mt-1">Submit a new leave application</p>
+                </div>
+            </a>
+
+            <!-- All Leaves Till Date -->
+            <a href="{% url 'EmployeeApp:leave_history' %}" class="bg-gray-800 p-6 rounded-lg cursor-pointer shadow-lg transition-all transform hover:scale-[1.025] hover:-translate-y-2 hover:border-2 border-green-500" data-tooltip="All leaves taken to date">
+                <div class="flex items-center justify-between">
+                    <div class="w-12 h-12 rounded-full bg-green-500/10 flex items-center justify-center">
+                        <i class="ri-calendar-check-line text-2xl text-green-500"></i>
+                    </div>
+                    <span class="text-3xl font-semibold text-green-400">{{ approved_leave }}</span>
+                </div>
+                <div class="mt-3">
+                    <h3 class="text-gray-200 font-medium">Leave History</h3>
+                    <p class="text-xs text-gray-400 mt-1">All your approved leaves till date</p>
+                </div>
+            </a>
+
+            <!-- Leave Status -->
+            <a href="{% url 'EmployeeApp:leave_status' %}" class="bg-gray-800 p-6 rounded-lg cursor-pointer shadow-lg transition-all transform hover:scale-[1.025] hover:-translate-y-2 hover:border-2 border-yellow-500" data-tooltip="Status of the requested leave">
+                <div class="flex items-center justify-between">
+                    <div class="w-12 h-12 rounded-full bg-yellow-500/10 flex items-center justify-center">
+                        <i class="ri-information-line text-2xl text-yellow-500"></i>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-4xl font-semibold text-yellow-500">{{ leave_status }}</span>
+                        <span class="text-xl text-gray-400">of {{ leaves }}</span>
+
+                        <div class="text-xs mt-1">
+                            <span class="text-gray-400">The requests that are not Accepted</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <h3 class="text-gray-200 font-medium">Leave Status</h3>
+                    <p class="text-xs text-gray-400 mt-1">Track current request statuses</p>
+                </div>
+            </a>
+
+        </div>
+
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.7/gsap.min.js"
+    integrity="sha512-f6bQMg6nkSRw/xfHw5BCbISe/dJjXrVGfz9BSDwhZtiErHwk7ifbmBEtF9vFW8UNIQPhV2uEFVyI/UHob9r7Cw=="
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    {% load static %}
+    <script src="{% static 'Hr_App/employee.js' %}"></script>
+{% endblock %}

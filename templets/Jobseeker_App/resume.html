@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Build Your Resume | Create, Edit & Download Your CV</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#7C3AED',
+                        secondary: '#9333EA'
+                    },
+                    borderRadius: {
+                        'none': '0px',
+                        'sm': '4px',
+                        DEFAULT: '8px',
+                        'md': '12px',
+                        'lg': '16px',
+                        'xl': '20px',
+                        '2xl': '24px',
+                        '3xl': '32px',
+                        'full': '9999px',
+                        'button': '8px'
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.5.0/echarts.min.js"></script>
+    <style>
+        :where([class^="ri-"])::before {
+            content: "\f3c2";
+        }
+
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+            background-color: #2b3647;
+        }
+
+        * {
+            scrollbar-color: #7C3AED #1F2937;
+        }
+
+        .ResumeBox {
+            box-shadow: 0px 0px 12px #2e3642;
+        }
+
+        input:focus {
+            outline: none;
+        }
+
+        input {
+            text-transform: capitalize;
+        }
+
+        textarea:focus {
+            outline: none;
+        }
+
+        textarea {
+            text-transform: capitalize;
+            height: 40vh;
+        }
+    </style>
+</head>
+
+<body class="bg-[#0F172A]">
+    <div class="flex h-screen m-0 p-0">
+        <aside class="w-64 h-screen bg-[#1E293B] fixed top-0 left-0 border-r border-gray-700 flex flex-col">
+            <div class="p-4 border-b border-gray-700">
+                <h1 class="text-2xl font-['Pacifico'] text-primary">Tallent
+                    Twister</h1>
+            </div>
+            <nav class="flex-1 p-4 space-y-2 text-white">
+                <a href="{% url 'dashboard' %}"
+                    class="flex items-center px-4 py-2 text-sm font-medium rounded-button hover:bg-primary/5 hover:text-primary">
+                    <div class="w-5 h-5 flex items-center justify-center mr-3">
+                        <i class="ri-home-line"></i>
+                    </div>
+                    Dashboard
+                </a>
+                <a href="{% url 'find_job' %}"
+                    class="flex items-center px-4 py-2 text-sm font-medium text-gray-300 hover:bg-primary/5 hover:text-primary rounded-button">
+                    <div class="w-5 h-5 flex items-center justify-center mr-3">
+                        <i class="ri-briefcase-line"></i>
+                    </div>
+                    Find Jobs
+                </a>
+                <a href="{% url 'saved_jobs' %}"
+                    class="flex items-center px-4 py-2 text-sm font-medium text-gray-300 hover:bg-primary/5 hover:text-primary rounded-button">
+                    <div class="w-5 h-5 flex items-center justify-center mr-3">
+                        <i class="ri-user-line"></i>
+                    </div>
+                    Saved Jobs
+                </a>
+                <a href="{% url 'resume' %}"
+                    class="flex items-center px-4 py-2 text-sm font-medium text-gray-300 border border-white bg-primary/5 text-primary hover:bg-primary/5 hover:text-primary rounded-button">
+                    <div class="w-5 h-5 flex items-center justify-center mr-3">
+                        <i class="ri-file-list-line"></i>
+                    </div>
+                    Resume
+                </a>
+                <a href="{% url 'ai_chat_bot' %}"
+                    class="flex items-center px-4 py-2 text-sm font-medium text-gray-300 hover:bg-primary/5 hover:text-primary rounded-button">
+                    <div class="w-5 h-5 flex items-center justify-center mr-3">
+                        <i class="ri-message-3-line"></i>
+                    </div>
+                    AI Chat
+                </a>
+                <a href="{% url 'messages' %}"
+                    class="flex items-center px-4 py-2 text-sm font-medium text-gray-300 hover:bg-primary/5 hover:text-primary rounded-button">
+                    <div class="w-5 h-5 flex items-center justify-center mr-3">
+                        <i class="ri-chat-1-line"></i>
+                    </div>
+                    Messages
+                </a>
+            </nav>
+            <div class="p-4 border-t border-gray-700">
+                <div class="flex items-center">
+                    <img src="https://public.readdy.ai/ai/img_res/f2dbcd780dbf0bdab5d64d406dc5063d.jpg"
+                        class="w-10 h-10 rounded-full object-cover" alt="Profile">
+                    <div class="ml-3">
+                        <p class="text-sm font-medium text-gray-100">Michael
+                            Anderson</p>
+                        <p class="text-xs text-gray-400">michael@example.com</p>
+                    </div>
+                </div>
+            </div>
+        </aside>
+        <div class="w-64 bg-[#1E293B]"></div>
+        <main class="ResumeForm">
+            <div class="min-h-screen w-[80vw] text-white px-4 py-8">
+                <div class="text-center mb-8">
+                    <h1 class="text-4xl font-bold text-gray-100 mb-4">Create
+                        Your Resume</h1>
+                    <p class="text-lg text-gray-400">Fill in your details to
+                        generate a professional resume</p>
+                </div>
+
+                <div class="bg-[#213350] rounded-lg p-8 ResumeBox">
+                    <form id="resumeForm" class="space-y-8">
+                        <!-- Personal Information -->
+                        <div class="space-y-6">
+                            <h2 class="text-xl font-semibold text-gray-100">Personal
+                                Information</h2>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-400 mb-2">Full
+                                        Name *</label>
+                                    <input type="text" required name="FullName"
+                                        class="bg-[#455c7d] w-full px-4 py-2 border border-gray-300 rounded-button">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-400 mb-2">Email
+                                        Address *</label>
+                                    <input type="email" required name="Email"
+                                        class="bg-[#455c7d] w-full px-4 py-2 border border-gray-300 rounded-button">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-400 mb-2">Phone
+                                        Number</label>
+                                    <input type="tel" name="PhoneNumber"
+                                        class="bg-[#455c7d] w-full px-4 py-2 border border-gray-300 rounded-button">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-400 mb-2">Professional
+                                        Title</label>
+                                    <input type="text" name="ProffTitle"
+                                        class="bg-[#455c7d] w-full px-4 py-2 border border-gray-300 rounded-button">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-400 mb-2">LinkedIn
+                                        Profile</label>
+                                    <input type="url" name="LinkedIn"
+                                        class="bg-[#455c7d] w-full px-4 py-2 border border-gray-300 rounded-button"
+                                        placeholder="Add Profile Link">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-400 mb-2">GitHub
+                                        Portfolio</label>
+                                    <input type="url" name="GitHub"
+                                        class="bg-[#455c7d] w-full px-4 py-2 border border-gray-300 rounded-button"
+                                        placeholder="Add Profile Link">
+                                </div>
+                                <!-- Profile Picture -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-400 mb-2">Profile
+                                        Picture for Resume</label>
+                                    <label for="ProfilePicture"
+                                        class="bg-[#455c7d] flex gap-4 items-center cursor-pointer px-4 py-2 border border-gray-300 rounded-button focus:ring-2 focus:ring-primary focus:border-transparent">
+                                        <div
+                                            class="relative w-14 h-14 rounded-full border border-gray-300 flex items-center justify-center overflow-hidden">
+                                            <!-- Human Icon (Displayed when no photo is uploaded) -->
+                                            <i id="humanIcon" class="ri-user-line text-2xl text-gray-300"></i>
+                                            <!-- Uploaded Image (Hidden by default) -->
+                                            <img id="profilePicturePreview" src alt="Profile Picture"
+                                                class="w-full h-full rounded-full object-cover hidden">
+                                        </div>
+                                        <!-- File Input -->
+                                        <input id="ProfilePicture" type="file" name="ProfilePicture" accept="image/*"
+                                            class="hidden">
+                                        <!-- Upload/Update Text -->
+                                        <span id="fileLabel" class="text-[1.3vw] text-gray-300 cursor-pointer"><i
+                                                class="ri-upload-cloud-line"></i>
+                                            Click to upload/update</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Education -->
+                        <div class="space-y-6">
+                            <div class="flex justify-between items-center">
+                                <h2 class="text-xl font-semibold text-gray-100">Education</h2>
+                            </div>
+                            <div id="educationContainer" class="space-y-6">
+                                <div class="education-entry p-6 border border-gray-200 rounded-lg">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-400 mb-2">Institution
+                                                Name</label>
+                                            <input type="text" required
+                                                class="bg-[#455c7d] w-full px-4 py-2 border border-gray-300 rounded-button focus:ring-2 focus:ring-primary focus:border-transparent"
+                                                name="InstitutionName">
+                                        </div>
+                                        <div>
+                                            <label
+                                                class="block text-sm font-medium text-gray-400 mb-2">Degree/Certification</label>
+                                            <input type="text" required
+                                                class="bg-[#455c7d] w-full px-4 py-2 border border-gray-300 rounded-button focus:ring-2 focus:ring-primary focus:border-transparent"
+                                                name="DegreeCertification">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-400 mb-2">Date
+                                                of Start</label>
+                                            <input type="date" required
+                                                class="bg-[#455c7d] w-full px-4 py-2 border border-gray-300 rounded-button focus:ring-2 focus:ring-primary focus:border-transparent"
+                                                name="YearOfStart">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-400 mb-2">Date
+                                                of Completion</label>
+                                            <input type="date" required
+                                                class="bg-[#455c7d] w-full px-4 py-2 border border-gray-300 rounded-button focus:ring-2 focus:ring-primary focus:border-transparent"
+                                                name="YearOfCompletion">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="education-entrys p-6 border border-gray-200 rounded-lg">
+                                    <div class="flex justify-between items-center mb-6">
+                                        <h2 class="text-xl font-semibold text-gray-100">HSC
+                                            - Higher Secondary
+                                            Certificate</h2>
+                                        <p class="text-gray-400">*Not
+                                            Necessary, If you want you
+                                            can</p>
+                                    </div>
+                                    <div class="p-6 border border-gray-200 rounded-lg">
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-400 mb-2">Institution
+                                                    Name</label>
+                                                <input type="text" name="HSCName"
+                                                    class="bg-[#455c7d] w-full px-4 py-2 border border-gray-300 rounded-button focus:ring-2 focus:ring-primary focus:border-transparent">
+                                            </div>
+                                            <div>
+                                                <label
+                                                    class="block text-sm font-medium text-gray-400 mb-2">Degree/Certification</label>
+                                                <input type="text" name="HSCcertificate"
+                                                    class="bg-[#455c7d] w-full px-4 py-2 border border-gray-300 rounded-button focus:ring-2 focus:ring-primary focus:border-transparent">
+                                            </div>
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-400 mb-2">Year
+                                                    of Completion</label>
+                                                <input type="month" name="HSCcompleteYear"
+                                                    class="bg-[#455c7d] w-full px-4 py-2 border border-gray-300 rounded-button focus:ring-2 focus:ring-primary focus:border-transparent">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="flex justify-between items-center mb-6 mt-8">
+                                        <h2 class="text-xl font-semibold text-gray-100">SSC
+                                            - Secondary School
+                                            Certificate</h2>
+                                        <p class="text-gray-400">*Not
+                                            Necessary, If you want you
+                                            can</p>
+                                    </div>
+                                    <div class="p-6 border border-gray-200 rounded-lg">
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-400 mb-2">Institution
+                                                    Name</label>
+                                                <input type="text" name="SSCName"
+                                                    class="bg-[#455c7d] w-full px-4 py-2 border border-gray-300 rounded-button focus:ring-2 focus:ring-primary focus:border-transparent">
+                                            </div>
+                                            <div>
+                                                <label
+                                                    class="block text-sm font-medium text-gray-400 mb-2">Degree/Certification</label>
+                                                <input type="text" name="SSCcertificate"
+                                                    class="bg-[#455c7d] w-full px-4 py-2 border border-gray-300 rounded-button focus:ring-2 focus:ring-primary focus:border-transparent">
+                                            </div>
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-400 mb-2">Year
+                                                    of Completion</label>
+                                                <input type="month" name="SSCcompleteYear"
+                                                    class="bg-[#455c7d] w-full px-4 py-2 border border-gray-300 rounded-button focus:ring-2 focus:ring-primary focus:border-transparent">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Work Experience -->
+                        <div class="space-y-6">
+                            <div class="flex justify-between items-center">
+                                <h2 class="text-xl font-semibold text-gray-100">Resent
+                                    Work
+                                    Experience</h2>
+                            </div>
+                            <div id="experienceContainer" class="space-y-6">
+                                <div class="experience-entry p-6 border border-gray-200 rounded-lg">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-400 mb-2">Company
+                                                Name</label>
+                                            <input type="text"
+                                                class="bg-[#455c7d] w-full px-4 py-2 border border-gray-300 rounded-button focus:ring-2 focus:ring-primary focus:border-transparent"
+                                                name="CompanyName">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-400 mb-2">Position
+                                                Title</label>
+                                            <input type="text"
+                                                class="bg-[#455c7d] w-full px-4 py-2 border border-gray-300 rounded-button focus:ring-2 focus:ring-primary focus:border-transparent"
+                                                name="PositionTitle">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-400 mb-2">Start
+                                                Date</label>
+                                            <input type="date"
+                                                class="bg-[#455c7d] w-full px-4 py-2 border border-gray-300 rounded-button focus:ring-2 focus:ring-primary focus:border-transparent"
+                                                name="StartDate">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-400 mb-2">End
+                                                Date</label>
+                                            <input type="date"
+                                                class="bg-[#455c7d] w-full px-4 py-2 border border-gray-300 rounded-button focus:ring-2 focus:ring-primary focus:border-transparent"
+                                                name="EndDate">
+                                        </div>
+                                        <div class="md:col-span-2">
+                                            <label class="block text-sm font-medium text-gray-400 mb-2">Job
+                                                Responsibilities</label>
+                                            <textarea rows="4"
+                                                class="bg-[#455c7d] w-full px-4 py-2 border border-gray-300 rounded-button focus:ring-2 focus:ring-primary focus:border-transparent resize-none"
+                                                name="JobDicrecption"></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Certifications -->
+                        <div class="space-y-6">
+                            <h2 class="text-xl font-semibold text-gray-100">Certifications
+                                & Courses</h2>
+                            <div id="certificationContainer" class="space-y-6">
+                                <div class="certification-entry p-6 border border-gray-200 rounded-lg">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-400 mb-2">Certification
+                                                Name</label>
+                                            <input type="text" name="CertName"
+                                                class="bg-[#455c7d] w-full px-4 py-2 border border-gray-300 rounded-button">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-400 mb-2">Issuing
+                                                Organization</label>
+                                            <input type="text" name="CertOrg"
+                                                class="bg-[#455c7d] w-full px-4 py-2 border border-gray-300 rounded-button">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-400 mb-2">Completion
+                                                Date</label>
+                                            <input type="date" name="CertDate"
+                                                class="bg-[#455c7d] w-full px-4 py-2 border border-gray-300 rounded-button">
+                                        </div>
+                                        <div class="flex flex-col space-y-2">
+                                            <label class="block text-sm font-medium text-gray-400">Complete
+                                                Certification</label>
+                                            <div id="CertificateContainer"
+                                                class="relative flex items-center bg-[#455c7d] rounded-lg border border-gray-300 px-4 py-2 cursor-pointer">
+                                                <input type="file" id="CertFile" name="CompleteCertFile"
+                                                    accept=".pdf, .jpg, .jpeg, .png"
+                                                    class="absolute inset-0 opacity-0 w-full h-full cursor-pointer">
+                                                <i class="ri-upload-cloud-2-line text-white text-lg mr-2"></i>
+                                                <span id="FileName" class="text-white">Upload
+                                                    PDF or Image</span>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Projects -->
+                        <h2 class="text-xl font-semibold text-gray-100">Highlighting
+                            Projects</h2>
+                        <div id="projectsContainer" class="space-y-6">
+                            <div class="project-entry p-6 border border-gray-200 rounded-lg">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-400 mb-2">Project
+                                            Name</label>
+                                        <input type="text" name="ProjectName"
+                                            class="bg-[#455c7d] w-full px-4 py-2 border border-gray-300 rounded-button">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-400 mb-2">Technologies
+                                            Used</label>
+                                        <input type="text" name="ProjectTech"
+                                            class="bg-[#455c7d] w-full px-4 py-2 border border-gray-300 rounded-button">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-400 mb-2">Project
+                                            Link</label>
+                                        <input type="url" name="ProjectLink"
+                                            class="bg-[#455c7d] w-full px-4 py-2 border border-gray-300 rounded-button">
+                                    </div>
+                                    <div class="md:col-span-2">
+                                        <label class="block text-sm font-medium text-gray-400 mb-2">Description</label>
+                                        <textarea name="ProjectDesc" rows="4"
+                                            class="bg-[#455c7d] w-full px-4 py-2 border border-gray-300 rounded-button"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Skills -->
+                        <div class="space-y-6">
+                            <h2 class="text-xl font-semibold text-gray-100">Skills</h2>
+                            <div id="skillsContainer" class="space-y-4">
+                                <div class="flex flex-wrap gap-2" id="skillTags"></div>
+                                <div class="flex gap-2">
+                                    <input type="text" id="skillInput" placeholder="Add a skill"
+                                        class="flex-1 bg-[#455c7d] px-4 py-2 border border-gray-300 rounded-button focus:ring-2 focus:ring-primary focus:border-transparent">
+                                    <button type="button" id="addSkill"
+                                        class="px-4 py-2 bg-primary text-white font-medium hover:bg-primary/90 cursor-pointer !rounded-button">Add
+                                        Skill</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Upload Existing Resume -->
+                        <div class="space-y-6">
+                            <h2 class="text-xl font-semibold text-gray-100">Upload
+                                Existing Resume (Optional)</h2>
+                            <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center"
+                                id="dropZone">
+                                <div class="space-y-4">
+                                    <div class="w-12 h-12 mx-auto flex items-center justify-center">
+                                        <i class="ri-upload-cloud-line text-4xl text-gray-400"></i>
+                                    </div>
+                                    <div class="text-gray-600">
+                                        <p class="font-medium">Drag and drop
+                                            your file here or</p>
+                                        <label class="text-primary hover:text-primary/80 cursor-pointer">
+                                            Browse Files
+                                            <input type="file" class="bg-[#455c7d] hidden" accept=".pdf,.doc,.docx">
+                                        </label>
+                                    </div>
+                                    <p class="text-sm text-gray-500">Supported
+                                        formats: PDF, DOC, DOCX (Max
+                                        5MB)</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Form Buttons -->
+                        <div class="flex gap-4 justify-end">
+                            <button type="submit"
+                                class="mt-1 px-6 py-2 border border-gray-300 bg-primary text-white font-medium hover:bg-[#213350] hover:text-primary cursor-pointer !rounded-button">Generate
+                                Resume</button>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+        </main>
+
+        <!-- Resume Preview -->
+        <div class="ResumePreview hidden">
+            <div class="min-h-screen w-[80vw] text-white px-4 py-8">
+                <div class="bg-[#213350] rounded-lg p-8" id="resumePreview">
+                    <!-- The resume content will be inserted here dynamically -->
+                </div>
+            </div>
+        </div>
+
+        <div class="w-full h-full fixed top-0 left-0 bg-[#333] text-white flex items-center justify-center overflow-y-auto hidden"
+            id="ImgContainer">
+            <button
+                class="flex gap-2 absolute top-4 left-2 py-2 px-6 text-base bg-primary rounded-xl hover:bg-gray-200 hover:text-primary"
+                id='CloseBtn'>
+                <i class="ri-arrow-left-line"></i> Back
+            </button>
+            <!-- Image Preview -->
+            <img id="CertiSrc" class="hidden h-auto max-w-full" alt="Your Certificate">
+
+            <!-- PDF Preview -->
+            <iframe id="pdfViewer" class="hidden w-full h-full"></iframe>
+        </div>
+    </div>
+</body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<script src="Resume.js"></script>
+
+</html>

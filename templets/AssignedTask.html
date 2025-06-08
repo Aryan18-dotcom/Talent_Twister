@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Admin - Assign Task</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#8E6FF7',
+                        secondary: '#2D3748',
+                    },
+                    borderRadius: {
+                        button: '8px'
+                    }
+                }
+            }
+        }
+    </script>
+        <link rel="stylesheet"
+            href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css">
+        <style>
+        .back:hover i,
+        .back:hover span {
+            color: white;
+        }
+    </style>
+    </head>
+
+    <body class="bg-gray-900 text-white h-screen flex flex-col">
+
+        <!-- Navbar -->
+        <header
+            class="py-4 px-6 flex items-center justify-between border-b border-gray-800">
+            <div class="flex items-center space-x-2">
+                <span class="text-2xl font-['Pacifico'] text-primary">Talent
+                    Twister</span>
+            </div>
+            <div class="flex items-center space-x-6">
+                <div class="relative">
+                    <button id="profileButton"
+                        class="flex items-center space-x-3">
+                        <div
+                            class="w-12 h-12 rounded-full bg-gray-700 flex items-center justify-center overflow-hidden">
+                            <a href="{% url 'Myapp:upload_profile_pic' %}"
+                                class="profile">
+                                {% if profile.image %}
+                                <img src="{{ profile.image.url }}"
+                                    alt="ProfileImg"
+                                    style="height: 100%; width: 100%; object-fit: cover; object-position: center;">
+                                {% else %}
+                                <i class="ri-user-3-fill"></i>
+                                {% endif %}
+                            </a>
+                        </div>
+                        <div class="text-sm">
+                            <div class="font-medium"
+                                id="profileName">{{request.session.username}}</div>
+                            <div class="text-gray-400"
+                                id="role">{{request.session.role }}</div>
+                        </div>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Back Button -->
+        <button onclick="closeAdminPanel()"
+            class="absolute top-24 left-6 bg-gray-700 px-6 py-2 rounded-full flex items-center space-x-2 text-gray-400 hover:bg-primary hover:text-white transition">
+            <i class="ri-arrow-left-line text-xl"></i>
+            <span class="text-sm">Back</span>
+        </button>
+
+        <!-- Main Content -->
+        <main class="flex-1 flex items-center justify-center">
+            <div class="w-full max-w-lg bg-gray-800 p-6 rounded-lg shadow-lg">
+                <h2
+                    class="text-xl font-semibold text-gray-300 mb-4 text-center">Assign
+                    Task</h2>
+                <form id="taskForm" class="flex flex-col gap-4" method="POST"
+                    action="{% url 'Myapp:add_task' %}">
+                    {% csrf_token %}
+                    <input type="text" name="taskHeading"
+                        placeholder="Task Heading" required
+                        class="bg-gray-700 text-gray-200 p-3 rounded-lg border border-gray-600 focus:ring-2 focus:ring-primary focus:outline-none">
+                    <textarea name="taskDescription"
+                        placeholder="Task Description" required
+                        class="bg-gray-700 text-gray-200 p-3 rounded-lg border border-gray-600 focus:ring-2 focus:ring-primary focus:outline-none"></textarea>
+                    <input type="date" name="taskDate" required
+                        class="bg-gray-700 text-gray-200 p-3 rounded-lg border border-gray-600 focus:ring-2 focus:ring-primary focus:outline-none">
+                    <select name="employeeSelect" required
+                        class="bg-gray-700 text-gray-200 p-3 rounded-lg border border-gray-600 focus:ring-2 focus:ring-primary focus:outline-none">
+                        <option value selected disabled>Select Employee</option>
+                        {% if employees %}
+                        {% for employee in employees %}
+                        <option value="{{ employee.id }}">{{ employee.username}} ({{ employee.company }})</option>
+                        {% endfor %}
+                        {% else %}
+                        <option value>No Employees</option>
+                        {% endif %}
+                    </select>
+                    <select name="Taskpriority" required
+                        class="bg-gray-700 text-gray-200 p-3 rounded-lg border border-gray-600 focus:ring-2 focus:ring-primary focus:outline-none">
+                        <option value selected disabled>Select Priority</option>
+                        <option value="High">High</option>
+                        <option value="Low">Low</option>
+                        <option value="Medium">Medium</option>
+                    </select>
+
+                    <button type="submit"
+                        class="bg-primary text-white py-3 rounded-button hover:bg-purple-600 transition">Assign
+                        Task</button>
+                </form>
+            </div>
+        </main>
+
+        <!-- Close Function -->
+        <script>
+        function closeAdminPanel() {
+            window.location.href = "/HrPannel/";
+        }
+    </script>
+
+    </body>
+
+</html>

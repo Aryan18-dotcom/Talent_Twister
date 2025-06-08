@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Saved Jobs | Keep Your Dream Career in Sight</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#7C3AED',
+                        secondary: '#9333EA'
+                    },
+                    borderRadius: {
+                        'none': '0px',
+                        'sm': '4px',
+                        DEFAULT: '8px',
+                        'md': '12px',
+                        'lg': '16px',
+                        'xl': '20px',
+                        '2xl': '24px',
+                        '3xl': '32px',
+                        'full': '9999px',
+                        'button': '8px'
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.5.0/echarts.min.js"></script>
+    <style>
+        :where([class^="ri-"])::before {
+            content: "\f3c2";
+        }
+
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        * {
+            scrollbar-color: #7C3AED #1F2937;
+        }
+    </style>
+</head>
+
+<body class="bg-[#0F172A]">
+    <div class="flex h-screen">
+        <aside class="w-64 h-screen bg-[#1E293B] fixed top-0 left-0 border-r border-gray-700 flex flex-col">
+            <div class="p-4 border-b border-gray-700">
+                <h1 class="text-2xl font-['Pacifico'] text-primary">Tallent
+                    Twister</h1>
+            </div>
+            <nav class="flex-1 p-4 space-y-2 text-white">
+                <a href="{% url 'dashboard' %}"
+                    class="flex items-center px-4 py-2 text-sm font-medium rounded-button hover:bg-primary/5 hover:text-primary">
+                    <div class="w-5 h-5 flex items-center justify-center mr-3">
+                        <i class="ri-home-line"></i>
+                    </div>
+                    Dashboard
+                </a>
+                <a href="{% url 'find_job' %}"
+                    class="flex items-center px-4 py-2 text-sm font-medium text-gray-300 hover:bg-primary/5 hover:text-primary rounded-button">
+                    <div class="w-5 h-5 flex items-center justify-center mr-3">
+                        <i class="ri-briefcase-line"></i>
+                    </div>
+                    Find Jobs
+                </a>
+                <a href="{% url 'saved_jobs' %}"
+                    class="flex items-center px-4 py-2 text-sm font-medium text-gray-300 border border-white bg-primary/5 text-primary hover:bg-primary/5 hover:text-primary rounded-button">
+                    <div class="w-5 h-5 flex items-center justify-center mr-3">
+                        <i class="ri-user-line"></i>
+                    </div>
+                    Saved Jobs
+                </a>
+                <a href="{% url 'resume' %}"
+                    class="flex items-center px-4 py-2 text-sm font-medium text-gray-300 hover:bg-primary/5 hover:text-primary rounded-button">
+                    <div class="w-5 h-5 flex items-center justify-center mr-3">
+                        <i class="ri-file-list-line"></i>
+                    </div>
+                    Resume
+                </a>
+                <a href="{% url 'ai_chat_bot' %}"
+                    class="flex items-center px-4 py-2 text-sm font-medium text-gray-300 hover:bg-primary/5 hover:text-primary rounded-button">
+                    <div class="w-5 h-5 flex items-center justify-center mr-3">
+                        <i class="ri-message-3-line"></i>
+                    </div>
+                    AI Chat
+                </a>
+                <a href="{% url 'messages' %}"
+                    class="flex items-center px-4 py-2 text-sm font-medium text-gray-300 hover:bg-primary/5 hover:text-primary rounded-button">
+                    <div class="w-5 h-5 flex items-center justify-center mr-3">
+                        <i class="ri-chat-1-line"></i>
+                    </div>
+                    Messages
+                </a>
+            </nav>
+            <div class="p-4 border-t border-gray-700">
+                <div class="flex items-center">
+                    <img src="https://public.readdy.ai/ai/img_res/f2dbcd780dbf0bdab5d64d406dc5063d.jpg"
+                        class="w-10 h-10 rounded-full object-cover" alt="Profile">
+                    <div class="ml-3">
+                        <p class="text-sm font-medium text-gray-100">Michael
+                            Anderson</p>
+                        <p class="text-xs text-gray-400">michael@example.com</p>
+                    </div>
+                </div>
+            </div>
+        </aside>
+        <div class="w-64 bg-[#1E293B]"></div>
+        <main>
+            <div class="min-h-screen w-[80vw] text-white">
+                <div class="max-w-6xl mx-auto px-4 py-8">
+                    <header class="flex items-center justify-between mb-8">
+                        <h1 class="text-2xl font-semibold">Saved
+                            Jobs</h1>
+                        <button
+                            class="w-10 h-10 flex items-center justify-center text-gray-200 hover:bg-primary rounded-full cursor-pointer"
+                            id="filterBtn">
+                            <i class="ri-filter-3-line text-2xl"></i>
+                        </button>
+                    </header>
+
+                    <div class="relative mb-6">
+                        <input type="text" placeholder="Search saved jobs" name="random123" autocomplete="off"
+                            class="w-full h-12 pl-12 pr-4 text-sm text-gray-200 bg-[#232A34] rounded-lg border border-gray-200 focus:outline-none focus:border-primary"
+                            id="searchInput">
+                        <div class="absolute left-4 top-0 h-12 w-5 flex items-center justify-center">
+                            <i class="ri-search-line text-gray-400"></i>
+                        </div>
+
+                        <!-- Suggestion Box -->
+                        <div id="suggestionsBox"
+                            class="absolute top-full left-0 w-full bg-[#232A34] z-10 border border-gray-600 rounded-lg shadow-lg mt-3 hidden">
+                        </div>
+                    </div>
+
+                    <div class="flex space-x-4 mb-6 whitespace-nowrap py-2" id="filterList">
+                        <div class="relative">
+                            <button
+                                class="px-4 py-2 bg-primary text-gray-200 rounded-full text-sm font-medium !rounded-button"
+                                onclick="resetJobs()">
+                                All Jobs
+                            </button>
+
+                        </div>
+                    </div>
+
+                    <div id="savedJobsList" class="space-y-4">
+                    </div>
+
+                    <div id="emptyState" class="hidden text-center py-16">
+                        <img src="https://public.readdy.ai/ai/img_res/ced6250dd54908a1ad972282a9900254.jpg"
+                            alt="No saved jobs" class="w-48 h-48 mx-auto mb-6">
+                        <h3 class="text-xl font-semibold text-gray-900 mb-2">No
+                            saved jobs yet</h3>
+                        <p class="text-gray-600 mb-6">Start saving jobs
+                            you're interested in to build your
+                            collection</p>
+                        <button
+                            class="px-6 py-3 bg-primary text-white font-medium rounded-lg !rounded-button cursor-pointer"
+                            onclick="window.location.href = 'findJob.html'">Browse
+                            Jobs</button>
+                    </div>
+
+                </div>
+
+                <div id="filterModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center">
+                    <div class="bg-[#1E293B] rounded-lg p-6 w-96">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="text-lg font-semibold">Filter
+                                Jobs</h3>
+                            <button class="text-gray-200 hover:text-primary" onclick="toggleFilterModal()">
+                                <i class="ri-close-line text-xl"></i>
+                            </button>
+                        </div>
+                        <div class="space-y-4 p-4 rounded-lg" id="FilterLableConatiner">
+                        </div>
+                        <div class="mt-6 flex space-x-4">
+                            <button
+                                class="flex-1 px-4 py-2 bg-primary text-white rounded-lg !rounded-button cursor-pointer hover:bg-gray-100 hover:text-primary"
+                                id="applyFiltersBtn">Apply</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+    </div>
+</body>
+<script src="SaveJobs.js"></script>
+
+</html>

@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | Your Success Hub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#7C3AED',
+                        secondary: '#9333EA'
+                    },
+                    borderRadius: {
+                        'none': '0px',
+                        'sm': '4px',
+                        DEFAULT: '8px',
+                        'md': '12px',
+                        'lg': '16px',
+                        'xl': '20px',
+                        '2xl': '24px',
+                        '3xl': '32px',
+                        'full': '9999px',
+                        'button': '8px'
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.5.0/echarts.min.js"></script>
+    <style>
+        :where([class^="ri-"])::before {
+            content: "\f3c2";
+        }
+
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        
+        * {
+            scrollbar-color: #7C3AED #1F2937;
+        }
+    </style>
+</head>
+
+<body class="bg-[#0F172A]">
+    <div class="flex h-screen">
+        <aside class="w-64 bg-[#1E293B] border-r border-gray-700 flex flex-col">
+            <div class="p-4 border-b border-gray-700">
+                <h1 class="text-2xl font-['Pacifico'] text-primary">Tallent Twister</h1>
+            </div>
+            <nav class="flex-1 p-4 space-y-2 text-white">
+                <a href="{% url 'JobseekerApp:dashboard' %}"
+                    class="flex items-center px-4 py-2 text-sm font-medium rounded-button border border-white bg-primary/5 text-primary hover:bg-primary/5 hover:text-primary">
+                    <div class="w-5 h-5 flex items-center justify-center mr-3">
+                        <i class="ri-home-line"></i>
+                    </div>
+                    Dashboard
+                </a>
+                <a href="{% url 'JobseekerApp:find_job' %}"
+                    class="flex items-center px-4 py-2 text-sm font-medium text-gray-300 hover:bg-primary/5 hover:text-primary rounded-button">
+                    <div class="w-5 h-5 flex items-center justify-center mr-3">
+                        <i class="ri-briefcase-line"></i>
+                    </div>
+                    Find Jobs
+                </a>
+                <a href="{% url 'JobseekerApp:saved_jobs' %}"
+                    class="flex items-center px-4 py-2 text-sm font-medium text-gray-300 hover:bg-primary/5 hover:text-primary rounded-button">
+                    <div class="w-5 h-5 flex items-center justify-center mr-3">
+                        <i class="ri-user-line"></i>
+                    </div>
+                    Saved Jobs
+                </a>
+                <a href="{% url 'JobseekerApp:resume' %}"
+                    class="flex items-center px-4 py-2 text-sm font-medium text-gray-300 hover:bg-primary/5 hover:text-primary rounded-button">
+                    <div class="w-5 h-5 flex items-center justify-center mr-3">
+                        <i class="ri-file-list-line"></i>
+                    </div>
+                    Resume
+                </a>
+                <a href="{% url 'JobseekerApp:ai_chat_bot' %}"
+                    class="flex items-center px-4 py-2 text-sm font-medium text-gray-300 hover:bg-primary/5 hover:text-primary rounded-button">
+                    <div class="w-5 h-5 flex items-center justify-center mr-3">
+                        <i class="ri-message-3-line"></i>
+                    </div>
+                    AI Chat
+                </a>
+                <a href="{% url 'JobseekerApp:messages' %}"
+                    class="flex items-center px-4 py-2 text-sm font-medium text-gray-300 hover:bg-primary/5 hover:text-primary rounded-button">
+                    <div class="w-5 h-5 flex items-center justify-center mr-3">
+                        <i class="ri-chat-1-line"></i>
+                    </div>
+                    Messages
+                </a>
+                <a href="{% url 'JobseekerApp:logout' %}"
+                    class="flex items-center px-4 py-2 text-sm font-medium text-gray-300 hover:bg-primary/5 hover:text-primary rounded-button">
+                    <div class="w-5 h-5 flex items-center justify-center mr-3">
+                        <i class="ri-chat-1-line"></i>
+                    </div>
+                    Logout
+                </a>
+            </nav>
+            <div class="p-4 border-t border-gray-700">
+                <div class="flex items-center">
+                    <img src="https://public.readdy.ai/ai/img_res/f2dbcd780dbf0bdab5d64d406dc5063d.jpg"
+                        class="w-10 h-10 rounded-full object-cover" alt="Profile">
+                    <div class="ml-3">
+                        <p class="text-sm font-medium text-gray-100">{{ username }}</p>
+                        <p class="text-xs text-gray-400">{{ profile.email }}</p>
+                    </div>
+                </div>
+            </div>
+        </aside>
+        <div class="flex-1 flex flex-col overflow-hidden h-full">
+            <header class="bg-[#1E293B] border-b border-gray-700">
+                <div class="flex items-center justify-between px-6 py-4">
+                    <div class="flex-1 flex items-center">
+                        <div class="relative w-96">
+                                <div>
+                                    <h2 class="text-2xl font-semibold text-gray-100">Welcome back, {{ username }}!</h2>
+                                    <p class="mt-1 text-sm text-gray-400">Here's what's happening with your job search today.</p>
+                                </div>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <button id="notificationButton"
+                            class="relative w-10 h-10 flex items-center justify-center text-white hover:text-primary">
+                            <div class="w-5 h-5 flex items-center justify-center">
+                                <i class="ri-notification-line text-xl"></i>
+                            </div>
+                            <span class="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full"></span>
+                        </button>
+                        <button class="w-10 h-10 flex items-center justify-center text-white hover:text-primary">
+                            <div class="w-5 h-5 flex items-center justify-center">
+                                <i class="ri-settings-line text-xl"></i>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+            </header>
+            <main class="flex-1 p-6 bg-[#0F172A]">
+                <div class="max-w-7xl mx-auto">
+                    <div class="grid grid-cols-4 gap-6 mb-8">
+                        <div class="bg-[#1E293B] p-6 rounded-lg border border-gray-700">
+                            <div class="flex items-center">
+                                <div
+                                    class="w-12 h-12 flex items-center justify-center bg-primary/5 rounded-full text-primary">
+                                    <div class="w-6 h-6 flex items-center justify-center">
+                                        <i class="ri-send-plane-line"></i>
+                                    </div>
+                                </div>
+                                <div class="ml-4">
+                                    <h3 class="text-sm font-medium text-gray-100">Applications</h3>
+                                    <p class="text-2xl font-semibold text-gray-100">24</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-[#1E293B] p-6 rounded-lg border border-gray-700">
+                            <div class="flex items-center">
+                                <div
+                                    class="w-12 h-12 flex items-center justify-center bg-primary/5 rounded-full text-primary">
+                                    <div class="w-6 h-6 flex items-center justify-center">
+                                        <i class="ri-message-2-line"></i>
+                                    </div>
+                                </div>
+                                <div class="ml-4">
+                                    <h3 class="text-sm font-medium text-gray-100">Messages</h3>
+                                    <p class="text-2xl font-semibold text-gray-100">12</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-[#1E293B] p-6 rounded-lg border border-gray-700">
+                            <div class="flex items-center">
+                                <div
+                                    class="w-12 h-12 flex items-center justify-center bg-primary/5 rounded-full text-primary">
+                                    <div class="w-6 h-6 flex items-center justify-center">
+                                        <i class="ri-eye-line"></i>
+                                    </div>
+                                </div>
+                                <div class="ml-4">
+                                    <h3 class="text-sm font-medium text-gray-100">Profile Views</h3>
+                                    <p class="text-2xl font-semibold text-gray-100">156</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-[#1E293B] p-6 rounded-lg border border-gray-700">
+                            <div class="flex items-center">
+                                <div
+                                    class="w-12 h-12 flex items-center justify-center bg-primary/5 rounded-full text-primary">
+                                    <div class="w-6 h-6 flex items-center justify-center">
+                                        <i class="ri-star-line"></i>
+                                    </div>
+                                </div>
+                                <div class="ml-4">
+                                    <h3 class="text-sm font-medium text-gray-100">Saved Jobs</h3>
+                                    <p class="text-2xl font-semibold text-gray-100">18</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="notificationDropdown"
+                        class="hidden absolute top-16 right-6 w-80 bg-[#1E293B] rounded-lg border border-gray-700 shadow-lg">
+                        <div class="p-4 border-b border-gray-700">
+                            <h3 class="text-lg font-medium text-gray-100">Notifications</h3>
+                        </div>
+                        <div class="max-h-96 overflow-y-auto">
+                            <div class="p-4 space-y-4">
+                                <div class="flex items-center">
+                                    <img src="https://public.readdy.ai/ai/img_res/5160413d6ede5abc058620a6a0e27b97.jpg"
+                                        class="w-10 h-10 rounded-full object-cover" alt="Sarah">
+                                    <div class="ml-3">
+                                        <p class="text-sm font-medium text-gray-100">Sarah Wilson</p>
+                                        <p class="text-xs text-gray-400">Thanks for your application...</p>
+                                        <p class="text-xs text-gray-500">2 hours ago</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center">
+                                    <img src="https://public.readdy.ai/ai/img_res/c5384eaf80d1c8fe93bfe38368468d7f.jpg"
+                                        class="w-10 h-10 rounded-full object-cover" alt="James">
+                                    <div class="ml-3">
+                                        <p class="text-sm font-medium text-gray-100">James Brown</p>
+                                        <p class="text-xs text-gray-500">Interview scheduled for...</p>
+                                        <p class="text-xs text-gray-400">5 hours ago</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center">
+                                    <img src="https://public.readdy.ai/ai/img_res/8454848d25e8fbd30e16cf7163672791.jpg"
+                                        class="w-10 h-10 rounded-full object-cover" alt="Emma">
+                                    <div class="ml-3">
+                                        <p class="text-sm font-medium text-gray-100">Emma Davis</p>
+                                        <p class="text-xs text-gray-500">Your profile matches our...</p>
+                                        <p class="text-xs text-gray-400">1 day ago</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-4 border-t border-gray-700">
+                            <button
+                                class="w-full text-center text-sm text-primary font-medium hover:text-primary/80">View
+                                All Notifications</button>
+                        </div>
+                    </div>
+                    <div class="bg-[#1E293B] rounded-lg border border-gray-700">
+                        <div class="p-6">
+                            <div class="flex items-center justify-between mb-6">
+                                <h3 class="text-lg font-medium text-gray-100">Recommended Companies</h3>
+                                <button class="text-sm text-primary font-medium hover:text-primary/80"
+                                    onclick="window.location.href = 'findJob.html'">
+                                    View All
+                                </button>
+
+                            </div>
+                            <div class="grid grid-cols-3 gap-6">
+                                <div
+                                    class="p-4 bg-[#0F172A] border border-gray-700 rounded-lg hover:border-primary cursor-pointer">
+                                    <img src="https://public.readdy.ai/ai/img_res/8d9b77c1a5115c4de8a70cdb9c1c84a3.jpg"
+                                        class="w-full h-40 object-cover rounded-lg mb-4" alt="Tech Corp">
+                                    <h4 class="text-lg font-medium text-gray-100 mb-1">Tech Corp</h4>
+                                    <p class="text-sm text-gray-400 mb-2">San Francisco, CA</p>
+                                    <div class="flex items-center text-sm text-gray-400">
+                                        <div class="w-4 h-4 flex items-center justify-center mr-1">
+                                            <i class="ri-briefcase-line"></i>
+                                        </div>
+                                        12 open positions
+                                    </div>
+                                </div>
+                                <div
+                                    class="p-4 bg-[#0F172A] border border-gray-700 rounded-lg hover:border-primary cursor-pointer">
+                                    <img src="https://public.readdy.ai/ai/img_res/a5a7de308e7c3252612997839fd32653.jpg"
+                                        class="w-full h-40 object-cover rounded-lg mb-4" alt="Innovation Labs">
+                                    <h4 class="text-lg font-medium text-gray-100 mb-1">Innovation Labs</h4>
+                                    <p class="text-sm text-gray-400 mb-2">New York, NY</p>
+                                    <div class="flex items-center text-sm text-gray-400">
+                                        <div class="w-4 h-4 flex items-center justify-center mr-1">
+                                            <i class="ri-briefcase-line"></i>
+                                        </div>
+                                        8 open positions
+                                    </div>
+                                </div>
+                                <div
+                                    class="p-4 bg-[#0F172A] border border-gray-700 rounded-lg hover:border-primary cursor-pointer">
+                                    <img src="https://public.readdy.ai/ai/img_res/1504f23a09c18450aef6299317414336.jpg"
+                                        class="w-full h-40 object-cover rounded-lg mb-4" alt="Global Solutions">
+                                    <h4 class="text-lg font-medium text-gray-100 mb-1">Global Solutions</h4>
+                                    <p class="text-sm text-gray-400 mb-2">Seattle, WA</p>
+                                    <div class="flex items-center text-sm text-gray-400">
+                                        <div class="w-4 h-4 flex items-center justify-center mr-1">
+                                            <i class="ri-briefcase-line"></i>
+                                        </div>
+                                        15 open positions
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const notificationButton = document.getElementById('notificationButton');
+            const notificationDropdown = document.getElementById('notificationDropdown');
+            let isDropdownVisible = false;
+            notificationButton.addEventListener('click', function (e) {
+                e.stopPropagation();
+                isDropdownVisible = !isDropdownVisible;
+                notificationDropdown.classList.toggle('hidden');
+            });
+            document.addEventListener('click', function (e) {
+                if (!notificationDropdown.contains(e.target) && isDropdownVisible) {
+                    notificationDropdown.classList.add('hidden');
+                    isDropdownVisible = false;
+                }
+            });
+        });
+        document.addEventListener('DOMContentLoaded', function () {
+            const navLinks = document.querySelectorAll('nav a');
+            navLinks.forEach(link => {
+                link.addEventListener('click', function (e) {
+                    navLinks.forEach(l => l.classList.remove('bg-primary/5', 'text-primary', 'border', 'border-white'));
+                    this.classList.add('bg-primary/5', 'text-primary', 'border', 'border-white');
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>

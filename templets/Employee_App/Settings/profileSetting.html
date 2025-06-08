@@ -1,0 +1,139 @@
+{% extends 'Employee_App/Settings/base.html' %}
+
+{% block content %}
+    <div id="profileSettingsContainer" class="fixed top-0 left-full w-full h-screen bg-gray-900 text-white shadow-lg transform transition-transform duration-500 ease-in-out">
+        <div id="profileSettings" class=" w-full text-white pt-4 pb-0 p-6 shadow-lg">
+            <a href="/Employee/Dashboard/" id="Back">
+                <i class="ri-close-fill text-3xl cursor-pointer absolute top-4 right-4 hover:text-primary"></i>
+            </a>
+            <h1 class="text-2xl font-semibold mb-[-.8vw]">Profile Settings</h1>
+            <form method="POST" enctype="multipart/form-data" action="{% url 'EmployeeApp:update_profile' %}">
+                {% csrf_token %}
+                <div class="text-center">
+                    <div class="relative w-20 h-20 mx-auto mb-[-.8vw]">
+                        <div id="largeAvatarContainer"
+                            class="w-20 h-20 rounded-full bg-gray-700 flex items-center justify-center overflow-hidden relative">
+
+                            {% if employee_dets.image %}
+                            <img src="{{ employee_dets.image.url }}" id="avatarImage"
+                                class="w-full h-full object-cover object-top">
+                            {% else %}
+                            <i class="ri-user-line text-3xl" id="avatarPlaceholder"></i>
+                            {% endif %}
+
+                        </div>
+
+                        <div id="smallAvatarContainer" class="w-20 h-20 rounded-full bg-gray-700 flex items-center justify-center overflow-hidden absolute top-0 left-0 hidden">
+                            <img src="" id="samllAvatarImage"
+                                class="w-full h-full object-cover object-top">
+                        </div>
+
+                        <label for="avatarInput"
+                            class="absolute bottom-0 z-20 right-0 w-6 h-6 bg-primary rounded-full flex items-center justify-center cursor-pointer">
+                            <i class="ri-camera-line text-white text-sm"></i>
+                        </label>
+
+                        <input type="file" id="avatarInput" name="avatarInput" class="hidden" accept="image/*">
+                    </div>
+                </div>
+
+                <div class="space-y-3">
+                    <div>
+                        <label class="block text-sm text-gray-400 mb-1">Full
+                            Name</label>
+                        <input type="text" name="nameInput"
+                            class="w-full bg-gray-700 text-white px-3 py-2 rounded-button"
+                            value="{{ employee_dets.full_name }}">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm text-gray-400 mb-1">Username</label>
+                        <input type="text" name="usernameInput"
+                            class="w-full bg-gray-700 text-white px-3 py-2 rounded-button"
+                            value="{{ employee_dets.username }}">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm text-gray-400 mb-1">Role</label>
+                        <input type="text" name="roleInput"
+                            class="w-full bg-gray-700 text-white px-3 py-2 rounded-button"
+                            value="{{ employee_dets.role }}">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm text-gray-400 mb-1">Email</label>
+                        <input type="email" class="w-full bg-gray-700 text-gray-500 px-3 py-2 rounded-button"
+                            value="{{ employee_dets.email }}" disabled>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm text-gray-400 mb-1">Enter
+                            old Password</label>
+                        <input type="password" name="oldPasswordInput"
+                            class="w-full bg-gray-700 text-white px-3 py-2 rounded-button"
+                            placeholder="Enter new password">
+                    </div>
+                    <div>
+                        <label class="block text-sm text-gray-400 mb-1">New
+                            Password</label>
+                        <input type="password" name="passwordInput"
+                            class="w-full bg-gray-700 text-white px-3 py-2 rounded-button"
+                            placeholder="Enter new password">
+                    </div>
+                </div>
+
+                <div class="mt-4 flex justify-end space-x-2">
+                    <button type="submit" id="saveProfileButton" class="px-4 py-2 bg-primary text-white rounded-button">
+                        Save Changes
+                    </button>
+                    <a href="{% url 'EmployeeApp:settings' %}" id="Close"
+                        class="px-4 py-2 bg-gray-700 text-white rounded-button">Close</a>
+                </div>
+            </form>
+        </div>
+    </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            if (!localStorage.getItem("profileSettingsAnimationPlayed")) {
+                setTimeout(() => {
+                    gsap.to("#profileSettingsContainer", {
+                        left: 0,
+                        duration: .3,
+                        ease: "power2.out"
+                    });
+
+                    localStorage.setItem("profileSettingsAnimationPlayed", "true");
+                }, 200);
+            } else {
+                document.getElementById("profileSettingsContainer").style.left = "0";
+            }
+
+
+            document.getElementById("Back").addEventListener("click", function () {
+                localStorage.removeItem("profileSettingsAnimationPlayed");
+            });
+            document.getElementById("Close").addEventListener("click", function () {
+                localStorage.removeItem("profileSettingsAnimationPlayed");
+            });
+
+            const smallContainer = document.getElementById("smallAvatarContainer");
+            const largeContainer = document.getElementById("largeAvatarContainer");
+            const Input = document.getElementById("avatarInput");
+
+            Input.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) { // Ensure a file is selected
+                    const file = e.target.files[0]; 
+                    const fileURL = URL.createObjectURL(file); // Generate URL for preview
+
+                    // ✅ Preview image in containers
+                    smallContainer.classList.remove("hidden") 
+                    document.getElementById('samllAvatarImage').src = fileURL
+                    largeContainer.classList.add("hidden")
+                }
+            });
+
+        });
+
+    </script>
+
+{% endblock %}

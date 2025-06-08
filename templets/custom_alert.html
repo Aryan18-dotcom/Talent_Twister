@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Access Denied</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            function customAlert(message, redirectUrl) {
+                const overlay = document.createElement('div');
+                overlay.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+
+                const alertBox = document.createElement('div');
+                alertBox.className = 'bg-white text-black p-6 rounded-lg shadow-lg text-center w-80';
+
+                const messageText = document.createElement('p');
+                messageText.textContent = message;
+                alertBox.appendChild(messageText);
+
+                const okButton = document.createElement('button');
+                okButton.textContent = 'OK';
+                okButton.className = 'mt-4 bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded shadow cursor-pointer';
+
+                function closeAlert() {
+                    overlay.remove();
+                    document.removeEventListener('keydown', handleEnterKey);
+                    window.location.href = redirectUrl;
+                }
+
+                function handleEnterKey(event) {
+                    if (event.key === "Enter") {
+                        closeAlert();
+                    }
+                }
+
+                document.addEventListener('keydown', handleEnterKey);
+                okButton.onclick = closeAlert;
+
+                alertBox.appendChild(okButton);
+                overlay.appendChild(alertBox);
+                document.body.appendChild(overlay);
+
+                okButton.focus();
+            }
+
+            // Call the alert with Django template variables
+            customAlert("{{ alert_message|escapejs }}", "{{ redirect_url|escapejs }}");
+        });
+    </script>
+</head>
+<body>
+    <!-- Empty body, the alert will show immediately -->
+</body>
+</html>

@@ -1,0 +1,621 @@
+{% extends 'Hr_app/base.html' %}
+{% block title %}Hr Dashboard{% endblock %}
+{% load static %}
+{% block content %}
+{% url 'HrApp:Dashboard' as dashboard_url %}
+{% url 'HrApp:Completed_Task' as complete_task_url %}
+{% url 'HrApp:Accepted_Task' as accepted_task_url %}
+{% url 'HrApp:team_members' as team_members_url %}
+{% url 'HrApp:active_teams' as active_teams_url %}
+{% url 'HrApp:pending_task' as pending_task_url %}
+{% url 'HrApp:completed_task' as completed_task_url %}
+{% url 'HrApp:accepted_task' as all_accepted_task_url %}
+{% url 'HrApp:all_tasks' as all_tasks_url %}
+{% url 'HrApp:Manage_Team' as manage_team_url %}
+{% url 'HrApp:Post_Task' as post_task_url %}
+{% url 'HrApp:Build_Team' as build_team_url %}
+{% url 'HrApp:employees_on_leave' as employees_leave_url %}
+
+
+<div class="grid grid-cols-4 gap-6 mt-8 h-40">
+    <!-- Tasks Due Today (Primary Action Item) -->
+    <a href="{{ dashboard_url }}"
+        class="tooltip bg-gray-800 p-6 rounded-lg cursor-pointer shadow-lg transition-all transform hover:scale-[1.025] hover:-translate-y-2 hover:border-2 border-primary"
+        data-tooltip="Browse all tasks in one place">
+        <div class="flex items-center justify-between">
+            <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                <i class="ri-alarm-warning-line text-2xl text-primary"></i>
+            </div>
+            <span class="text-4xl font-semibold text-primary">{{ tasks_due_today }}</span>
+        </div>
+        <div class="mt-3">
+            <h3 class="text-gray-200 font-medium">Tasks Due Today</h3>
+            <p class="text-xs text-gray-400 mt-1">{% if task_due_today > 0 %}Prioritize these{% else %}All clear!{% endif %}</p>
+        </div>
+    </a>
+
+
+    <!-- Completed Task Today (Primary Action Item) -->
+    <a href="{{ completed_task_url }}"
+        class="bg-gray-800 p-6 rounded-lg cursor-pointer shadow-lg transition-all transform hover:scale-[1.025] hover:-translate-y-2 hover:border-2 border-green-500"
+        data-tooltip="View all tasks that have been completed successfully">
+        <div class="flex items-center justify-between">
+            <div class="w-12 h-12 rounded-full bg-green-500/10 flex items-center justify-center">
+                <i class="ri-checkbox-circle-line text-2xl text-green-500"></i>
+            </div>
+            <div class="text-right">
+                <span class="text-4xl font-semibold text-green-500">{{ complete_task }}</span>
+                <span class="text-xl text-gray-400">of {{ tasks_due_today }}</span>
+                <div class="text-xs text-green-400 mt-1">
+                    {% if completion_percentage > 0 %}
+                        {{ completion_percentage }}% completion
+                    {% else %}
+                        No tasks Completed
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="mt-3">
+            <h3 class="text-gray-200 font-medium">Completed Tasks</h3>
+            {% if remaining_percentage > 0 %}
+                <p class="text-xs text-gray-400 mt-1">
+                    {% if remaining_percentage < 0 %}0{% else %}{{ remaining_percentage }}{% endif %}% remaining </p>
+            {% endif %}
+        </div>
+    </a>
+
+
+    <!-- Accepted Tasks -->
+    <a href="{{ all_accepted_task_url }}"
+        class="bg-gray-800 p-6 rounded-lg cursor-pointer shadow-lg transition-all transform hover:scale-[1.025] hover:-translate-y-2 hover:border-2 border-blue-500"
+        data-tooltip="View all tasks that are accpeted but still and waiting for completion">
+        <div class="flex items-center justify-between">
+            <div class="w-12 h-12 rounded-full bg-blue-500/10 flex items-center justify-center">
+                <i class="ri-time-line text-2xl text-blue-500"></i>
+            </div>
+            <div class="text-right">
+                <span class="text-4xl font-semibold text-blue-400">{{ accepted_task_counts }}</span>
+                <span class="text-xl text-gray-400">of {{ tasks_due_today }}</span>
+                <div class="text-xs text-amber-400 mt-1">
+                    {% widthratio accepted_task_counts|default:0 tasks_due_today 100 as percentage %}
+                    {% if tasks_due_today == 0 %}
+                    <span class="text-green-400">No Tasks Assigned</span>
+                    {% elif percentage|floatformat:0 == "0" %}
+                    <span class="text-green-400">All Tasks Completed!</span>
+                    {% else %}
+                    <span class="text-blue-400">{{ percentage|floatformat:0 }}% pending</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="mt-3">
+            <h3 class="text-gray-200 font-medium">Accepted Tasks</h3>
+        </div>
+    </a>
+
+
+    <!-- Pending Tasks -->
+    <a href="{{ pending_task_url }}"
+        class="bg-gray-800 p-6 rounded-lg cursor-pointer shadow-lg transition-all transform hover:scale-[1.025] hover:-translate-y-2 hover:border-2 border-amber-500"
+        data-tooltip="View all tasks that are still pending and waiting for completion">
+        <div class="flex items-center justify-between">
+            <div class="w-12 h-12 rounded-full bg-amber-500/10 flex items-center justify-center">
+                <i class="ri-time-line text-2xl text-amber-500"></i>
+            </div>
+            <div class="text-right">
+                <span class="text-4xl font-semibold text-amber-500">{{ pending_task_count }}</span>
+                <span class="text-xl text-gray-400">of {{ tasks_due_today }}</span>
+                <div class="text-xs text-amber-400 mt-1">
+                    {% widthratio pending_task_count|default:0 tasks_due_today 100 as percentage %}
+                    {% if tasks_due_today == 0 %}
+                    <span class="text-green-400">No Tasks Assigned</span>
+                    {% elif percentage|floatformat:0 == "0" %}
+                    <span class="text-green-400">All Tasks Completed!</span>
+                    {% else %}
+                    <span class="text-amber-500">{{ percentage|floatformat:0 }}% pending</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="mt-3">
+            <h3 class="text-gray-200 font-medium">Pending Tasks</h3>
+        </div>
+    </a>
+</div>
+
+<div class="mt-8 bg-gray-800 rounded-lg p-6">
+    <div class="flex items-center justify-between mb-6">
+        <h2 class="text-[2.8vw] font-semibold">Last Tasks</h2>
+        <div class="flex bg-gray-700 rounded-full p-1">
+            <a href="{{ dashboard_url }}"
+                class="px-4 py-1 rounded-full {% if request.path == dashboard_url %}bg-primary text-white{% else %}text-gray-400{% endif %} ">Today</a>
+            <a href="{{ complete_task_url }}"
+                class="px-4 py-1 rounded-full {% if request.path == complete_task_url %}bg-primary text-white{% else %}text-gray-400{% endif %}">Completed</a>
+            <a href="{{ accepted_task_url }}"
+                class="px-4 py-1 rounded-full {% if request.path == accepted_task_url %}bg-primary text-white{% else %}text-gray-400{% endif %}">Accepted</a>
+        </div>
+    </div>
+    <div class="space-y-4" id="myTask">
+        {% if request.path == dashboard_url %}
+            {% if tasks %}
+                {% for task in tasks %}
+                <div class="task-card bg-gray-700 p-4 rounded-lg">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h3 class="font-medium">{{ task.title }}</h3>
+                            <p class="text-sm text-gray-400 mt-1 max-w-[95%]">{{ task.description }}</p>
+                            <p class="text-xs text-gray-500 mt-1">Assigned to {{ task.assigned_to }} on {{ task.created_at }}
+                            </p>
+                        </div>
+                        <span class="px-2 py-1 text-sm rounded-full bg-{{ task.color }}-500/20 text-{{ task.color }}-500">{{
+                            task.priority }}</span>
+                    </div>
+                    <div class="mt-4">
+                        <div class="flex items-center justify-between text-sm text-gray-400">
+                            <div class="flex items-center space-x-2">
+                                <i class="ri-calendar-line"></i>
+                                <span>Due {{ task.due_date }}</span>
+                            </div>
+                            <div class="flex -space-x-2">
+                                <div class="w-10 h-10 rounded-full bg-gray-600 flex items-center justify-center">
+                                    {{ task.assigned_to|cut:" "|slice:":2" }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div
+                    class="task-card bg-gray-700/70 w-full p-8 rounded-lg shadow-md border-2 border-gray-500/50 mb-6 flex flex-col items-center justify-center transition-all hover:bg-gray-700/90">
+                    <div class="text-center max-w-md mx-auto">
+                        <!-- Main Icon -->
+                        <div class="w-20 h-20 rounded-full bg-gray-600/30 flex items-center justify-center mx-auto mb-4">
+                            <i class="ri-checkbox-circle-line text-4xl text-gray-400"></i>
+                        </div>
+
+                        <!-- Primary Message -->
+                        <h3 class="text-xl font-semibold text-gray-200 mb-2">No new tasks assigned today</h3>
+                        <p class="text-red-400 text-lg italic text-center mb-6">You haven't assigned any task yet!</p>
+
+
+                        <!-- Accepted Tasks Summary -->
+                        {% if accepted_task_count %}
+                            <div class="bg-gray-800/50 p-4 rounded-lg border border-gray-700">
+                                <div class="flex items-center justify-center space-x-3">
+                                    <span class="w-10 h-10 rounded-full bg-green-500/10 flex items-center justify-center">
+                                        <i class="ri-check-line text-green-500"></i>
+                                    </span>
+                                    <div>
+                                        <h4 class="text-sm font-medium text-gray-300">Accepted Tasks</h4>
+                                        <p class="text-lg font-semibold text-gray-100">
+                                            {{ tasks_due_today }} task assigned today
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+
+                        <!-- Optional Action Button -->
+                        <button onclick="window.location.reload()"
+                            class="px-5 py-2 bg-gray-600/50 hover:bg-gray-600/70 border border-gray-500/30 text-gray-300 rounded-lg transition-all flex items-center space-x-2 mx-auto hover:shadow-md hover:translate-y-[-2px]">
+                            <i class="ri-refresh-line"></i>
+                            <span>Check for New Tasks</span>
+                        </button>
+                    </div>
+                </div>
+            {% endif %}
+        {% elif request.path == complete_task_url %}
+            {% if completed_task_progress %}
+                {% for task in completed_task_progress %}
+                    <div
+                            class="task-card bg-gray-700/70 p-6 rounded-lg shadow-md border border-gray-700 mb-6 transition-all hover:shadow-lg hover:border-gray-600 hover:bg-gray-700/90">
+                            <!-- Header Section -->
+                            <div class="flex items-start justify-between gap-4">
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex items-center gap-2 mb-1">
+                                        <h3 class="text-lg font-semibold text-gray-100 truncate">{{ task.task.title }}</h3>
+                                        <span
+                                            class="px-2 py-0.5 text-xs font-medium rounded-full bg-green-500/20 text-green-400 flex items-center gap-1">
+                                            <i class="ri-checkbox-circle-line text-xs"></i> Completed
+                                        </span>
+                                    </div>
+
+                                    <p class="text-sm text-gray-400 mt-1 line-clamp-2">
+                                        {{ task.task.description }}
+                                    </p>
+
+                                    <div class="flex items-center gap-3 mt-3 text-xs text-gray-500">
+                                        <span class="flex items-center text-gray-400 text-x font-bold">
+                                            <i class="ri-user-line mr-1"></i>
+                                            {{ task.task.assigned_to }}
+                                        </span>
+                                        <span class="flex items-center">
+                                            <i class="ri-calendar-line mr-1"></i>
+                                            {{ task.task.created_at|date:"M d, Y" }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Completion Timeline -->
+                            <div class="mt-4 relative">
+                                <div class="absolute left-4 top-3 h-[calc(100%-28px)] w-px bg-gray-600"></div>
+
+                                <!-- Due Date -->
+                                <div class="flex items-start pl-6 mb-4 relative">
+                                    <div class="w-2 h-2 rounded-full bg-amber-400 absolute left-3.5 top-1.5"></div>
+                                    <div>
+                                        <p class="text-xs text-gray-400">Original Due Date</p>
+                                        <p class="text-sm text-gray-200 font-medium">{{ task.task.due_date|date:"M d, Y" }}</p>
+                                    </div>
+                                </div>
+
+                                <!-- Completion Date -->
+                                <div class="flex items-start pl-6 relative">
+                                    <div
+                                        class="w-2 h-2 rounded-full {% if completion.task.completed_on > completion.task.due_date %}bg-red-400{% else %}bg-green-400{% endif %} absolute left-3.5 top-1.5">
+                                    </div>
+                                    <div>
+                                        <p class="text-xs text-gray-400">Completed On</p>
+                                        <p class="text-sm text-gray-200 font-medium">{{ task.completion_date|date:"M d, Y" }}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Performance Metrics -->
+                            <div class="mt-5 grid grid-cols-2 gap-3 text-sm">
+                                <!-- Time Taken -->
+                                <div class="bg-gray-800/40 p-3 rounded-lg">
+                                    <p class="text-gray-400 mb-1">Completion Time</p>
+                                    <p class="text-blue-400 font-medium flex items-center gap-1">
+                                        <i class="ri-timer-line"></i>
+                                        {{ task.time_taken_display }}
+                                    </p>
+                                </div>
+
+                                <!-- Status -->
+                                <div class="bg-gray-800/40 p-3 rounded-lg border 
+                                                    {% if completion.completion_type == 'late' %}border-red-500/20
+                                                    {% elif completion.completion_type == 'ontime' %}border-amber-500/20
+                                                    {% else %}border-green-500/20{% endif %}">
+                                    <p class="text-xs font-medium text-gray-400 mb-1.5">COMPLETION STATUS</p>
+                                    <div class="flex items-center gap-2">
+                                        {% if task.completion_type == 'late' %}
+                                        <div class="p-1.5 rounded-full bg-red-500/20">
+                                            <i class="ri-alarm-warning-line text-red-400 text-sm"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-medium text-red-400">Delayed</p>
+                                            <p class="text-xs text-red-300/80 mt-0.5">
+                                                {{ task.days_difference }} day{{ task.days_difference|pluralize }} of overdue
+                                            </p>
+                                        </div>
+
+                                        {% elif task.completion_type == 'ontime' %}
+                                        <div class="p-1.5 rounded-full bg-amber-500/20">
+                                            <i class="ri-checkbox-circle-line text-amber-400 text-sm"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-medium text-amber-400">On Time</p>
+                                            <p class="text-xs text-amber-300/80 mt-0.5">
+                                                Completed on deadline
+                                            </p>
+                                        </div>
+
+                                        {% else %}
+                                        <div class="p-1.5 rounded-full bg-green-500/20">
+                                            <i class="ri-flag-2-line text-green-400 text-sm"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-medium text-green-400">Early Completion</p>
+                                            <p class="text-xs text-green-300/80 mt-0.5">
+                                                {{ task.days_difference }} day{{ task.days_difference|pluralize }} ahead
+                                            </p>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Efficiency Rating (Optional) -->
+                            <div class="mt-4">
+                                <div class="flex items-center justify-between text-xs text-gray-400 mb-1">
+                                    <span>Task Efficiency</span>
+                                    <span>{% if task.completion_type == 'late' %}Needs Improvement{% elif task.completion_type ==
+                                        'early' %}Excellent Work.{% else %}Can Be Better.{% endif %}</span>
+                                </div>
+                                <div class="w-full bg-gray-600 rounded-full h-1.5">
+                                    <div class="bg-{% if task.completion_type == 'late' %}red-500{% elif task.completion_type == 'early' %}green-500{% else %}yellow-500{% endif %} h-1.5 rounded-full"
+                                        style="width:100%">
+                                    </div>
+                                </div>
+                            </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div
+                        class="task-card bg-gray-700/70 w-full p-8 rounded-lg shadow-md border-2 border-gray-500/50 mb-6 flex flex-col items-center justify-center transition-all hover:bg-gray-700/90">
+                        <div class="text-center max-w-md mx-auto">
+                            <!-- Main Icon -->
+                            <div class="w-20 h-20 rounded-full bg-gray-600/30 flex items-center justify-center mx-auto mb-4">
+                                <i class="ri-checkbox-circle-line text-4xl text-gray-400"></i>
+                            </div>
+
+                            <!-- Primary Message -->
+                            <h3 class="text-xl font-semibold text-gray-200 mb-2">No assigned task has been competed today</h3>
+                            <p class="text-red-400 text-lg italic text-center mb-6">Employees haven't completed any task yet!</p>
+
+
+                            <!-- Accepted Tasks Summary -->
+                            {% if accepted_task_counts %}
+                            <div class="bg-gray-800/50 p-4 rounded-lg border border-gray-700">
+                                <div class="flex items-center justify-center space-x-3">
+                                    <span class="w-10 h-10 rounded-full bg-green-500/10 flex items-center justify-center">
+                                        <i class="ri-check-line text-green-500"></i>
+                                    </span>
+                                    <div>
+                                        <h4 class="text-sm font-medium text-gray-300">accepted Tasks</h4>
+                                        <p class="text-lg font-semibold text-gray-100">
+                                            {{ accepted_task_counts }} task accpeted today
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            <!-- Optional Action Button -->
+                            <button onclick="window.location.reload()"
+                                class="px-5 py-2 bg-gray-600/50 hover:bg-gray-600/70 border border-gray-500/30 text-gray-300 rounded-lg transition-all flex items-center space-x-2 mx-auto hover:shadow-md hover:translate-y-[-2px]">
+                                <i class="ri-refresh-line"></i>
+                                <span>Check for New Tasks</span>
+                            </button>
+                        </div>
+                </div>
+            {% endif %}
+        {% else %}
+            {% if accepted_task_progress %}
+                {% for task in accepted_task_progress %}
+                    <div
+                            class="task-card bg-gray-700/70 p-6 rounded-lg shadow-lg border border-gray-600 hover:border-gray-500 mb-6 transition-all duration-200">
+                            <!-- Task Header -->
+                            <div class="flex items-start justify-between gap-3">
+                                <div class="flex-1 min-w-0">
+                                    <h3 class="text-xl font-semibold text-white truncate">{{ task.task.title }}</h3>
+                                    <!-- Priority Badge -->
+                                    <div class="mt-2">
+                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium 
+                                                                    {% if task.task.task_priority == 'High' %}bg-red-500/20 text-red-400
+                                                                    {% elif task.task.task_priority == 'Medium' %}bg-amber-500/20 text-amber-400
+                                                                    {% else %}bg-green-500/20 text-green-400{% endif %}">
+                                            {{ task.task.task_priority }}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <!-- Assigned By Avatar -->
+                                <div class="flex-shrink-0 relative group">
+                                    <div class="w-10 h-10 rounded-full bg-gray-600 flex items-center justify-center text-gray-200 font-medium text-sm"
+                                        data-tooltip="{{ task.task.assigned_by.username }}">
+                                        {{ task.task.assigned_to.username|slice:":2"|upper }}
+                                    </div>
+                                    <span
+                                        class="absolute -bottom-6 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                                        {{ task.task.assigned_by.username }}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Task Description -->
+                            <p class="text-gray-300 mt-3 line-clamp-2">
+                                {{ task.task.description }}
+                            </p>
+
+                            <!-- Metadata -->
+                            <div class="mt-4 space-y-2 text-sm">
+                                <div class="mt-4 mb-[-.4vw] space-y-2 text-sm">
+                                    <div class="flex items-center text-gray-400">
+                                        <i class="ri-user-line mr-2"></i>
+                                        <span>Assigned to <span class="text-gray-200">{{ task.task.assigned_to }}</span></span>
+                                    </div>
+                                    <div class="flex items-center text-gray-400">
+                                        <i class="ri-calendar-line mr-2"></i>
+                                        <span>Assigned on <span class="text-gray-200">{{ task.task.created_at|date:"M d, Y"
+                                                }}</span></span>
+                                    </div>
+                                </div>
+                                <div
+                                    class="flex items-center {% if task.task.is_due_soon and not task.task.is_due_today %}text-amber-400{% else %}text-gray-400{% endif %}">
+                                    <i class="ri-calendar-event-line mr-2"></i>
+                                    <span>
+                                        Due <span
+                                            class="font-medium {% if task.task.is_due_soon %}text-white{% else %}text-gray-200{% endif %}">
+                                            {{ task.task.due_date|date:"M j, Y" }}
+                                            {% if task.task.is_due_soon and not task.task.is_due_today %}
+                                            <span class="ml-1 text-xs">(in {{ task.task.due_date|timeuntil }})</span>
+                                            {% endif %}
+                                        </span>
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Progress Bar -->
+                            <div class="mt-4">
+                                <div class="flex items-center justify-between text-xs mb-1">
+                                    <span class="text-gray-400">Progress</span>
+                                    <span
+                                        class="font-medium {% if task.calculated_progress < 50 %}text-amber-400{% else %}text-green-400{% endif %}">
+                                        {{ task.task.calculated_progress }}%
+                                    </span>
+                                </div>
+                                <div class="relative h-2.5 bg-gray-600 rounded-full overflow-hidden">
+                                    <div class="absolute top-0 left-0 h-full {% if task.task.calculated_progress < 50 %}bg-amber-500{% else %}bg-green-500{% endif %} rounded-full"
+                                        style="width: {{ task.task.calculated_progress }}%">
+                                    </div>
+                                </div>
+                                <div class="mt-1 flex justify-between text-xs">
+                                    <span class="text-gray-500">Assigned</span>
+                                    <span
+                                        class="{% if task.task.days_remaining < 3 %}text-amber-400 font-medium{% else %}text-gray-400{% endif %}">
+                                        {{ task.task.days_remaining }} day{{ task.task.days_remaining|pluralize }} left for
+                                    </span>
+                                    <span class="text-gray-300">{{ task.task.due_date|date:"M j" }}</span>
+                                </div>
+                            </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div
+                    class="task-card bg-gray-700/70 w-full p-8 rounded-lg shadow-md border-2 border-gray-500/50 mb-6 flex flex-col items-center justify-center transition-all hover:bg-gray-700/90">
+                    <div class="text-center max-w-md mx-auto">
+                        <!-- Main Icon -->
+                        <div class="w-20 h-20 rounded-full bg-gray-600/30 flex items-center justify-center mx-auto mb-4">
+                            <i class="ri-checkbox-circle-line text-4xl text-gray-400"></i>
+                        </div>
+
+                        <!-- Primary Message -->
+                        <h3 class="text-xl font-semibold text-gray-200 mb-2">No assigned task has be accepted today</h3>
+                        <p class="text-red-400 text-lg italic text-center mb-6">Employees haven't accepted any task yet!</p>
+
+
+                        <!-- Accepted Tasks Summary -->
+                        {% if pending_task_count > 0 %}
+                            <div class="bg-gray-800/50 p-4 rounded-lg border border-gray-700">
+                                <div class="flex items-center justify-center space-x-3">
+                                    <span class="w-10 h-10 rounded-full bg-green-500/10 flex items-center justify-center">
+                                        <i class="ri-check-line text-green-500"></i>
+                                    </span>
+                                    <div>
+                                        <h4 class="text-sm font-medium text-gray-300">pending Tasks</h4>
+                                        <p class="text-lg font-semibold text-gray-100">
+                                            {{ pending_task_count }} pending task today
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+
+                        <!-- Optional Action Button -->
+                        <button onclick="window.location.reload()"
+                            class="px-5 py-2 bg-gray-600/50 hover:bg-gray-600/70 border border-gray-500/30 text-gray-300 rounded-lg transition-all flex items-center space-x-2 mx-auto hover:shadow-md hover:translate-y-[-2px]">
+                            <i class="ri-refresh-line"></i>
+                            <span>Check for New Tasks</span>
+                        </button>
+                    </div>
+                </div>
+            {% endif %}
+        {% endif %}
+    </div>
+</div>
+
+<div class="grid grid-cols-4 gap-6 mt-8 h-36">
+    <!-- Active Employees -->
+    <a href="{{ team_members_url }}"
+        class="bg-gray-800 p-6 rounded-lg cursor-pointer shadow-lg transition-all transform hover:scale-[1.025] hover:-translate-y-2 hover:border-2 border-blue-500"
+        data-tooltip="View all Active Employees">
+        <div class="flex items-center justify-between">
+            <div class="w-12 h-12 rounded-full bg-blue-500/10 flex items-center justify-center">
+                <i class="ri-team-line text-2xl text-blue-400"></i>
+            </div>
+            <div class="text-right">
+                <span class="text-4xl font-semibold text-blue-500">{{ active_employees }}</span>
+                <span class="text-xl text-gray-400">of {{ total_employees }}</span>
+                <div class="text-xs mt-1 {% if total_percentage == 0 %}text-red-400{% elif total_percentage <= 50 %}text-yellow-400{% elif total_percentage <= 80 %}text-blue-400{% else %}text-green-400{% endif %}">
+                    {% if total_percentage > 0 %}
+                        {{ total_percentage }}% completion
+                    {% else %}
+                        None of the Employees are active
+                    {% endif %}
+                </div>
+
+            </div>
+        </div>
+        <div class="mt-3">
+            <h3 class="text-gray-200 font-medium">Completed Tasks</h3>
+            {% if total_remaining_percentage > 0 %}
+            <p class="text-xs text-red-400 mt-1">
+                {% if total_remaining_percentage < 0 %}0{% else %}{{ total_remaining_percentage }}{% endif %}% Offline </p>
+            {% endif %}
+        </div>
+    </a>
+
+    <!-- Assigned Tasks -->
+    <a href="{{ all_tasks_url }}"
+        class="bg-gray-800 p-6 rounded-lg cursor-pointer shadow-lg transition-all transform hover:scale-[1.025] hover:-translate-y-2 hover:border-2 border-orange-400"
+        data-tooltip="Total Tasks Assigned Till Now">
+        <div class="flex items-center justify-between">
+            <div class="w-12 h-12 rounded-full bg-orange-500/10 flex items-center justify-center">
+                <i class="ri-checkbox-circle-line text-2xl text-orange-400"></i>
+            </div>
+            <span class="text-4xl font-semibold text-orange-400">{{ tasks_till_now }}</span>
+        </div>
+        <div class="mt-3">
+            <h3 class="text-gray-200 font-medium">Assigned Tasks</h3>
+        </div>
+    </a>
+
+    <!-- Employees on Leave -->
+    <a href="{{ employees_leave_url }}"
+        class="bg-gray-800 p-6 rounded-lg cursor-pointer shadow-lg transition-all transform hover:scale-[1.025] hover:-translate-y-2 hover:border-2 border-yellow-400"
+        data-tooltip="Employees Currently on Leave">
+        <div class="flex items-center justify-between">
+            <div class="w-12 h-12 rounded-full bg-yellow-400/10 flex items-center justify-center">
+                <i class="ri-folder-line text-2xl text-yellow-400"></i>
+            </div>
+            <span class="text-4xl font-semibold text-yellow-400">
+                {% if employee_on_leave %}
+                    {{ employee_on_leave }}
+                {% else %}
+                    All Present
+                {% endif %}
+            </span>
+        </div>
+        <div class="mt-3">
+            <h3 class="text-gray-200 font-medium">Employees on Leave</h3>
+        </div>
+    </a>
+
+    <!-- Active Teams -->
+    <a href="{{ active_teams_url }}"
+        class="bg-gray-800 p-6 rounded-lg cursor-pointer shadow-lg transition-all transform hover:scale-[1.025] hover:-translate-y-2 hover:border-2 border-green-400"
+        data-tooltip="Total Active Teams">
+        <div class="flex items-center justify-between">
+            <div class="w-12 h-12 rounded-full bg-green-500/10 flex items-center justify-center">
+                <i class="ri-building-line text-2xl text-green-400"></i>
+            </div>
+            <span class="text-4xl font-semibold text-green-400">{{ companys }}</span>
+        </div>
+        <div class="mt-3">
+            <h3 class="text-gray-200 font-medium">Active Teams</h3>
+        </div>
+    </a>
+</div>
+
+<div class="rbRight bg-gray-800 p-6 rounded-lg mt-8">
+    <div class="mb-4">
+        <h2 class="text-xl font-semibold text-gray-300">Quick
+            Actions</h2>
+    </div>
+    <div class="grid grid-cols-3 gap-4">
+        <a href="{{ post_task_url }}"
+            class="bg-blue-500/20 p-4 rounded-lg flex flex-col items-center justify-center gap-2 transition hover:bg-blue-500/30 focus:ring-2 focus:ring-blue-400 focus:outline-none w-full">
+            <i class="ri-add-circle-line text-2xl text-blue-400"></i>
+            <span class="text-gray-300 text-sm font-medium">Post
+                Task</span>
+        </a>
+        <a href="{{ manage_team_url }}"
+            class="bg-orange-500/20 p-4 rounded-lg flex flex-col items-center justify-center gap-2 transition hover:bg-orange-500/30 focus:ring-2 focus:ring-orange-400 focus:outline-none w-full">
+            <i class="ri-user-add-line text-2xl text-orange-400"></i>
+            <span class="text-gray-300 text-sm font-medium">Manage
+                Team</span>
+        </a>
+        <a href="{{ build_team_url }}"
+            class="bg-green-500/20 p-4 rounded-lg flex flex-col items-center justify-center gap-2 transition hover:bg-green-500/30 focus:ring-2 focus:ring-green-400 focus:outline-none w-full">
+            <i class="ri-team-line text-2xl text-green-400"></i>
+            <span class="text-gray-300 text-sm font-medium">Build
+                Team</span>
+        </a>
+    </div>
+</div>
+
+{% endblock %}

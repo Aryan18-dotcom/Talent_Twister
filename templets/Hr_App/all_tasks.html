@@ -1,0 +1,183 @@
+{% extends 'Hr_App/base.html' %}
+{% load static %}
+{% block title %}All Tasks{% endblock %}
+{% block content %}
+{% include 'Hr_App/Components.html' %}
+
+<!-- Task Cards Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    {% for task in all_tasks %}
+    <div class="task-row bg-gray-800 rounded-xl p-6 transition hover:bg-gray-700/50 group flex flex-col h-full"
+        data-status="{{ task.task_progress|lower }}" 
+        data-name="{{ task.title|lower }}" 
+        data-duedate="{{ task.due_date|date:'Y-m-d' }}"
+        data-assignedto="{{ task.assigned_to.full_name|default:'Not assigned' }}"
+        data-created="{{ task.created_at|date:'Y-m-d' }}"
+        data-progress-date="{{task.completion_date}}"
+        data-task-description="{{ task.description }}"
+        data-completion-status="{% if task.completion_type %}{{ task.completion_type }}{% else %}none{% endif %}"
+        data-task-id="{{ task.id }}"
+        data-priority="{{ task.task_priority|lower }}">
+        
+        <!-- Header -->
+        <div class="mb-4">
+            <div class="flex justify-between items-start">
+                <h3 class="text-white text-xl font-bold">{{ task.title }}</h3>
+                <span class="text-sm px-3 py-1 rounded-full font-medium {% if task.task_progress == 'Completed' %}bg-green-600/20 text-green-400{% elif task.task_progress == 'Pending' %}bg-yellow-500/20 text-yellow-400{% elif task.task_progress == 'Accepted' %}bg-blue-500/20 text-blue-400{% else %}bg-gray-500/20 text-gray-400{% endif %}">
+                    {{ task.task_progress }}
+                </span>
+            </div>
+            <p class="text-sm text-gray-400 mt-1">Assigned to: <span class="text-white">{{ task.assigned_to.full_name }}</span></p>
+        </div>
+
+        <!-- Description -->
+        <div class="text-sm text-gray-400 mb-4 flex-grow">
+            <span class="block font-medium text-gray-300">Task Discription:</span>
+            {{ task.description|truncatechars:150 }}
+        </div>
+
+        <!-- Dates -->
+        <div class="grid grid-cols-3 gap-6 text-sm text-gray-400 mb-4">
+            <div>
+                <span class="block font-medium text-gray-300">Created At:</span>
+                {{ task.created_at|date:"M d, Y" }}
+            </div>
+            <div>
+                <span class="block font-medium text-gray-300">Due Date:</span>
+                {{ task.due_date|date:"M d, Y" }}
+                {% if task.due_date < today and task.status != 'Completed' %}
+                <span class="text-xs text-red-400">(Overdue)</span>
+                {% endif %}
+            </div>
+            <div>
+                <span class="block font-medium text-gray-300">Task Priority:</span>
+                <span class="px-3 py-[2px] rounded-full text-xs {% if task.task_priority == 'High' %}bg-red-500/20 text-red-400{% elif task.task_priority == 'Medium' %}bg-yellow-500/20 text-yellow-400{% else %}bg-green-500/20 text-green-400{% endif %}">
+                    {{ task.task_priority }}
+                </span>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex justify-end gap-2">
+            <!-- View Button -->
+            <button class="view-task-btn action-btn hover:text-blue-400 hover:bg-blue-500/10 p-2 rounded-full transition"
+                title="View Task"  data-task-id="{{ task.id }}"
+                data-task-title="{{ task.title }}"
+                data-task-description="{{ task.description }}"
+                data-task-assigned-by="{{ task.assigned_to.full_name }}"
+                data-task-assigned-date="{{ task.created_at|date:'M d, Y' }}"
+                data-task-due-date="{{ task.due_date|date:'M d, Y' }}"
+                data-task-priority="{{ task.task_priority }}"
+                data-task-status="{% with progress=task.progress.first %}{% if progress %}{{progress.status|lower}}{% endif %}{% endwith %}" data-task-id="{{ task.id }}"
+                data-task-completion-date="{% with progress=task.progress.first %}{% if progress %}{% if progress.status == 'Accepted' %}{{ progress.action_date }}{% elif progress.status == 'Completed' %}{{ progress.completion_date|date:'Y-m-d H:i' }}{% else %}N/A{% endif %}{% else %}N/A{% endif %}{% endwith %}"
+                data-task-completion-type="{% with progress=task.progress.first %}{% if progress %}{{progress.completion_type}}{% endif %}{% endwith %}"
+                data-task-days-differernce="{% with progress=task.progress.first %}{% if progress %}{{ progress.days_difference }} day{{ progress.days_difference|pluralize }} {% with progress=task.progress.first %}{% if progress %}{% if progress.completion_type == 'late' %}Late{% elif progress.completion_type == 'ontime' %}Ontime{% else %}Ahead{% endif %}{% endif %}{% endwith %}{% else %}N/A{% endif %}{% endwith %}">
+                <i class="ri-eye-line text-lg"></i>
+            </button>
+            
+        </div>
+    </div>
+    {% empty %}
+    <div class="noData bg-gray-800 rounded-xl p-6 transition hover:bg-gray-700/50 group flex flex-col items-center h-full col-span-2 text-center py-12">
+        <img src="{% static 'Employee_App/Static_Imgs/outline.svg' %}" alt="No Results" class="mx-auto mb-4">
+        <h2 class="text-xl font-semibold text-white">No Tasks Available</h2>
+        <p class="text-gray-400">There are currently no tasks to display. You can post a new task.</p>
+        <a href="{% url 'HrApp:Post_Task' %}" class="mt-4 px-4 py-2 rounded-lg text-sm font-medium text-white bg-purple-600 hover:bg-purple-700/40 transition-all duration-200">Post a Task</a>
+    </div>
+    {% endfor %}
+</div>
+<!-- No Results Message -->
+<div id="noResults" class="hidden bg-gray-800 rounded-xl p-6 transition hover:bg-gray-700/50 group flex flex-col items-center h-full col-span-2 text-center py-12">
+    <img src="{% static 'Employee_App/Static_Imgs/outline.svg' %}" alt="No Results" class="mx-auto mb-4">
+    <h2 class="text-xl font-semibold text-white">No Tasks Found</h2>
+    <p class="text-gray-400">No Task Found, please Try to adjusting your search or filter options.</p>
+    <button class="resetFilter mt-4 px-4 py-2 rounded-lg text-sm font-medium text-white bg-purple-600 hover:bg-purple-700/40 transition-all duration-200">Reset Filters</button>
+</div>
+
+<!-- View Task Modal -->
+<div id="taskDetailModal"
+    class="fixed inset-0 z-50 hidden items-center justify-center bg-black/60 backdrop-blur-sm p-3">
+    <div
+        class="bg-gray-800 border border-gray-700 rounded-xl m-auto shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto  transition-transform duration-300 scale-0" id="taskDetailModalContent">
+
+        <!-- Task Head -->
+        <div class="p-6 relative">
+            <button id="closeTaskDetail"
+                class="absolute top-4 right-4 text-gray-400 hover:text-purple-500 text-4xl transition">
+                &times;
+            </button>
+            <div class="flex item-center gap-3">
+                <h2 id="taskModalTitle" class="text-2xl font-bold mb-2 text-white"></h2>
+                <div class="flex items-center gap-2 mb-2">
+                    <span id="taskModalPriority" class="px-2 py-1 rounded-full text-xs"></span>
+                </div>
+            </div>
+
+            <!-- Task Content -->
+            <!-- Discription -->
+            <div class="bg-gray-700/50 rounded-lg p-4 mb-4">
+                <h3 class="text-gray-300 font-medium mb-2">Description:</h3>
+                <p id="taskModalDescription" class="text-white whitespace-pre-line"></p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm mb-4">
+                <!-- Assigned to -->
+                <div class="bg-gray-700/30 rounded-lg p-3">
+                    <span class="block text-gray-400 font-medium">Assigned To:</span>
+                    <p id="taskModalAssignedBy" class="text-white"></p>
+                </div>
+                <!-- Status -->
+                <div class="bg-gray-700/30 rounded-lg p-3">
+                    <span class="block text-gray-400 font-medium">Status:</span>
+                    <p id="taskModalStatus" class="inline-block px-3 py-1 rounded-full bg-gradient-to-r shadow-lg "></p>
+                </div>
+                <!-- Created at -->
+                <div class="bg-gray-700/30 rounded-lg p-3">
+                    <span class="block text-gray-400 font-medium">Created At:</span>
+                    <p id="taskModalAssignedDate" class="text-white"></p>
+                </div>
+                <!-- Due date -->
+                <div class="bg-gray-700/30 rounded-lg p-3 ">
+                    <span class="block text-gray-400 font-medium">Due Date:</span>
+                    <p id="taskModalDueDate" class="text-white"></p>
+                </div>
+            </div>
+
+            <!-- Compition date -->
+            <div class="bg-gray-700/30 rounded-lg p-3 mb-6">
+                <span class="block text-gray-400 font-medium">completion Date:</span>
+                <p id="taskModalcompletionDate" class="text-white"></p>
+            </div>
+
+            <!-- Special Achivments How Work is done and in how much time -->
+            <div id="taskModalExcellentWorkContainer"
+                class="flex items-center gap-4 p-4 rounded-lg bg-gradient-to-r from-green-500/20 via-green-400/20 to-green-500/20 shadow-lg hidden">
+                <div id="taskModalExcellentWorkIcon"
+                    class="w-10 h-10 rounded-full bg-green-600 flex items-center justify-center text-white">
+                    <i class="ri-award-line text-xl"></i>
+                </div>
+                <div class="flex items-center justify-between w-full">
+                    <div>
+                        <p id="taskModalExcellentWorkHeading" class="text-xs text-green-300">Special Achievement</p>
+                        <p id="taskModalExcellentWork" class="text-green-100 font-semibold text-sm">Excellent Work!
+                        </p>
+                    </div>
+                    <div>
+                        <p id="taskModalExcellentWorkType" class="text-xs text-green-300"></p>
+                        <p id="taskModalExcellentDays" class="text-green-100 font-semibold text-sm"></p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-3 mt-4">
+                <button id="closeModalBtn"
+                    class="px-4 py-2 rounded-lg text-sm text-white bg-gray-700 hover:bg-gray-600 transition">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}

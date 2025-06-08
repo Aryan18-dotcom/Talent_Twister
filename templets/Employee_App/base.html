@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        {% block title %}Dashboard{% endblock %} | Tallent Twister
+    </title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#8E6FF7',
+                        secondary: '#2D3748'
+                    },
+                    borderRadius: {
+                        'none': '0px',
+                        'sm': '4px',
+                        DEFAULT: '8px',
+                        'md': '12px',
+                        'lg': '16px',
+                        'xl': '20px',
+                        '2xl': '24px',
+                        '3xl': '32px',
+                        'full': '9999px',
+                        'button': '8px'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom scrollbar for WebKit browsers (Chrome, Safari, Edge) */
+        ::-webkit-scrollbar {
+            width: 12px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background-color: #f0f0f0;
+            /* Light gray track that contrasts with most sites */
+            border-radius: 6px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background-color: #8E6FF7;
+            /* Purple thumb */
+            border-radius: 6px;
+            border: 2px solid #f0f0f0;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background-color: #7A5BD6;
+            /* Slightly darker purple on hover */
+        }
+
+        ::-webkit-scrollbar-button {
+            background-color: #8E6FF7;
+            /* Purple arrows */
+            border-radius: 12px;
+        }
+
+        ::-webkit-scrollbar-button:hover {
+            background-color: #7A5BD6;
+        }
+
+        /* For Firefox */
+        * {
+            scrollbar-width: medium;
+            scroll-behavior: smooth;
+            scrollbar-color: #8E6FF7 #273342;
+        }
+
+        :where([class^="ri-"])::before {
+            content: "\f3c2";
+        }
+
+        .task-card {
+            transition: transform 0.3s;
+        }
+
+        .task-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .notification-dot {
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            width: 8px;
+            height: 8px;
+            background-color: #EF4444;
+            border-radius: 50%;
+        }
+
+        .panel {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 300px;
+            height: 100vh;
+            background: #fff;
+            box-shadow: -2px 0 5px rgba(0, 0, 0, 0.2);
+            transition: right 0.3s ease;
+            padding: 20px;
+            display: none;
+        }
+
+        .panel.active {
+            right: 0;
+            display: block;
+            width: 100%;
+            color: black;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            cursor: pointer;
+            font-size: 18px;
+        }
+
+        .buttons-container {
+            display: flex;
+            gap: 10px;
+            margin: 20px;
+        }
+
+        button {
+            padding: 10px 15px;
+            border: none;
+            cursor: pointer;
+            background: #007BFF;
+            color: white;
+            border-radius: 5px;
+        }
+
+        .Bar:hover .DaysLeft {
+            display: block;
+        }
+
+        .text-description {
+            white-space: pre-line;
+            /* Preserves line breaks */
+            line-height: 1.4;
+            /* Adjusts line spacing (reduce if needed) */
+            margin-bottom: 0.5rem;
+            /* Optional: Adjusts bottom margin to avoid extra gaps */
+        }
+
+        .status-indicator {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            transform: translate(25%, 25%);
+            width: 12px;
+            height: 12px;
+            border: 2px solid #1f2937;
+            border-radius: 50%;
+        }
+        .avatar-border-effect {
+        position: relative;
+    }
+
+    .avatar-border-effect::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-radius: 100px;
+        padding: 10px;
+        background: conic-gradient(var(--tw-color-primary, #3b82f6) 0deg, transparent 0deg);
+        mask: 
+            linear-gradient(#fff 0 0) content-box, 
+            linear-gradient(#fff 0 0);
+        mask-composite: exclude;
+        -webkit-mask-composite: destination-out;
+        pointer-events: none;
+        transition: background 0.6s ease;
+        z-index: 10;
+    }
+
+    .parent:hover .avatar-border-effect::before {
+        background: conic-gradient(var(--tw-color-primary, #3b82f6) 360deg, transparent 0deg);
+    }
+    [data-tooltip] {
+    position: relative;
+    cursor: pointer;
+}
+
+[data-tooltip]:hover::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    top: -40px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #283141;
+    color: #fff;
+    padding: 5px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    white-space: nowrap;
+    z-index: 10;
+}
+
+/* Tooltip Arrow */
+[data-tooltip]:hover::before {
+    content: "";
+    position: absolute;
+    top: -13px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 10px;
+    border-style: solid;
+    border-color: #283141 transparent transparent transparent;
+    z-index: 10;
+}
+
+:where([class^="ri-"])::before { content: "\f3c2"; }
+body {
+    background-color: #111827;
+    color: #f9fafb;
+    font-family: 'Inter', sans-serif;
+}
+input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+}
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+.custom-switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 24px;
+}
+.custom-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+.switch-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #374151;
+    transition: .4s;
+    border-radius: 34px;
+}
+.switch-slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+input:checked + .switch-slider {
+    background-color: #8b5cf6;
+}
+input:checked + .switch-slider:before {
+    transform: translateX(26px);
+}
+.custom-file-upload {
+    display: inline-block;
+    cursor: pointer;
+    background-color: #374151;
+    color: #f9fafb;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    transition: all 0.2s;
+}
+.custom-file-upload:hover {
+    background-color: #4b5563;
+}
+.custom-file-upload input[type="file"] {
+    display: none;
+}
+.custom-select {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+}
+.custom-select-selected {
+    background-color: #1f2937;
+    color: #f9fafb;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.custom-select-options {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background-color: #1f2937;
+    border-radius: 8px;
+    margin-top: 0.5rem;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 10;
+    display: none;
+}
+.custom-select-option {
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.custom-select-option:hover {
+    background-color: #374151;
+}
+.custom-select-option.selected {
+    background-color: #8b5cf6;
+    color: white;
+}
+
+
+    </style>
+</head>
+
+<body class="bg-gray-900 text-gray-100 min-h-screen">
+    <div class="max-w-7xl mx-auto px-4 mb-[16vh]">
+
+        {% url 'EmployeeApp:dashboard' as dashboard_url %}
+        {% url 'EmployeeApp:complete_task_dashboard' as complete_task_url %}
+        {% url 'EmployeeApp:team_members' as team_url %}
+        {% url 'EmployeeApp:chat_list' as chat_url %}
+        {% url 'EmployeeApp:settings' as settings_url %}
+        {% url 'EmployeeApp:all_tasks' as all_tasks_url %}
+        
+        <header class="py-4 flex items-center justify-between border-b border-gray-800">
+            <div class="flex items-center space-x-2">
+                <a href="{{ dashboard_url }}" 
+                class="text-2xl font-['Pacifico'] text-primary relative transition-all duration-400 ease-out hover:scale-105 hover:rotate-1 before:absolute before:inset-0 before:rounded-lg before:bg-primary/20 before:blur-md before:opacity-0 hover:before:opacity-100">
+                 Talent Twister
+             </a>             
+            </div>
+            <div class="flex items-center space-x-6">
+                <div class="relative">
+                    <a href="{{ chat_url }}" class="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-primary">
+                        <i class="ri-notification-3-line ri-xl"></i>
+                        <span class="notification-dot"></span>
+                    </a>
+                </div>
+                <div class="relative">
+                    <a href="{% url 'EmployeeApp:profile_settings' %}" id="profileButton"
+                        class="flex items-center space-x-3 group">
+                
+                        <!-- Avatar with circular border animation -->
+                        <div id="avatarContainer"
+                            class="relative w-14 h-14 rounded-full bg-gray-700 flex items-center justify-center overflow-hidden group-hover:ring-2 group-hover:ring-primary">
+                            {% if employee_dets.image %}
+                            <img src="{{ employee_dets.image.url }}" id="avatarImage"
+                                class="w-full h-full object-cover object-top z-10">
+                            {% else %}
+                            <i class="ri-user-line text-xl text-gray-300 group-hover:text-primary transition duration-300 z-10"
+                                id="avatarPlaceholder"></i>
+                            {% endif %}
+                        </div>
+                
+                        <!-- Text -->
+                        <div class="text-sm transition-all group-hover:text-primary duration-300">
+                            <div class="font-medium" id="profileName">{{ request.session.username }}</div>
+                            <div class="text-gray-400 group-hover:text-primary/60" id="role">
+                                {% if employee_dets.role == "Employee" %}
+                                {{ employee_dets.role }} (Default)
+                                {% else %}
+                                {{ employee_dets.role }}
+                                {% endif %}
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                
+            </div>
+        </header>
+
+        {% block content %}
+        {% endblock %}
+        
+        <nav class="fixed bottom-0 left-0 right-0 bg-gray-800 border-t border-gray-700 z-40 Nav">
+            <div class="max-w-7xl mx-auto px-4">
+                <div class="flex justify-around py-4">
+        
+                    <!-- Dashboard -->
+                    <a href="{{ dashboard_url }}"
+                       class="flex flex-col items-center {% if request.path == dashboard_url or request.path == complete_task_url %}text-primary{% else %}text-gray-400 hover:text-primary{% endif %}" data-tooltip="Go to Dashboard">
+                        <i class="ri-home-5-line text-xl"></i>
+                        <span class="text-xs mt-1">Dashboard</span>
+                    </a>
+        
+                    <!-- Tasks (Empty URL) -->
+                    <a href="{{ all_tasks_url }}"
+                       class="flex flex-col items-center {% if request.path == all_tasks_url %}text-primary{% else %}text-gray-400 hover:text-primary{% endif %}" data-tooltip="View all tasks">
+                        <i class="ri-task-line text-xl"></i>
+                        <span class="text-xs mt-1">Tasks</span>
+                    </a>
+        
+                    <!-- Team Members -->
+                    <a href="{{ team_url }}"
+                       class="flex flex-col items-center {% if request.path == team_url %}text-primary{% else %}text-gray-400 hover:text-primary{% endif %}" data-tooltip="View all colleagues">
+                       <i class="ri-team-line text-xl"></i>
+                        <span class="text-xs mt-1">Team Members</span>
+                    </a>
+        
+                    <!-- Messages -->
+                    <a href="{{ chat_url }}"
+                       class="flex flex-col items-center {% if request.path == chat_url %}text-primary{% else %}text-gray-400 hover:text-primary{% endif %}" data-tooltip="Check your messages">
+                        <i class="ri-message-3-line text-xl"></i>
+                        <span class="text-xs mt-1">Messages</span>
+                    </a>
+        
+                    <!-- Settings -->
+                    <a href="{{ settings_url }}"
+                       class="flex flex-col items-center {% if request.path == settings_url %}text-primary{% else %}text-gray-400 hover:text-primary{% endif %}" data-tooltip="Go to Settings">
+                        <i class="ri-settings-3-line text-xl"></i>
+                        <span class="text-xs mt-1">Settings</span>
+                    </a>
+        
+                </div>
+            </div>
+        </nav>
+        
+        
+        
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const chatButtons = document.querySelectorAll('.ri-chat-3-line');
+                const chatModal = document.getElementById('chatModal');
+                const closeChat = document.getElementById('closeChat');
+                const navButtons = document.querySelectorAll('.navButton');
+
+
+                navButtons.forEach(button => {
+        button.addEventListener('click', function () {
+            // Remove active class from all
+            navButtons.forEach(btn => {
+                btn.classList.remove('text-primary');
+                btn.classList.add('text-gray-400');
+            });
+
+            // Add active class to clicked one
+            this.classList.remove('text-gray-400');
+            this.classList.add('text-primary');
+        });
+    });
+            });
+        </script>
+        {% if messages %}
+        <div id="alert-container" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div id="alert-box" class="p-6 rounded-lg shadow-lg text-center w-80 bg-gray-700">
+                {% for message in messages %}
+                <p class="text-lg">{{ message }}</p>
+                <button id="alert-ok-btn" class="mt-4 px-6 py-2 rounded shadow cursor-pointer
+                    {% for message in messages %}
+                        {% if message.tags == 'success' %} bg-green-500 text-white
+                            {% elif message.tags == 'warning' %} bg-yellow-500 text-black
+                            {% elif message.tags == 'error' %} bg-red-500 text-white
+                            {% elif message.tags == 'info' %} bg-blue-500 text-white
+                            {% else %} bg-gray-500 text-white
+                        {% endif %}
+                    {% endfor %}
+                    ">
+                    OK
+                </button>
+                {% endfor %}
+            </div>
+        </div>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const alertBox = document.getElementById("alert-box");
+                const alertOkBtn = document.getElementById("alert-ok-btn");
+                const alertContainer = document.getElementById("alert-container");
+
+                function closeAlert() {
+                    alertContainer.remove();
+                }
+
+                // Close alert on button click
+                alertOkBtn.addEventListener("click", closeAlert);
+
+                // Close alert when pressing Enter key
+                document.addEventListener("keydown", function (event) {
+                    if (event.key === "Enter") {
+                        closeAlert();
+                    }
+                });
+
+                // Auto-focus the OK button so Enter key works immediately
+                alertOkBtn.focus();
+            });
+        </script>
+        {% endif %}
+    </div>
+</body>
+</html>
+

@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="container">
+  <nav class="bg-light border-bottom border-dark shadow-sm py-3">
+    <div class="container d-flex justify-content-between align-items-center">
+      <div>
+        <h3 class="text-success fw-bold mb-0">Talent Twister</h3>
+        <div class="profileDiv">
+          {% if request.session.username %}
+          <p class="text-muted small mb-2">Welcome Back,
+            {{request.session.username }} 👋. Jobseeker Findind a Job</p>
+          {% endif %}
+        </div>
+      </div>
+      <a href="{% url 'logout' %}"
+        class="btn btn-danger px-4 py-2 fw-semibold shadow-sm">Logout</a>
+    </div>
+  </nav>
+  <div class="conatainer mt-5">
+    <div class="profileDivPhoto">
+      <a href="{% url 'upload_profile_pic' %}" class="profile">
+        {% if profile.image %}
+          <img src="{{ profile.image.url }}" alt="ProfileImg" style="height: 100%; width: 100%; object-fit: cover; object-position: center;">
+        {% else %}
+          <i class="ri-user-3-fill"></i>
+        {% endif %}
+      </a>
+      <h1>{{request.session.username }}</h1>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

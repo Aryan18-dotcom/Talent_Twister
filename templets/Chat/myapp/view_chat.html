@@ -1,0 +1,62 @@
+{% extends 'chat/base.html' %}
+{% block title %}{% if chat.name %}{{ chat.name }}{% else %}{{ other_username }}{% endif %}{% endblock %}
+{% block content %}
+    <h1>{% if other_username %}{{ other_username }}{% else %}There is Some Error pleese Contact Admin{% endif %}</h1>
+    <div id="chat-log" class="messages">
+        {% for message in messages %}
+            <div class="message">
+                <strong>{{ message.sender.username }}:</strong> {{ message.content }}
+                <small>{{ message.timestamp|date:"Y-m-d H:i:s" }}</small>
+            </div>
+        {% empty %}
+            <p>No messages yet.</p>
+        {% endfor %}
+    </div>
+    <form id="chat-form">
+        {% csrf_token %}
+        <input type="text" id="message-input" placeholder="Type your Message...">
+        <button type="submit">Send</button>
+    </form>
+    <p><a href="{% url 'Myapp:chat_list' %}">Back to Chats</a></p>
+
+    <script>
+        const chatSocket = new WebSocket(
+            'ws://'
+            + window.location.host
+            + '/ws/chat/'
+            + {{chat.id}}
+            + '/'
+        );
+
+        chatSocket.onmessage = function(e) {
+            const data = JSON.parse(e.data);
+            document.querySelector('#chat-log').innerHTML += (`<div class="message"><strong>${data.username}:</strong> ${data.message}</div>`);
+            document.querySelector('#chat-log').scrollTop = document.querySelector('#chat-log').scrollHeight;
+        };
+
+        chatSocket.onclose = function(e) {
+            console.error('Chat socket closed unexpectedly');
+        };
+
+        document.querySelector('#chat-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const messageInputDom = document.querySelector('#message-input');
+
+            const message = messageInputDom.value;
+
+            console.log(message);
+            chatSocket.send(JSON.stringify({
+                'message': message,
+                
+            }));
+            messageInputDom.value = '';
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const chatLog = document.querySelector('#chat-log');
+            if (chatLog) {
+                chatLog.scrollTop = chatLog.scrollHeight;
+            }
+        });
+    </script>
+{% endblock %}

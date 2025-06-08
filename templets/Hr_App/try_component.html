@@ -1,0 +1,165 @@
+
+<script>
+    class SearchFilter {
+        constructor(options) {
+            // Configuration options
+            this.options = {
+                searchId: 'taskSearch',
+                searchFields: ['name', 'assignedto', 'duedate'],
+                filterButtons: '.filter-btn',
+                statusFilterId: 'statusFilter',
+                resetButton: '.resetFilter',
+                rowSelector: '.task-row',
+                noResultsId: 'noResults',
+                noDataClass: 'noData',
+                defaultFilter: 'month',
+                ...options
+            };
+            // Initialize
+            this.init();
+        }
+
+
+        init() {
+            // Get DOM elements
+            this.searchInput = document.getElementById(this.options.searchId);
+            this.filterButtons = document.querySelectorAll(this.options.filterButtons);
+            this.statusFilter = document.getElementById(this.options.statusFilterId);
+            this.resetButton = document.querySelector(this.options.resetButton);
+            this.noResults = document.getElementById(this.options.noResultsId);
+            this.noData = document.querySelector(`.${this.options.noDataClass}`);
+
+            // Set current filter
+            this.currentFilter = this.options.defaultFilter;
+
+            // Add event listeners
+            if (this.searchInput) {
+                this.searchInput.addEventListener('input', () => this.applyFilterAndSearch());
+            }
+
+            if (this.filterButtons) {
+                this.filterButtons.forEach(btn => {
+                    btn.addEventListener('click', () => this.handleFilterButtonClick(btn));
+                });
+            }
+
+            if (this.statusFilter) {
+                this.statusFilter.addEventListener('change', () => this.applyFilterAndSearch());
+            }
+
+            if (this.resetButton) {
+                this.resetButton.addEventListener('click', () => this.resetFilters());
+            }
+
+            // Apply default filter
+            this.applyDefaultFilter();
+        }
+
+        applyDefaultFilter() {
+            const defaultBtn = document.querySelector(`[data-filter="${this.options.defaultFilter}"]`);
+            if (defaultBtn) {
+                defaultBtn.click();
+            }
+        }
+
+        handleFilterButtonClick(btn) {
+            this.currentFilter = btn.getAttribute('data-filter');
+
+            // Update button states
+            this.filterButtons.forEach(b => {
+                b.classList.remove('active', 'bg-purple-700', 'hover:bg-purple-700', 'shadow-lg', 'shadow-purple-500/20');
+                b.classList.add('bg-gray-700', 'hover:bg-gray-600/40');
+            });
+
+            btn.classList.add('active', 'bg-purple-700', 'hover:bg-purple-700', 'shadow-lg', 'shadow-purple-500/20');
+            btn.classList.remove('bg-gray-700', 'hover:bg-gray-600/40');
+
+            this.applyFilterAndSearch();
+        }
+
+        getWeekNumber(date) {
+            const firstJan = new Date(date.getFullYear(), 0, 1);
+            const days = Math.floor((date - firstJan) / (24 * 60 * 60 * 1000));
+            return Math.ceil((days + firstJan.getDay() + 1) / 7);
+        }
+
+        applyFilterAndSearch() {
+            const now = new Date();
+            const currentMonth = now.getMonth() + 1;
+            const currentYear = now.getFullYear();
+            const currentWeek = this.getWeekNumber(now);
+            const searchTerm = this.searchInput ? this.searchInput.value.toLowerCase() : '';
+            const selectedFilterValue = this.statusFilter ? this.statusFilter.value : 'all';
+
+            let hasResults = false;
+
+            document.querySelectorAll(this.options.rowSelector).forEach(row => {
+                const dataDueDate = row.getAttribute('data-duedate');
+                if (!dataDueDate) return;
+
+                const [yearStr, monthStr, dayStr] = dataDueDate.split('-');
+                const dueDate = new Date(yearStr, monthStr - 1, dayStr);
+                const taskWeek = this.getWeekNumber(dueDate);
+                const taskMonth = parseInt(monthStr);
+                const taskYear = parseInt(yearStr);
+
+                const isThisWeek = taskWeek === currentWeek && taskYear === currentYear;
+                const isThisMonth = taskMonth === currentMonth && taskYear === currentYear;
+                const isThisYear = taskYear === currentYear;
+
+                let passFilter = false;
+                if (this.currentFilter === 'all') passFilter = true;
+                else if (this.currentFilter === 'month') passFilter = isThisMonth;
+                else if (this.currentFilter === 'year') passFilter = isThisYear;
+                else if (this.currentFilter === 'week') passFilter = isThisWeek;
+
+                // Status filter
+                if (['ontime', 'late', 'early'].includes(selectedFilterValue)) {
+                    passFilter = passFilter && row.getAttribute('data-status') === selectedFilterValue;
+                }
+
+                // Search filter
+                let matchesSearch = false;
+                if (searchTerm === '') {
+                    matchesSearch = true;
+                } else {
+                    for (const field of this.options.searchFields) {
+                        const value = row.getAttribute(`data-${field}`)?.toLowerCase() || '';
+                        if (value.includes(searchTerm)) {
+                            matchesSearch = true;
+                            break;
+                        }
+                    }
+                }
+
+                const showRow = passFilter && matchesSearch;
+                row.style.display = showRow ? '' : 'none';
+                if (showRow) hasResults = true;
+            });
+
+            if (this.noResults) this.noResults.classList.toggle('hidden', hasResults);
+            if (this.noData) this.noData.classList.toggle('hidden', hasResults);
+        }
+
+        resetFilters() {
+            if (this.searchInput) this.searchInput.value = "";
+            this.currentFilter = this.options.defaultFilter;
+
+            if (this.statusFilter) this.statusFilter.selectedIndex = 0;
+
+            // Reset buttons
+            this.filterButtons.forEach(btn => {
+                btn.classList.remove('active', 'bg-purple-700', 'hover:bg-purple-700', 'shadow-lg', 'shadow-purple-500/20');
+                btn.classList.add('bg-gray-700', 'hover:bg-gray-600/40');
+            });
+
+            const defaultBtn = document.querySelector(`[data-filter="${this.options.defaultFilter}"]`);
+            if (defaultBtn) {
+                defaultBtn.classList.add('active', 'bg-purple-700', 'hover:bg-purple-700', 'shadow-lg', 'shadow-purple-500/20');
+                defaultBtn.classList.remove('bg-gray-700', 'hover:bg-gray-600/40');
+            }
+
+            this.applyFilterAndSearch();
+        }
+    }
+</script>

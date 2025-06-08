@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>JobSeeker | Find Your Dream Job</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link
+            href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap"
+            rel="stylesheet">
+        <link
+            href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css"
+            rel="stylesheet">
+        <style>
+        :where([class^="ri-"])::before {
+            content: "\f3c2";
+        }
+
+        * {
+            scrollbar-color: #7C3AED #1F2937;
+        }
+        
+        .search-input:focus {
+            outline: none;
+        }
+
+        .dropdown-content {
+            display: none;
+        }
+
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+
+        .dropdown-content:hover {
+            display: block;
+        }
+
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        input {
+            border: none;
+        }
+
+        input:focus {
+            border: none;
+            outline: none;
+        }
+    </style>
+        <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#8B5CF6',
+                        secondary: '#4B5563'
+                    },
+                    borderRadius: {
+                        'none': '0px',
+                        'sm': '4px',
+                        DEFAULT: '8px',
+                        'md': '12px',
+                        'lg': '16px',
+                        'xl': '20px',
+                        '2xl': '24px',
+                        '3xl': '32px',
+                        'full': '9999px',
+                        'button': '8px'
+                    }
+                }
+            }
+        }
+    </script>
+    </head>
+
+    <body class="bg-[#0F172A] min-h-screen text-white">
+        <div class="flex">
+            <aside
+                class="w-64 h-screen bg-[#1E293B] fixed top-0 left-0 border-r border-gray-700 flex flex-col">
+                <div class="p-4 border-b border-gray-700">
+                    <h1 class="text-2xl font-['Pacifico'] text-primary">Tallent
+                        Twister</h1>
+                </div>
+                <nav class="flex-1 p-4 space-y-2 text-white">
+                    <a href="{% url 'dashboard' %}"
+                        class="flex items-center px-4 py-2 text-sm font-medium rounded-button hover:bg-primary/5 hover:text-primary">
+                        <div class="w-5 h-5 flex items-center justify-center mr-3">
+                            <i class="ri-home-line"></i>
+                        </div>
+                        Dashboard
+                    </a>
+                    <a href="{% url 'find_job' %}"
+                        class="flex items-center px-4 py-2 text-sm font-medium text-gray-300 hover:bg-primary/5 hover:text-primary rounded-button">
+                        <div class="w-5 h-5 flex items-center justify-center mr-3">
+                            <i class="ri-briefcase-line"></i>
+                        </div>
+                        Find Jobs
+                    </a>
+                    <a href="{% url 'saved_jobs' %}"
+                        class="flex items-center px-4 py-2 text-sm font-medium text-gray-300 hover:bg-primary/5 hover:text-primary rounded-button">
+                        <div class="w-5 h-5 flex items-center justify-center mr-3">
+                            <i class="ri-user-line"></i>
+                        </div>
+                        Saved Jobs
+                    </a>
+                    <a href="{% url 'resume' %}"
+                        class="flex items-center px-4 py-2 text-sm font-medium text-gray-300 hover:bg-primary/5 hover:text-primary rounded-button">
+                        <div class="w-5 h-5 flex items-center justify-center mr-3">
+                            <i class="ri-file-list-line"></i>
+                        </div>
+                        Resume
+                    </a>
+                    <a href="{% url 'ai_chat_bot' %}"
+                        class="flex items-center px-4 py-2 text-sm font-medium text-gray-300 border border-white bg-primary/5 text-primary hover:bg-primary/5 hover:text-primary rounded-button">
+                        <div class="w-5 h-5 flex items-center justify-center mr-3">
+                            <i class="ri-message-3-line"></i>
+                        </div>
+                        AI Chat
+                    </a>
+                    <a href="{% url 'messages' %}"
+                        class="flex items-center px-4 py-2 text-sm font-medium text-gray-300 hover:bg-primary/5 hover:text-primary rounded-button">
+                        <div class="w-5 h-5 flex items-center justify-center mr-3">
+                            <i class="ri-chat-1-line"></i>
+                        </div>
+                        Messages
+                    </a>
+                </nav>
+                <div class="p-4 border-t border-gray-700">
+                    <div class="flex items-center">
+                        <img
+                            src="https://public.readdy.ai/ai/img_res/f2dbcd780dbf0bdab5d64d406dc5063d.jpg"
+                            class="w-10 h-10 rounded-full object-cover"
+                            alt="Profile">
+                        <div class="ml-3">
+                            <p class="text-sm font-medium text-gray-100">Michael
+                                Anderson</p>
+                            <p
+                                class="text-xs text-gray-400">michael@example.com</p>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+            <div class="w-64 bg-[#1E293B]"></div>
+            <main>
+                <div class="min-h-screen">
+                    <div class="max-w-6xl mx-auto px-8 py-12">
+                        <h1>AI Chat Bot Html</h1>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </body>
+</html>

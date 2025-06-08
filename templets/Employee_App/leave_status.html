@@ -1,0 +1,526 @@
+{% extends 'Employee_App/base.html' %}
+{% load static %}
+
+{% block title %}
+Leave_Status
+{% endblock %}
+
+{% block content %}
+{% include 'Hr_App/Components.html' %}
+
+<!-- Leaves Table -->
+<div class="min-h-96">
+    <div class="bg-gray-800 rounded-xl overflow-hidden border border-gray-700">
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead class="bg-gray-700 text-gray-300 text-sm">
+                    <tr>
+                        <th class="py-3 px-6 text-left">Title</th>
+                        <th class="py-3 px-6 text-left">Reason</th>
+                        <th class="py-3 px-6 text-left">Leave status</th>
+                        <th class="py-3 px-6 text-left">Responded By</th>
+                        <th class="py-3 px-6 text-left">Start Date</th>
+                        <th class="py-3 px-6 text-left">End Date</th>
+                        <th class="py-3 px-6 text-left">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="text-white divide-y divide-gray-700" id="taskTableBody">
+                    {% for leave in leaves_approved %}
+                    <tr class="task-row hover:bg-gray-700/50 transition overflow-hidden" 
+                        data-id="{{ leave.id }}"
+                        data-type="{{ leave.leave_type }}"
+                        data-status="{{ leave.status }}"
+                        data-created="{{ leave.start_date|date:'Y-m-d' }}"
+                        data-duedate="{{ leave.end_date|date:'Y-m-d' }}"
+                        data-modified-start="{% if leave.modified_start_date %}{{ leave.modified_start_date }}{% else %}N/A{% endif %}"
+                        data-modified-end="{% if leave.modified_end_date %}{{ leave.modified_end_date }}{% else %}N/A{% endif %}"
+                        data-assignedto="{{ leave.approved_by }}"
+                        data-approved-at="{{ leave.approved_at|date:'Y-m-d' }}"
+                        data-applied-at="{{ leave.applied_at }}"
+                        data-rejection-reason="{{ leave.rejection_reason }}"
+                        data-modification-note="{{ leave.modification_note }}"
+                        data-reconsider-note="{{ leave.reconsider_note }}"
+                        data-name="{{ leave.reason_title }}"
+                        data-task-description="{{ leave.reason_discription }}"
+                        data-priority="{{ leave.leave_type }}"
+                        data-is-halfday="{{ leave.is_half_day }}"
+                        data-duration="{{ leave.duration }}"
+                        data-contact-info="{% if leave.contact_info %}{{ leave.contact_info }}{% else %}{{ leave.user.phone_number }}{% endif %}"
+                        data-link-info="{% if leave.is_modified %}modified{% elif leave.is_reconsidered %}reconsider{% else %}approved{% endif %}">
+                        <!-- Title -->
+                         <td class="py-4 px-6">
+                            <div class="flex items-center gap-2">
+                                {{ leave.reason_title }}
+                            </div>
+                        </td>
+                        <!-- Reason -->
+                        <td class="py-4 px-6">
+                            <div class="flex items-center gap-2">
+                                <i class="ri-information-line text-gray-400"></i>
+                                {{ leave.reason_discription|truncatewords:8 }}
+                            </div>
+                        </td>
+                        <!-- Leave status -->
+                        <td class="py-4 px-6">
+                            <div class="px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap text-center
+                                {% if leave.status == 'Pending' %}bg-amber-500/20 text-amber-400
+                                {% elif leave.status == 'Approved' %}bg-green-500/20 text-green-400
+                                {% elif leave.status == 'Modified' %}bg-blue-500/20 text-blue-400
+                                {% elif leave.status == 'Reconsidered' %}bg-purple-500/20 text-purple-400
+                                {% else %}bg-red-500/20 text-red-400
+                                {% endif %}">
+                                {{ leave.status }}
+                            </div>
+                        </td>
+                        <!-- Approved By -->
+                        <td class="py-4 px-6">
+                            <div class="flex items-center gap-2">
+                                {% if leave.approved_by.image %}
+                                <img src="{{ leave.approved_by.image.url }}"
+                                    class="object-cover object-top w-6 h-6 rounded-full">
+                                    {{ leave.approved_by.full_name }}
+                                {% else %}
+                                <div class="w-6 h-6 rounded-full bg-gray-600 flex items-center justify-center">
+                                    <i class="ri-user-line text-xs"></i>
+                                </div>
+                                    Admin
+                                {% endif %}
+                            </div>
+                        </td>
+                        <!-- Start Date -->
+                        <td class="py-4 px-6">
+                            <div class="flex items-center gap-2">
+                                <i class="ri-calendar-line text-gray-400"></i>
+                                {{ leave.start_date|date:"M d, Y" }}
+                                {% if leave.modified_start_date %}
+                                <span class="text-xs text-amber-400">(modified)</span>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <!-- End Date -->
+                        <td class="py-4 px-6">
+                            <div class="flex items-center gap-2">
+                                <i class="ri-calendar-line text-gray-400"></i>
+                                {{ leave.end_date|date:"M d, Y" }}
+                                {% if leave.modified_end_date %}
+                                <span class="text-xs text-amber-400">(modified)</span>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <!-- Actions -->
+                        <td class="py-4 px-6">
+                            <div class="flex gap-2">
+                                <button class="view-leave-btn action-btn hover:text-blue-400 hover:bg-blue-500/10 p-2 rounded-full transition"
+                                    data-tooltip="View leave details">
+                                    <i class="ri-eye-line text-lg"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="noData py-8 text-center text-gray-400">
+                            <img src="{% static 'Employee_App/Static_Imgs/outline.svg' %}" alt="No leaves"
+                                class="w-32 mx-auto mb-4">
+                            <p>No leaves found</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <!-- No Results Message -->
+            <div id="noResults" class="hidden py-8 text-center text-gray-400">
+                <img src="{% static 'Employee_App/Static_Imgs/outline.svg' %}" alt="No Results" class="w-32 mx-auto mb-4">
+                <h2>No Tasks Found</h2>
+                <p class="mt-4 text-sm text-gray-500">Try adjusting your search or filter options.</p>
+                <button class="text-purple-500 hover:text-purple-700 font-semibold transition duration-300 ease-in-out resetFilter" >Reset Filters</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Leave Detail Modal -->
+<div id="taskDetailModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+    <div class="bg-gray-800 border border-gray-700 rounded-xl m-auto shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto transition-all duration-300 transform scale-0" id="taskDetailModalContent">
+        <!-- Modal Header -->
+        <div class="sticky top-0 bg-gray-800/90 backdrop-blur-sm border-b border-gray-700 p-6 flex justify-between items-start z-10">
+            <div>
+                <h2 class="text-2xl font-bold text-white">Leave Details</h2>
+                <div class="flex items-center gap-2 mt-2">
+                    <span id="taskModalStatusBadge" class="px-2.5 py-1 rounded-full text-xs font-medium">aaaa</span>
+                    <span class="text-gray-400 text-sm" id="taskModalDuration"></span>
+                    <span id="taskModalHalfDay" class="hidden px-2.5 py-1 rounded-full text-xs font-medium bg-indigo-500/20 text-indigo-400"></span>
+                </div>
+            </div>
+            <button id="closeTaskDetail" class="text-gray-400 hover:text-white transition p-1 rounded-full hover:bg-gray-700">
+                <i class="ri-close-line text-2xl"></i>
+            </button>
+        </div>
+
+        <!-- Modal Content -->
+        <div class="p-6 space-y-6">
+            <!-- Leave Basic Info -->
+            <div class="bg-gray-700/30 rounded-xl p-5 border border-gray-700/50 shadow-sm">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Leave Type -->
+                    <div>
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="w-8 h-8 rounded-lg bg-purple-500/20 flex items-center justify-center text-purple-400">
+                                <i class="ri-calendar-todo-line"></i>
+                            </div>
+                            <h3 class="text-gray-300 font-medium">Leave Type</h3>
+                        </div>
+                        <p id="taskModalType" class="text-white pl-11 font-medium"></p>
+                    </div>
+
+                    <!-- Contact Info -->
+                    <div>
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center text-blue-400">
+                                <i class="ri-phone-line"></i>
+                            </div>
+                            <h3 class="text-gray-300 font-medium">Contact During Leave</h3>
+                        </div>
+                        <p id="taskModalContact" class="text-white pl-11"></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reason Card -->
+            <div class="bg-gray-700/30 rounded-xl p-5 border border-gray-700/50 shadow-sm">
+                <div class="flex items-center gap-3 mb-3">
+                    <div class="w-8 h-8 rounded-lg bg-amber-500/20 flex items-center justify-center text-amber-400">
+                        <i class="ri-information-line"></i>
+                    </div>
+                    <h3 class="text-gray-300 font-medium">Reason</h3>
+                </div>
+                <p id="taskModalReason" class="text-white pl-11 whitespace-pre-line"></p>
+            </div>
+
+            <!-- Timeline Card -->
+            <div class="bg-gray-700/30 rounded-xl p-5 border border-gray-700/50 shadow-sm">
+                <h3 class="text-gray-300 font-medium mb-4 flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-lg bg-green-500/20 flex items-center justify-center text-green-400">
+                        <i class="ri-time-line"></i>
+                    </div>
+                    Leave Period
+                </h3>
+
+                <div class="space-y-4 pl-11">
+                    <!-- Original Dates -->
+                    <div class="pb-4 border-b border-gray-700/50">
+                        <p class="text-xs text-gray-400 mb-2">Original Request</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="flex items-start gap-4">
+                                <div class="mt-1 w-6 h-6 rounded-full bg-green-500/20 flex items-center justify-center text-green-400">
+                                    <i class="ri-arrow-right-up-line text-xs"></i>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-gray-400">Start Date</p>
+                                    <p id="taskModalOriginalStart" class="text-white font-medium"></p>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-4">
+                                <div class="mt-1 w-6 h-6 rounded-full bg-rose-500/20 flex items-center justify-center text-rose-400">
+                                    <i class="ri-arrow-left-down-line text-xs"></i>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-gray-400">End Date</p>
+                                    <p id="taskModalOriginalEnd" class="text-white font-medium"></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Modified Dates (conditional) -->
+                    <div id="modifiedDatesContainer" class="hidden pt-4">
+                        <p class="text-xs text-amber-400 mb-2">Modified Dates</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="flex items-start gap-4">
+                                <div class="mt-1 w-6 h-6 rounded-full bg-amber-500/20 flex items-center justify-center text-amber-400">
+                                    <i class="ri-arrow-right-up-line text-xs"></i>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-gray-400">Modified Start</p>
+                                    <p id="taskModalModifiedStart" class="text-white font-medium"></p>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-4">
+                                <div class="mt-1 w-6 h-6 rounded-full bg-amber-500/20 flex items-center justify-center text-amber-400">
+                                    <i class="ri-arrow-left-down-line text-xs"></i>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-gray-400">Modified End</p>
+                                    <p id="taskModalModifiedEnd" class="text-white font-medium"></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Duration -->
+                    <div class="flex items-start gap-4 pt-4">
+                        <div class="mt-1 w-6 h-6 rounded-full bg-indigo-500/20 flex items-center justify-center text-indigo-400">
+                            <i class="ri-timer-flash-line text-xs"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-400">Total Duration</p>
+                            <p id="taskModalDaysCount" class="text-white font-medium"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Approval Details Card -->
+            <div class="bg-gray-700/30 rounded-xl p-5 border border-gray-700/50 shadow-sm">
+                <h3 class="text-gray-300 font-medium mb-4 flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-lg bg-emerald-500/20 flex items-center justify-center text-emerald-400">
+                        <i class="ri-user-check-line"></i>
+                    </div>
+                    Approval Details
+                </h3>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pl-11">
+                    <!-- Approved By -->
+                    <div>
+                        <p class="text-xs text-gray-400">Approved By</p>
+                        <div class="flex items-center gap-3 mt-1">
+                            <div id="taskModalApproverAvatar" class="w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center">
+                                <i class="ri-user-line text-xs"></i>
+                            </div>
+                            <p id="taskModalApprovedBy" class="text-white font-medium"></p>
+                        </div>
+                    </div>
+
+                    <!-- Approval Date -->
+                    <div>
+                        <p class="text-xs text-gray-400">Approved At</p>
+                        <p id="taskModalApprovedAt" class="text-white font-medium mt-1"></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Additional Notes Cards -->
+            <div id="rejectionNotesContainer" class="hidden rounded-xl overflow-hidden bg-gradient-to-r from-rose-500/10 to-rose-600/10 border border-rose-500/20">
+                <div class="p-5 flex items-start gap-4">
+                    <div class="mt-1 w-10 h-10 rounded-lg bg-rose-600/20 flex items-center justify-center text-rose-400 border border-rose-500/30">
+                        <i class="ri-close-circle-line text-xl"></i>
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-xs font-medium text-rose-400 mb-1">REJECTION REASON</p>
+                        <p id="taskModalRejectionReason" class="text-sm text-rose-100 whitespace-pre-line"></p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="modificationNotesContainer" class="hidden rounded-xl overflow-hidden bg-gradient-to-r from-amber-500/10 to-amber-600/10 border border-amber-500/20">
+                <div class="p-5 flex items-start gap-4">
+                    <div class="mt-1 w-10 h-10 rounded-lg bg-amber-600/20 flex items-center justify-center text-amber-400 border border-amber-500/30">
+                        <i class="ri-edit-2-line text-xl"></i>
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-xs font-medium text-amber-400 mb-1">MODIFICATION NOTES</p>
+                        <p id="taskModalModificationNote" class="text-sm text-amber-100 whitespace-pre-line"></p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="reconsiderNotesContainer" class="hidden rounded-xl overflow-hidden bg-gradient-to-r from-purple-500/10 to-purple-600/10 border border-purple-500/20">
+                <div class="p-5 flex items-start gap-4">
+                    <div class="mt-1 w-10 h-10 rounded-lg bg-purple-600/20 flex items-center justify-center text-purple-400 border border-purple-500/30">
+                        <i class="ri-refresh-line text-xl"></i>
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-xs font-medium text-purple-400 mb-1">RECONSIDERATION NOTES</p>
+                        <p id="taskModalReconsiderNote" class="text-sm text-purple-100 whitespace-pre-line"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Footer -->
+        <div id="FooterDiv" class="sticky bottom-0 bg-gray-800/90 backdrop-blur-sm border-t border-gray-700 p-4 flex justify-end z-10">
+            <!-- Dynamic Link -->
+            <a id="footerLink"
+            href="#"
+            class="hidden px-5 py-2.5 rounded-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-500 transition shadow-sm hover:shadow-md"
+            target="_blank">
+            View Details
+            </a>
+
+            <!-- Default Button -->
+            <button id="closeModalBtn"
+                    class="px-5 py-2.5 rounded-lg text-sm font-medium text-white bg-gray-700 hover:bg-gray-600 transition shadow-sm hover:shadow-md">
+                Close Details
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- <script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Modal elements
+    const taskDetailModal = document.getElementById('taskDetailModal');
+    const taskDetailModalContent = document.getElementById('taskDetailModalContent');
+    const closeTaskDetail = document.getElementById('closeTaskDetail');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    
+    
+    // View buttons event listeners
+    document.querySelectorAll('.view-leave-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const row = this.closest('tr');
+            
+            // Get all leave data from data attributes
+            const leaveId = row.getAttribute('data-id');
+            const leaveType = row.getAttribute('data-type');
+            const status = row.getAttribute('data-status');
+            const startDate = row.getAttribute('data-created');
+            const endDate = row.getAttribute('data-duedate');
+            const modifiedStart = row.getAttribute('data-modified-start');
+            const modifiedEnd = row.getAttribute('data-modified-end');
+            const approvedBy = row.getAttribute('data-assignedto');
+            const approvedAt = row.getAttribute('data-approved-at');
+            const appliedAt = row.getAttribute('data-applied-at');
+            const rejectionReason = row.getAttribute('data-rejection-reason');
+            const modificationNote = row.getAttribute('data-modification-note');
+            const reconsiderNote = row.getAttribute('data-reconsider-note');
+            const isHalfDay = row.getAttribute('data-is-halfday') === 'true';
+            const contactInfo = row.getAttribute('data-contact-info');
+            const duration = row.getAttribute('data-duration');
+
+            // Format dates
+            const formatDate = (dateStr) => {
+                if (!dateStr) return 'N/A';
+                const date = new Date(dateStr);
+                return date.toLocaleDateString('en-US', { 
+                    year: 'numeric', 
+                    month: 'short', 
+                    day: 'numeric' 
+                });
+            };
+            
+            // Calculate duration text
+            let durationText = duration + (duration > 1 ? ' days' : ' day');
+            if (isHalfDay) {
+                durationText = 'Half day (' + duration + ')';
+            }
+            
+            // Populate modal with leave data
+            document.getElementById('taskModalType').textContent = leaveType;
+            document.getElementById('taskModalReason').textContent = row.cells[1].textContent.trim();
+            document.getElementById('taskModalContact').textContent = contactInfo || 'Not provided';
+            document.getElementById('taskModalOriginalStart').textContent = formatDate(startDate);
+            document.getElementById('taskModalOriginalEnd').textContent = formatDate(endDate);
+            document.getElementById('taskModalDaysCount').textContent = durationText;
+            document.getElementById('taskModalDuration').textContent = durationText;
+            document.getElementById('taskModalApprovedBy').textContent = approvedBy || 'N/A';
+            document.getElementById('taskModalApprovedAt').textContent = approvedAt ? formatDate(approvedAt) : 'N/A';
+            
+            // Handle modified dates
+            const modifiedContainer = document.getElementById('modifiedDatesContainer');
+            if (modifiedStart && modifiedEnd) {
+                modifiedContainer.classList.remove('hidden');
+                document.getElementById('taskModalModifiedStart').textContent = formatDate(modifiedStart);
+                document.getElementById('taskModalModifiedEnd').textContent = formatDate(modifiedEnd);
+            } else {
+                modifiedContainer.classList.add('hidden');
+            }
+            
+            // Set status badge
+            const statusBadge = document.getElementById('taskModalStatusBadge');
+            
+            statusBadge.textContent = status;
+            
+            switch(status) {
+                case 'Approved':
+                    statusBadge.className = 'px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-500/20 text-emerald-400';
+                    break;
+                case 'Pending':
+                    statusBadge.className = 'px-2.5 py-1 rounded-full text-xs font-medium bg-amber-500/20 text-amber-400';
+                    break;
+                case 'Rejected':
+                    statusBadge.className = 'px-2.5 py-1 rounded-full text-xs font-medium bg-rose-500/20 text-rose-400';
+                    break;
+                case 'Modified':
+                    statusBadge.className = 'px-2.5 py-1 rounded-full text-xs font-medium bg-blue-500/20 text-blue-400';
+                    break;
+                case 'Reconsidered':
+                    statusBadge.className = 'px-2.5 py-1 rounded-full text-xs font-medium bg-purple-500/20 text-purple-400';
+                    break;
+            }
+            
+            // Handle half day indicator
+            const halfDayBadge = document.getElementById('taskModalHalfDay');
+            if (isHalfDay) {
+                halfDayBadge.classList.remove('hidden');
+                halfDayBadge.textContent = 'Half Day: ' + halfDayPeriod;
+            } else {
+                halfDayBadge.classList.add('hidden');
+            }
+            
+            // Handle notes containers
+            const rejectionContainer = document.getElementById('rejectionNotesContainer');
+            const modificationContainer = document.getElementById('modificationNotesContainer');
+            const reconsiderContainer = document.getElementById('reconsiderNotesContainer');
+            
+            if (rejectionReason) {
+                rejectionContainer.classList.remove('hidden');
+                document.getElementById('taskModalRejectionReason').textContent = rejectionReason;
+            } else {
+                rejectionContainer.classList.add('hidden');
+            }
+            
+            if (modificationNote) {
+                modificationContainer.classList.remove('hidden');
+                document.getElementById('taskModalModificationNote').textContent = modificationNote;
+            } else {
+                modificationContainer.classList.add('hidden');
+            }
+            
+            if (reconsiderNote) {
+                reconsiderContainer.classList.remove('hidden');
+                document.getElementById('taskModalReconsiderNote').textContent = reconsiderNote;
+            } else {
+                reconsiderContainer.classList.add('hidden');
+            }
+            
+            // Show modal
+            taskDetailModal.classList.remove('hidden');
+            taskDetailModalContent.classList.remove('scale-0');
+            taskDetailModalContent.classList.add('scale-100');
+            document.body.style.overflow = 'hidden';
+        });
+    });
+    
+    // Close modal functions
+    function closeModal() {
+        taskDetailModalContent.classList.remove('scale-100');
+        taskDetailModalContent.classList.add('scale-0');
+        
+        setTimeout(() => {
+            taskDetailModal.classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }, 300);
+    }
+    
+    closeTaskDetail.addEventListener('click', closeModal);
+    closeModalBtn.addEventListener('click', closeModal);
+
+    
+    // Close modal when clicking outside
+    taskDetailModal.addEventListener('click', function(e) {
+        if (e.target === taskDetailModal) {
+            closeModal();
+        }
+    });
+    
+    // Close modal with Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && !taskDetailModal.classList.contains('hidden')) {
+            closeModal();
+        }
+    });
+});
+</script> -->
+
+{% endblock %}

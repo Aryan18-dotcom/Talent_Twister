@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+    {% if employees %}
+    <h3 class="text-center my-3">Employees in {{ company_name }}</h3>
+
+    <div class="table-responsive">
+        <table class="table table-striped table-bordered">
+            <thead class="table-dark">
+                <tr>
+                    <th>User ID</th>
+                    <th>Full Name</th>
+                    <th>Email</th>
+                    <th>Employee Role</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for employee in employees %}
+                <tr class="hover:bg-light">
+                    <td class="align-middle">{{ employee.username }}</td>
+                    <td class="align-middle">{{ employee.full_name }}</td>
+                    <td class="align-middle">{{ employee.email }}</td>
+                    <td class="align-middle">
+                        <span class="badge 
+                            {% if employee.role == 'Admin' %}bg-primary
+                            {% elif employee.role == 'Manager' %}bg-success
+                            {% else %}bg-secondary{% endif %}">
+                            {{ employee.role }}
+                        </span>
+                    </td>
+                    <td class="align-middle">
+                        <div class="d-flex gap-2">                
+                            <form method="post" 
+                                  action="{% url 'Myapp:view_employee' employee.id %}" 
+                                  class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" 
+                                        class="btn btn-sm btn-outline-success">
+                                    View Employee
+                                </button>
+                            </form>
+                            <form method="post" 
+                                  action="{% url 'Myapp:delete_employee' employee.id %}" 
+                                  class="d-inline"
+                                  onsubmit="return confirm('Are you sure you want to delete {{ employee.full_name|escapejs }}? This action cannot be undone.');">
+                                {% csrf_token %}
+                                <button type="submit" 
+                                        class="btn btn-sm btn-outline-danger">
+                                    Delete
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Button to Delete the Entire Company -->
+    <div class="text-center mt-4">
+        <form method="post"
+            action="{% url 'Myapp:delete_company' employees.0.company.id %}"
+            onsubmit="return confirm('Are you sure you want to delete this company and all employees?');">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger w-100">Delete Company</button>
+        </form>
+    </div>
+    <a href="{% url 'Myapp:Hr_Pannel' %}"
+        class="text-decoration-none text-light text-center mt-2 btn btn-primary w-100">
+            Back To Home
+    </a>
+
+    {% else %}
+    <div class="alert alert-warning text-center mt-3">
+        No employees found for "{{ company_name }}".
+    </div>
+    <a href="{% url 'Myapp:Hr_Pannel' %}"
+        class="text-decoration-none text-light text-center mt-2 btn btn-primary w-100">
+        Register Employee
+    </a>
+    {% endif %}
+
+</div>
+{% endblock %}

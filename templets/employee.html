@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="container">
+  <nav class="bg-light border-bottom border-dark shadow-sm py-3">
+    <div class="container d-flex justify-content-between align-items-center">
+      <div>
+        <h3 class="text-success fw-bold mb-0">Talent Twister</h3>
+        <div class="profileDiv">
+          {% if request.session.username %}
+          <p class="text-muted small mb-2">Welcome Back,
+            {{request.session.username }} 👋</p>
+          {% endif %}
+        </div>
+      </div>
+      <a href="{% url 'Myapp:logout' %}" class="btn btn-danger px-4 py-2 fw-semibold shadow-sm">Logout</a>
+    </div>
+  </nav>
+  <div class="conatainer mt-5">
+    <div class="profileDivPhoto">
+      <a href="{% url 'Myapp:upload_profile_pic' %}" class="profile">
+        {% if profile.image %}
+        <img src="{{ profile.image.url }}" alt="ProfileImg"
+          style="height: 100%; width: 100%; object-fit: cover; object-position: center;">
+        {% else %}
+        <i class="ri-user-3-fill"></i>
+        {% endif %}
+      </a>
+      <h1>{{request.session.username }}</h1>
+    </div>
+    <h2>{{ profile.email }}</h2>
+  </div>
+</div>
+<div class="container mt-5">
+  {% if Tasks %}
+  <div class="row">
+    {% for Task in Tasks %}
+    <div class="col-md-4 mb-4">
+      <div class="card shadow-lg" style="height: 100%;">
+        <div class="card-body">
+          <h5 class="card-title">Assigned By: {{ Task.assigned_by.username}}</h5>
+          <h6 class="card-subtitle mb-4 text-body-secondary">Title: {{Task.title }}</h6>
+          <h6 class="card-subtitle text-body-secondary">Description:-</h6>
+          <p class="card-text text-bold mb-4">{{ Task.description }}</p>
+          <h6 class="card-subtitle mb-2 text-body-secondary">Due Date: {{Task.due_date }}</h6>
+          <h6 class="card-subtitle mb-2 text-body-secondary">Assigned Date: {{Task.created_at|date:"Y-m-d" }}</h6>
+          <h6 class="card-subtitle mb-2 text-body-secondary">Status: {{Task.task_status }}</h6>
+
+          <div class="d-flex justify-content-between mt-3" id="task-{{ Task.id }}">
+            <form action="{% url 'Myapp:accept_task' Task.id %}" method="POST" class="accept-form" data-task-id="{{ Task.id }}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-success">Accept Task</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="text-center">
+    <div class="card mx-auto shadow-lg" style="width: 18rem;">
+      <div class="card-body">
+        <h5 class="card-title">No Task Assigned Today</h5>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+</div>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function () {
+        // Handle Accept Task form submission
+        $(".accept-form").on("submit", function (e) {
+            e.preventDefault(); // Prevent default form submission
+            var form = $(this);
+            var taskId = form.data("task-id"); // Get the task ID
+            var url = form.attr("action");
+
+            $.ajax({
+                type: "POST",
+                url: url,
+                data: form.serialize(),
+                success: function (response) {
+                    // ✅ Show Complete & In-Progress buttons
+                    $("#task-" + taskId).html(`
+                        <button class="btn btn-primary in-progress-btn" data-task-id="${taskId}">In Progress 🔄</button>
+                        <button class="btn btn-success complete-btn" data-task-id="${taskId}">Complete ✅</button>
+                    `);
+                },
+                error: function (xhr, status, error) {
+                    console.error("Error accepting task:", error);
+                }
+            });
+        });
+
+        // Handle Task Completion
+        $(document).on("click", ".complete-btn", function () {
+            var taskId = $(this).data("task-id");
+            $.ajax({
+                type: "POST",
+                url: `/complete-task/${taskId}/`,  // URL to mark as complete
+                data: { csrfmiddlewaretoken: "{{ csrf_token }}" },
+                success: function (response) {
+                    $("#task-" + taskId).html('<div class="w-100 btn btn-success">Task Completed! ✅</div>');
+                },
+                error: function (xhr, status, error) {
+                    console.error("Error marking task as complete:", error);
+                }
+            });
+        });
+
+        // Handle Task In-Progress
+        $(document).on("click", ".in-progress-btn", function () {
+            var taskId = $(this).data("task-id");
+            $.ajax({
+                type: "POST",
+                url: `/in-progress-task/${taskId}/`,  // URL to mark as in-progress
+                data: { csrfmiddlewaretoken: "{{ csrf_token }}" },
+                success: function (response) {
+                    $("#task-" + taskId).html('<div class="w-100 btn btn-info">Task In Progress 🔄</div>');
+                },
+                error: function (xhr, status, error) {
+                    console.error("Error marking task as in-progress:", error);
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

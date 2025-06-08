@@ -1,0 +1,493 @@
+{% extends 'Employee_App/base.html' %}
+{% load static %}
+{% block title %}Leave Request{% endblock %}
+{% block content %}
+{% include 'Hr_App/Components.html' %}
+<!-- Main Content -->
+<main class="flex-grow">
+    <div class="container mx-auto px-4 pt-0 py-6">
+        <!-- Leave Request Form -->
+        <div class="bg-gray-800 rounded-lg shadow-lg overflow-hidden">
+            <div class="p-6">
+                <form id="leaveRequestForm" method="POST" action="{% url 'EmployeeApp:leave_request' %}">
+                    {% csrf_token %}
+                    <!-- Leave Information Section -->
+                    <div class="mb-8">
+                        <h2 class="text-lg font-semibold mb-4 text-gray-200">Leave Information</h2>
+                        <!-- Leave Type -->
+                        <div class="mb-5 relative">
+                            <div class="custom-select relative">
+                                <div
+                                    class="select-selected flex items-center justify-between w-full px-3 py-2.5 bg-gray-800 border border-gray-600 rounded-md cursor-pointer hover:border-gray-500 transition-colors">
+                                    <span class="select-placeholder text-gray-400">Select leave type</span>
+                                    <i class="ri-arrow-down-s-line text-gray-400 transition-transform duration-200"></i>
+                                </div>
+
+                                <div
+                                    class="select-options absolute z-10 hidden w-full mt-1 bg-gray-800 border border-gray-600 rounded-md shadow-lg overflow-hidden">
+                                    {% for leave_type in leave_types %}
+                                    <div class="select-option flex items-center px-3 py-2.5 hover:bg-gray-700 cursor-pointer transition-colors"
+                                        data-value="{{ leave_type.0 }}">
+                                        <span class="w-3 h-3 rounded-full {{ leave_type.2 }} mr-2"></span>
+                                        <span>{{ leave_type.1 }}</span>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+
+                                <input type="hidden" name="leave_type" class="select-input">
+                            </div>
+                        </div>
+
+                        <!-- Date Range -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-400 mb-2">Start Date</label>
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                        <i class="ri-calendar-line text-gray-500"></i>
+                                    </div>
+                                    <input type="date" id="startDate" name="start_date"
+                                        class="bg-gray-900 border-none rounded w-full pl-10 pr-4 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-primary"
+                                        min="{{ today }}">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-400 mb-2">End Date</label>
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                        <i class="ri-calendar-line text-gray-500"></i>
+                                    </div>
+                                    <input type="date" id="endDate" name="end_date"
+                                        class="bg-gray-900 border-none rounded w-full pl-10 pr-4 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-primary"
+                                        min="{{ today }}">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Half Day Options -->
+                        <input type="hidden" name="is_half_day" id="isHalfDay" value="false">
+                        <input type="hidden" name="half_day_period" id="halfDayPeriod" value="">
+
+                        <div class="mb-5">
+                            <div class="flex items-center mb-2">
+                                <label class="custom-switch mr-3">
+                                    <input type="checkbox" id="halfDaySwitch" name="half_day_toggle">
+                                    <span class="switch-slider"></span>
+                                </label>
+                                <span class="text-sm font-medium text-gray-300">Half Day</span>
+                            </div>
+                            <div id="halfDayOptions" class="ml-12 mt-3 hidden">
+                                <div class="flex space-x-4">
+                                    <label class="inline-flex items-center">
+                                        <input type="radio" name="half_day" value="first_half" class="hidden">
+                                        <div class="w-5 h-5 rounded-full border-2 border-gray-400 flex items-center justify-center mr-2 cursor-pointer"
+                                            id="firstHalf">
+                                            <div class="w-2.5 h-2.5 rounded-full bg-primary hidden"></div>
+                                        </div>
+                                        <span class="text-sm text-gray-300">First Half</span>
+                                    </label>
+                                    <label class="inline-flex items-center">
+                                        <input type="radio" name="half_day" value="second_half" class="hidden">
+                                        <div class="w-5 h-5 rounded-full border-2 border-gray-400 flex items-center justify-center mr-2 cursor-pointer"
+                                            id="secondHalf">
+                                            <div class="w-2.5 h-2.5 rounded-full bg-primary hidden"></div>
+                                        </div>
+                                        <span class="text-sm text-gray-300">Second Half</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Duration and Balance -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-400 mb-2">Duration</label>
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                        <i class="ri-time-line text-gray-500"></i>
+                                    </div>
+                                    <input type="text" id="duration" name="duration_date"
+                                        class="bg-gray-900 border-none rounded w-full h-full pl-10 pr-4 py-5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-primary pointer"
+                                        value="0 Days" readonly hidden>
+                                    <div id="durationShow" class="bg-gray-900 border-none rounded w-full h-full pl-10 pr-4 py-5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-primary pointer">0 Days</div>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-400 mb-2">Leave Balance</label>
+                                <div class="bg-gray-900 rounded p-3">
+                                    <div class="flex justify-between mb-1">
+                                        <span class="text-sm">{{ balance_heading }}</span>
+                                        <span class="text-sm font-medium" id="availableBalance">{{ current_leave_balance }} day{{ current_leave_balance|pluralize }}</span>
+                                    </div>
+                                    <div class="w-full bg-gray-700 rounded-full h-2">
+                                        <div class="{{ bar_color }} h-2 rounded-full"
+                                            style="width: {{ leave_bar_width }}%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Leave Details Section -->
+                    <div class="mb-8">
+                        <h2 class="text-lg font-semibold mb-4 text-gray-200">Leave Details</h2>
+
+                        <!-- Reason -->
+                        <div class="mb-5">
+                            <label class="block text-sm font-medium text-gray-400 mb-2">Reason for Leave</label>
+
+                            <textarea id="leaveReason" rows="4" name="reasonTitle"
+                                class="bg-gray-900 border-none rounded w-full px-4 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-primary h-12 resize-none"
+                                placeholder="Please provide title about your leave request..."></textarea>
+                            
+                            <textarea id="leaveReason" rows="4" name="reasonDiscription"
+                                class="bg-gray-900 border-none rounded w-full px-4 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-primary resize-none"
+                                placeholder="Please provide details about your leave request..."></textarea>
+                        </div>
+
+                        <!-- Contact Information -->
+                        <div class="mb-5">
+                            <label class="block text-sm font-medium text-gray-400 mb-2">Contact During Leave
+                                (Optional)</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                    <i class="ri-phone-line text-gray-500"></i>
+                                </div>
+                                <input type="text" id="contactInfo"
+                                    class="bg-gray-900 border-none rounded w-full pl-10 pr-4 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-primary"
+                                    name="contactInfo" placeholder="Phone number or alternate email">
+                            </div>
+                        </div>
+
+                        <!-- Attachment -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-400 mb-2">Supporting Documents
+                                (Optional)</label>
+                            <label class="custom-file-upload">
+                                <input type="file" id="documentAttachment" name="documentAttachment">
+                                <div class="flex items-center">
+                                    <i class="ri-upload-2-line mr-2"></i>
+                                    <span>Upload File</span>
+                                </div>
+                            </label>
+                            <div id="fileNameDisplay" class="mt-2 text-sm text-gray-400 hidden">
+                                <div class="flex items-center">
+                                    <i class="ri-file-line mr-2"></i>
+                                    <span id="fileName"></span>
+                                    <button type="button" id="removeFile" class="ml-2 text-red-400 hover:text-red-300">
+                                        <i class="ri-close-line"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Additional Options -->
+                    <div class="mb-8">
+                        <h2 class="text-lg font-semibold mb-4 text-gray-200">Additional Options</h2>
+
+                        <div class="space-y-4">
+                            <!-- Notify Team -->
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center">
+                                    <div class="w-8 h-8 flex items-center justify-center text-gray-400 mr-3">
+                                        <i class="ri-team-line ri-lg"></i>
+                                    </div>
+                                    <div>
+                                        <div class="text-sm font-medium text-gray-300">Notify Team Members</div>
+                                        <div class="text-xs text-gray-400">Send notification to your team about your
+                                            absence</div>
+                                    </div>
+                                </div>
+                                <label class="custom-switch">
+                                    <input type="checkbox" checked name="notify_team">
+                                    <span class="switch-slider"></span>
+                                </label>
+                            </div>
+
+                            <!-- Out of Office -->
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center">
+                                    <div class="w-8 h-8 flex items-center justify-center text-gray-400 mr-3">
+                                        <i class="ri-mail-line ri-lg"></i>
+                                    </div>
+                                    <div>
+                                        <div class="text-sm font-medium text-gray-300">Set Out of Office Reply</div>
+                                        <div class="text-xs text-gray-400">Automatically reply to emails during your
+                                            absence</div>
+                                    </div>
+                                </div>
+                                <label class="custom-switch">
+                                    <input type="checkbox" name="out_of_office">
+                                    <span class="switch-slider"></span>
+                                </label>
+                            </div>
+
+                            <!-- Task Delegation -->
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center">
+                                    <div class="w-8 h-8 flex items-center justify-center text-gray-400 mr-3">
+                                        <i class="ri-task-line ri-lg"></i>
+                                    </div>
+                                    <div>
+                                        <div class="text-sm font-medium text-gray-300">Delegate Pending Tasks</div>
+                                        <div class="text-xs text-gray-400">Assign your tasks to team members during
+                                            leave</div>
+                                    </div>
+                                </div>
+                                <label class="custom-switch">
+                                    <input type="checkbox" name="delegate_tasks">
+                                    <span class="switch-slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Preview Section -->
+                    <div class="bg-gray-900 rounded-lg p-5 mb-8">
+                        <h2 class="text-lg font-semibold mb-4 text-gray-200">Leave Request Summary</h2>
+
+                        <div class="space-y-3">
+                            <div class="flex justify-between">
+                                <div class="text-sm text-gray-400">Leave Type</div>
+                                <div class="text-sm font-medium" id="summaryLeaveType">Not selected</div>
+                            </div>
+                            <div class="flex justify-between">
+                                <div class="text-sm text-gray-400">Duration</div>
+                                <div class="text-sm font-medium" id="summaryDuration">0 days</div>
+                            </div>
+                            <div class="flex justify-between">
+                                <div class="text-sm text-gray-400">From</div>
+                                <div class="text-sm font-medium" id="summaryStartDate">Not selected</div>
+                            </div>
+                            <div class="flex justify-between">
+                                <div class="text-sm text-gray-400">To</div>
+                                <div class="text-sm font-medium" id="summaryEndDate">Not selected</div>
+                            </div>
+                            <div class="flex justify-between">
+                                <div class="text-sm text-gray-400">Period</div>
+                                <div class="text-sm font-medium" id="summaryPeriod">Full day</div>
+                            </div>
+                            <div class="flex justify-between">
+                                <div class="text-sm text-gray-400">Remaining Balance</div>
+                                <div class="text-sm font-medium" id="summaryBalance">{{ current_leave_balance }} days
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Submit Buttons -->
+                    <div class="flex flex-col sm:flex-row gap-3">
+                        <button type="submit" name="action" value="submit"
+                            class="flex-1 bg-primary hover:bg-primary/90 text-white py-3 px-4 rounded-button whitespace-nowrap">
+                            <i class="ri-send-plane-line mr-2"></i> Submit Request
+                        </button>
+                        <button type="submit" name="action" value="draft"
+                            class="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-3 px-4 rounded-button whitespace-nowrap">
+                            <i class="ri-draft-line mr-2"></i> Save as Draft
+                        </button>
+                        <a href="{% url 'EmployeeApp:dashboard' %}" id="cancelRequest"
+                            class="flex-1 bg-gray-900 hover:bg-red-500 text-white py-3 px-4 rounded-button whitespace-nowrap text-center">
+                            <i class="ri-close-line mr-2"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Initialize custom select
+        const selectContainer = document.querySelector('.custom-select');
+        const selectedDisplay = selectContainer.querySelector('.select-selected');
+        const placeholder = selectContainer.querySelector('.select-placeholder');
+        const optionsContainer = selectContainer.querySelector('.select-options');
+        const options = selectContainer.querySelectorAll('.select-option');
+        const hiddenInput = selectContainer.querySelector('.select-input');
+        const arrowIcon = selectContainer.querySelector('.ri-arrow-down-s-line');
+
+        selectedDisplay.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isOpen = optionsContainer.classList.toggle('hidden');
+            arrowIcon.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
+        });
+
+        options.forEach(option => {
+            option.addEventListener('click', () => {
+                const value = option.dataset.value;
+                const text = option.textContent.trim();
+                placeholder.textContent = text;
+                placeholder.classList.remove('text-gray-400');
+                hiddenInput.value = value;
+                document.getElementById('summaryLeaveType').textContent = text;
+                optionsContainer.classList.add('hidden');
+                arrowIcon.style.transform = 'rotate(0deg)';
+            });
+        });
+
+        document.addEventListener('click', () => {
+            optionsContainer.classList.add('hidden');
+            arrowIcon.style.transform = 'rotate(0deg)';
+        });
+
+        // Date and duration calculation
+        const startDateInput = document.getElementById('startDate');
+        const endDateInput = document.getElementById('endDate');
+        const durationInput = document.getElementById('duration');
+        const durationShowInput = document.getElementById('durationShow');
+        const halfDaySwitch = document.getElementById('halfDaySwitch');
+        const halfDayOptions = document.getElementById('halfDayOptions');
+        const firstHalf = document.getElementById('firstHalf');
+        const secondHalf = document.getElementById('secondHalf');
+        const isHalfDayInput = document.getElementById('isHalfDay');
+        const halfDayPeriodInput = document.getElementById('halfDayPeriod');
+
+        // Set min date to today
+        const today = new Date().toISOString().split('T')[0];
+        startDateInput.min = endDateInput.min = today;
+
+        // Half day toggle
+        halfDaySwitch.addEventListener('change', function () {
+            const isHalfDay = this.checked;
+            isHalfDayInput.value = isHalfDay;
+            halfDayOptions.classList.toggle('hidden', !isHalfDay);
+
+            if (isHalfDay) {
+                if (startDateInput.value) {
+                    endDateInput.value = startDateInput.value;
+                }
+                selectHalfDay('first_half');
+            } else {
+                halfDayPeriodInput.value = '';
+                document.getElementById('summaryPeriod').textContent = 'Full day';
+            }
+            calculateDuration();
+        });
+
+        // Half day selection
+        function selectHalfDay(period) {
+            halfDayPeriodInput.value = period;
+            const periodText = period === 'first_half' ? 'First half' : 'Second half';
+            document.getElementById('summaryPeriod').textContent = periodText;
+
+            firstHalf.querySelector('div').classList.toggle('hidden', period !== 'first_half');
+            secondHalf.querySelector('div').classList.toggle('hidden', period !== 'second_half');
+        }
+
+        firstHalf.addEventListener('click', () => selectHalfDay('first_half'));
+        secondHalf.addEventListener('click', () => selectHalfDay('second_half'));
+
+        // Date change handlers
+        startDateInput.addEventListener('change', function () {
+            if (halfDaySwitch.checked) {
+                endDateInput.value = this.value;
+            }
+            calculateDuration();
+        });
+
+        endDateInput.addEventListener('change', function () {
+            if (halfDaySwitch.checked && startDateInput.value !== this.value) {
+                alert("For half-day leave, start and end dates must be the same");
+                this.value = startDateInput.value;
+            }
+            calculateDuration();
+        });
+
+        // Caluclate and update the ui for the Duration Days Pannel
+        function calculateDuration() {
+            if (!startDateInput.value || !endDateInput.value) return;
+
+            const start = new Date(startDateInput.value);
+            const end = new Date(endDateInput.value);
+
+            if (end < start) {
+                alert("End date cannot be earlier than start date.");
+                return;
+            }
+
+            let totalDays = 0;
+            let workingDays = 0;
+            let nonWorkingDays = 0;
+
+            if (halfDaySwitch.checked) {
+                if (start.toDateString() !== end.toDateString()) {
+                    alert("Half-day leave must be for the same day");
+                    halfDaySwitch.checked = false;
+                    isHalfDayInput.value = 'false';
+                    halfDayOptions.classList.add('hidden');
+                    halfDayPeriodInput.value = '';
+                    document.getElementById('summaryPeriod').textContent = 'Full day';
+                }
+                workingDays = 0.5;
+                totalDays = 0.5;
+            } else {
+                let current = new Date(start);
+                while (current <= end) {
+                    const dayOfWeek = current.getDay();
+                    totalDays++;
+
+                    if (dayOfWeek === 0) { // Sunday (Non-Working)
+                        nonWorkingDays++;
+                    } else { // Monday-Saturday (Working)
+                        workingDays++;
+                    }
+                    current.setDate(current.getDate() + 1);
+                }
+            }
+
+            // Update duration display
+            const durationText = halfDaySwitch.checked
+                ? '0.5 day (Half day)'
+                : `Total: ${totalDays} day${totalDays !== 1 ? 's' : ''} | Working: ${workingDays} day${workingDays !== 1 ? 's' : ''} | Non-Working: ${nonWorkingDays} day${nonWorkingDays !== 1 ? 's' : ''}`;
+
+            durationInput.value = workingDays;
+            durationShowInput.innerHTML = `
+                <div class="flex flex-wrap items-center gap-4 text-sm">
+                    <div><span class="font-semibold text-white">Total:</span> <span class="text-primary">${totalDays}</span> day${totalDays !== 1 ? 's' : ''}</div>
+                    <div><span class="font-semibold text-white">Working:</span> <span class="text-green-400">${workingDays}</span> day${workingDays !== 1 ? 's' : ''}</div>
+                    <div><span class="font-semibold text-white">Non-Working:</span> <span class="text-red-400">${nonWorkingDays}</span> day${nonWorkingDays !== 1 ? 's' : ''}</div>
+                </div>
+            `;
+
+
+            document.getElementById('summaryDuration').innerHTML = `
+                <div class="flex flex-wrap items-center gap-4 text-sm">
+                    <div><span class="font-semibold text-white">Total:</span> <span class="text-primary">${totalDays}</span> day${totalDays !== 1 ? 's' : ''}</div>
+                    <div><span class="font-semibold text-white">Working:</span> <span class="text-green-400">${workingDays}</span> day${workingDays !== 1 ? 's' : ''}</div>
+                    <div><span class="font-semibold text-white">Non-Working:</span> <span class="text-red-400">${nonWorkingDays}</span> day${nonWorkingDays !== 1 ? 's' : ''}</div>
+                </div>
+            `;
+
+            // Update summary dates
+            const options = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
+            document.getElementById('summaryStartDate').textContent = start.toLocaleDateString('en-US', options);
+            document.getElementById('summaryEndDate').textContent = end.toLocaleDateString('en-US', options);
+
+            // Update balance (only deduct working days)
+            // const currentBalance = parseFloat(document.getElementById('availableBalance').textContent) || 0;
+            // const remainingBalance = Math.max(0, currentBalance - workingDays);
+            // document.getElementById('summaryBalance').textContent = `${remainingBalance} day${remainingBalance !== 1 ? 's' : ''}`;
+        }
+
+        // File upload handling
+        const fileInput = document.getElementById('documentAttachment');
+        const fileNameDisplay = document.getElementById('fileNameDisplay');
+        const fileName = document.getElementById('fileName');
+        const removeFile = document.getElementById('removeFile');
+
+        fileInput.addEventListener('change', function () {
+            if (this.files.length > 0) {
+                fileName.textContent = this.files[0].name;
+                fileNameDisplay.classList.remove('hidden');
+            }
+        });
+
+        removeFile.addEventListener('click', function () {
+            fileInput.value = '';
+            fileNameDisplay.classList.add('hidden');
+        });
+    });
+</script>
+{% endblock %}

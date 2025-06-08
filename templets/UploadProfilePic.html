@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="profileChange">
+    <form class="form" method="POST" action="{% url 'Myapp:upload_profile_pic' %}" enctype="multipart/form-data">
+        {% csrf_token %}
+        <button class="cross">
+            <i class="ri-close-large-fill"></i>
+        </button>
+        <input type="file" name="image" accept="images">
+        <button type="submit" class="save">Save Profile Pic</button>
+    </form>
+</div>
+<script>
+    document.querySelector('cross').addEventListener('click',() =>{
+        window.history.back();
+    })
+</script>
+{% endblock %}

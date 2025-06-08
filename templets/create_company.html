@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Create Your Company</h4>
+                </div>
+                <div class="card-body">
+                    <p class="mb-4">You need to create a company before you can add employees.</p>
+                    <form method="POST">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="company_name" class="form-label">Company Name</label>
+                            <input type="text" class="form-control" id="company_name" name="company_name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="company_domain" class="form-label">Company Domain</label>
+                            <input type="text" class="form-control" id="company_domain" name="company_domain" required>
+                            <small class="text-muted">This will be used for employee emails (e.g., username@yourdomain.com)</small>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Create Company</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
