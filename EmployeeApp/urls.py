@@ -20,10 +20,5 @@ urlpatterns = [
     path('leave_request/', views.leave_request, name="leave_request"),
     path('leave_history/', views.leave_history, name="leave_history"),
     path('leave_status/', views.leave_status, name="leave_status"),
-
-
-    path('chats/', views.chat_list, name='chat_list'),
-    path('start_chat/<int:user_id>/', views.start_chat, name='start_chat'),
-    path('chat/<int:chat_id>/', views.view_chat, name='view_chat'),
 ]
 

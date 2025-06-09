@@ -1,9 +1,10 @@
 from django.contrib import admin
 from django.utils.html import format_html
-from .models import Company, Employee, TeamLead, JobSeeker, Task, TaskProgress, Chat, Message, WorkLeave
+from .models import Company, Employee, TeamLead, JobSeeker, Task, TaskProgress, WorkLeave
 
 
-admin.site.register([Chat, Message])
+# admin.site.register([Chat, Message])
+
 # Common mixin for image display
 class ImageDisplayMixin:
     def image_thumbnail(self, obj):

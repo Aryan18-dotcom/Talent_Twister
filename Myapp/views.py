@@ -1,15 +1,13 @@
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, redirect
 from django.http import HttpResponse
-from django.contrib.auth import login, logout
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth import login
 from django.contrib.auth.models import User
-from .models import Company, TeamLead, Employee, JobSeeker, Task
-from django.db import IntegrityError
-from django.views.decorators.csrf import csrf_protect
-import os
-from django.conf import settings
+from .models import Company, TeamLead, Employee, JobSeeker
 from django.contrib import messages
 import logging
+from datetime import datetime
+
+current_time = datetime.now()
 
 
 # User Login and Signup Functions To create(SignUP_User) and Login If User_Signuped(Checks and Login to respective Dashboard)
@@ -85,7 +83,6 @@ def login_view(request):
         password = request.POST.get("password", "").strip()
 
         # ✅ HR (Admin) Login
-        # ✅ HR (Admin) Login
         try:
             hr_user = TeamLead.objects.filter(username=username).first()
 
@@ -95,7 +92,19 @@ def login_view(request):
                 login(request, user)
 
                 hr_user.is_active = True
-                hr_user.save()
+
+                # Proceed only if last login was not today
+                if hr_user.last_login is None or hr_user.last_login.date() != current_time.date():
+                    company = hr_user.created_companies.first()
+
+                    if company:  # Ensure the company exists
+                        if hr_user.days_worked < company.total_days_to_work:
+                            hr_user.days_worked += 1
+                        else:
+                            hr_user.days_worked = 1
+
+                    hr_user.last_login = current_time
+                    hr_user.save()
 
                 # Attempt to get the company if it exists
                 company = Company.objects.filter(created_by=hr_user).first()
@@ -135,7 +144,17 @@ def login_view(request):
 
                 # Mark employee as active
                 employee_user.is_active = True
-                employee_user.save()
+
+                if employee_user.last_login is None or employee_user.last_login.date() != current_time.date():
+
+                    if employee_user.company:  # Ensure the company exists
+                        if employee_user.days_worked < employee_user.company.total_days_to_work:
+                            employee_user.days_worked += 1
+                        else:
+                            employee_user.days_worked = 1
+
+                    employee_user.last_login = current_time
+                    employee_user.save()
 
                 request.session["employee_id"] = employee_user.id
                 request.session["username"] = username

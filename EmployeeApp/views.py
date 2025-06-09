@@ -3,7 +3,7 @@ from django.http import HttpResponse
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
 from datetime import date
-from Myapp.models import Employee, Task, TaskProgress, Chat, Company, WorkLeave
+from Myapp.models import Employee, Task, TaskProgress, Company, WorkLeave
 from EmployeeApp.utility import assign_priority_color, calculate_task_progress
 from django.utils.timezone import now
 from django.contrib.auth.models import User
@@ -19,7 +19,6 @@ import pytz
 
 india_timezone = pytz.timezone('Asia/Kolkata')
 current_time = now().astimezone(india_timezone)
-
 
 # Dashboard views show the top 4 box's dinemicaly from the DB, new task, accepted task, completed task 
 @login_required(login_url='Myapp:login')
@@ -398,45 +397,6 @@ def logout_view(request):
 
 
 @login_required
-def chat_list(request):
-    chats = request.user.chats.all()
-    users = User.objects.all()
-    chat_data = []
-    for chat in chats:
-        other_user = chat.members.exclude(id=request.user.id).first()
-        chat_data.append({
-            'chat': chat,
-            'other_user': other_user,
-        })
-    return render(request, 'chat/myapp/chat.html', {'chat_data': chat_data, 'users': users})
-
-
-@login_required
-def start_chat(request, user_id):
-    other_user = get_object_or_404(User, id=user_id)
-    # Order the members to ensure consistent chat identification regardless of who initiated
-    members = sorted([request.user.id, other_user.id])
-    chat = Chat.objects.filter(members=members[0]).filter(members=members[1])
-    if chat.exists():
-        chat = chat.first()
-    else:
-        chat = Chat.objects.create()
-        chat.members.add(request.user, other_user)
-        chat.name = f"{request.user.username}'s chat with {other_user.username}" # More descriptive name
-        chat.save()
-    return redirect('Myapp:view_chat', chat_id=chat.id)
-
-
-@login_required
-def view_chat(request, chat_id):
-    chat = get_object_or_404(Chat, id=chat_id, members=request.user)
-    messages = chat.messages.order_by('timestamp')
-    other_user = chat.members.exclude(id=request.user.id).first()
-    other_username = other_user.username if other_user else "Unknown User" # Handle the case if other_user is None
-    return render(request, 'myapp/view_chat.html', {'chat': chat, 'messages': messages, 'other_username': other_username})
-
-
-@login_required
 def teamMember(request):
     login_user = request.session.get("username")
     company_id = request.session.get("company_id")
@@ -525,11 +485,18 @@ def completedTask(request):
     pending_task_count = pending_task.count()
     next_url = request.POST.get('next') or request.META.get('HTTP_REFERER') or "EmployeeApp:dashboard"
 
+    for task in pending_task:
+        if task.task.due_date:
+            task.daysLeft = (task.task.due_date - current_time.now().date()).days
+            print(f"Task: {task.task.title}, Days Left: {task.daysLeft}")
+        else:
+            task.daysLeft = None
+
     context = {
         'employee_dets': employee,
         'pending_tasks': pending_task,
         'count': pending_task_count,
-        'page_title': 'All Pending Tasks',
+        'page_title': 'All Completed Tasks',
         'subtitle': employee.company.name,
         'unit': 'tasks',
         'filters': [
@@ -537,10 +504,23 @@ def completedTask(request):
             {'value': 'week', 'label': 'This Week'},
             {'value': 'month', 'label': 'This Month'},
             {'value': 'year', 'label': 'This Year'},
+            {
+                'dropdown': True,
+                'label': 'Priority Filter',
+                'options': [
+                    {'value': 'low', 'label': 'Low'},
+                    {'value': 'medium', 'label': 'Medium'},
+                    {'value': 'high', 'label': 'High'},
+                ]
+            }
         ],
         'search_id': 'taskSearch',
         'search_placeholder': 'Search tasks by name, due date or assigned by...',
         'back_url': next_url,
+        'searchFilterBar': True,
+        'profile': employee,
+        'defaultFilter': 'all',
+
     }
     return render(request, 'Employee_App/completed_task.html', context)
 

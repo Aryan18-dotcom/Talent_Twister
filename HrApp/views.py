@@ -204,6 +204,7 @@ def Dashboard(request):
         "total_percentage":total_percentage,
         "total_remaining_percentage":total_remaining_percentage,
         "employee_on_leave":employee_on_leave,
+        "company":company,
     })
 
 
@@ -807,7 +808,7 @@ def completedTask(request):
         'searchFilterBar': True,
     }
 
-    return render(request, 'EmployeeApp/pending_task.html', context)
+    return render(request, 'Hr_App/completed_task.html', context)
 
 
 @login_required
@@ -1134,6 +1135,11 @@ def logout_view(request):
         if employee_user:
             employee_user.is_active = False  # Mark inactive on logout
             employee_user.save()
+
+         # Delete corresponding User model entry
+        user_account = User.objects.filter(username=request.user.username).first()
+        if user_account:
+            user_account.delete()
 
         # Clear session and log out
         request.session.flush()

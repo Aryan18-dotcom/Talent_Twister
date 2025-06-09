@@ -6,7 +6,7 @@ from django.http import HttpResponse
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
 from datetime import date
-from Myapp.models import Employee, Task, TaskProgress, Chat, Message, TeamLead, Company
+from Myapp.models import Employee, Task, TaskProgress, TeamLead, Company
 from EmployeeApp.utility import assign_priority_color, calculate_task_progress
 from django.utils.timezone import now
 from django.contrib.auth.models import User

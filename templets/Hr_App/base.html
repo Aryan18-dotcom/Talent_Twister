@@ -327,6 +327,79 @@
             </div>
         </div>
         {% endif %}
+        {% if company_link %}
+{% if not company.basic_settings_set %}
+<div id="PopUpDiv" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm transition-transform duration-500 scale-100">
+    <div id="Model" class="w-full max-w-lg mx-4">
+        <div class="bg-gray-800/90 backdrop-blur-lg rounded-xl shadow-2xl overflow-hidden border border-gray-700/50">
+            <!-- Modal Header -->
+            <div class="p-6 border-b border-gray-700/50">
+                <h3 class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-blue-500">
+                    Set Up Your Basic Company Settings
+                </h3>
+                <div class="w-40 h-1 bg-gradient-to-r from-purple-500 to-blue-600 mt-2 rounded-full"></div>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="p-6">
+                <p id="infoPara" class="text-gray-300 mb-4">
+                    Before adding employees or assigning tasks, it's important to fill in your company's basic information. This helps personalize your experience, enable internal tools, and ensure smooth communication across your team.
+                </p>
+                <p class="text-gray-400 text-sm mb-6 italic">
+                    Things like working days, hours, task limits, and company branding need to be configured first.
+                </p>
+
+                <!-- Action Buttons -->
+                <div class="flex justify-end space-x-4">
+                    <!-- No Button -->
+                    <button id="noBtn" class="px-4 py-2 text-red-400 hover:text-red-500 border border-red-500/40 rounded-lg text-sm transition-all">
+                        No, Maybe Later
+                    </button>
+
+                    <!-- Yes Button -->
+                    <a href="" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition-all">
+                        Yes, Let's Do It
+                    </a>
+                </div>
+
+                <!-- Warning Message (Initially Hidden) -->
+                <div id="warningMessage" class="mt-6 p-4 bg-yellow-900/40 border border-yellow-600/50 rounded-lg text-yellow-300 text-sm hidden">
+                    ⚠️ This popup will keep appearing every time you log in until the company details are completed.
+                    <br><br>
+                    👉 Go to: <strong>Dashboard → Company Settings → Fill all required fields</strong> to complete your company setup.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript for Delayed Hide with Scale -->
+<script>
+    const noBtn = document.getElementById("noBtn");
+    const warningMsg = document.getElementById("warningMessage");
+    const infoPara = document.getElementById("infoPara");
+    const popupDiv = document.getElementById("PopUpDiv");
+    const model = document.getElementById("Model");
+
+    noBtn.addEventListener("click", () => {
+        // Hide info, show warning
+        infoPara.classList.add("hidden");
+        warningMsg.classList.remove("hidden");
+
+        // After 60 seconds, scale to 0 and hide
+        setTimeout(() => {
+            model.classList.add("scale-0", "transition-transform", "duration-500");
+            setTimeout(() => {
+                popupDiv.classList.add("hidden");
+            }, 500); // Wait for transition (scale)
+        }, 6000); // 1 minute
+
+    });
+</script>
+{% endif %}
+
+
+        {% endif %}
     {% endif %}
 
 

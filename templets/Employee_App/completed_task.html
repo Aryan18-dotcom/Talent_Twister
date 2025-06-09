@@ -7,7 +7,6 @@ Completed Tasks
 
 {% block content %}
 {% include 'Hr_App/Components.html' %}
-{% url 'HrApp:pending_task' as pending_task_url %}
 
 <!-- Tasks Table -->
 <div class="min-h-96">
@@ -27,9 +26,9 @@ Completed Tasks
                 <tbody class="text-white divide-y divide-gray-700" id="taskTableBody">
                     {% for task in pending_tasks %}
                     <tr class="task-row hover:bg-gray-700/50 transition" data-name="{{ task.task.title|lower }}"
-                        data-assignedto="{{ task.task.assigned_to.full_name|lower }}"
+                        data-assignedto="{{ task.task.assigned_by.full_name|lower }}"
                         data-duedate="{{ task.task.due_date|date:'Y-m-d' }}"
-                        data-priority="{{ task.task.task_priority|lower }}"
+                        data-priority="{{ task.task.task_prioritys|lower }}"
                         data-week="{% if task.task.due_date|date:'Y-W' == current_week %}true{% else %}false{% endif %}"
                         data-month="{% if task.task.due_date|date:'Y-m' == current_month %}true{% else %}false{% endif %}"
                         data-year="{% if task.task.due_date|date:'Y' == current_year %}true{% else %}false{% endif %}"
@@ -43,15 +42,15 @@ Completed Tasks
                         </td>
                         <td class="py-4 px-6">
                             <div class="flex items-center gap-2">
-                                {% if task.task.assigned_to.image %}
-                                <img src="{{ task.task.assigned_to.image.url }}"
+                                {% if task.task.assigned_by.image %}
+                                <img src="{{ task.task.assigned_by.image.url }}"
                                     class="object-cover object-top w-6 h-6 rounded-full">
                                 {% else %}
                                 <div class="w-6 h-6 rounded-full bg-gray-600 flex items-center justify-center">
                                     <i class="ri-user-line text-xs"></i>
                                 </div>
                                 {% endif %}
-                                {{ task.task.assigned_to.full_name }}
+                                {{ task.task.assigned_by.full_name }}
                             </div>
                         </td>
                         <td class="py-4 px-6">
@@ -72,9 +71,9 @@ Completed Tasks
                             </span>
                         </td>
                         <td class="py-4 px-6">
-                            <span class="px-2 py-1 rounded-full text-xs bg-green-500/20 text-green-400">
-                                {% with progress=task.task.progress.first %}{% if progress %}{{progress.completion_type}}{% endif %}{% endwith %}
-                            </span>
+                                <span class="px-3 py-1 rounded-full text-xs text-center {% with time=task.task.progress.first %}{% if time %}{% if time.completion_type == 'late' %}bg-red-500/20 text-red-400{% elif time.completion_type == 'ontime' %}bg-yellow-500/20 text-yellow-400{% else %}bg-green-500/20 text-green-400{% endif %}{% endif %}{% endwith %}">
+                                    {% with progress=task.task.progress.first %}{% if progress %}{{ progress.days_difference }} Day{{ progress.days_difference|pluralize }} {% if progress.completion_type == 'late' %}Delayed{% elif progress.completion_type == 'ontime' %}On Time{% else %}Ahead{% endif %}{% else %}N/A{% endif %}{% endwith %}
+                                </span>
                         </td>
                         <td class="py-4 px-6">
                             <div class="flex gap-2">
@@ -83,14 +82,14 @@ Completed Tasks
                                     data-tooltip="View details of task" data-task-id="{{ task.task.id }}"
                                     data-task-title="{{ task.task.title }}"
                                     data-task-description="{{ task.task.description }}"
-                                    data-task-assigned-by="{{ task.task.assigned_to.full_name }}"
+                                    data-task-assigned-by="{{ task.task.assigned_by.full_name }}"
                                     data-task-assigned-date="{{ task.task.created_at|date:'M d, Y' }}"
                                     data-task-due-date="{{ task.task.due_date|date:'M d, Y' }}"
                                     data-task-priority="{{ task.task.task_priority }}"
                                     data-task-status="{{ task.status }}" data-task-id="{{ task.task.id }}"
                                     data-task-completion-date="{% with progress=task.task.progress.first %}{% if progress %}{% if progress.status == 'Accepted' %}{{ progress.action_date }}{% elif progress.status == 'Completed' %}{{ progress.completion_date }}{% else %}N/A{% endif %}{% else %}N/A{% endif %}{% endwith %}"
                                     data-task-completion-type="{% with progress=task.task.progress.first %}{% if progress %}{{progress.completion_type}}{% endif %}{% endwith %}"
-                                    data-task-days-differernce="{% with progress=task.task.progress.first %}{% if progress %}{{ progress.days_difference }} day{{ progress.days_difference|pluralize }} {% with progress=task.task.progress.first %}{% if progress %}{% if progress.completion_type == 'late' %}Late{% elif progress.completion_type == 'ontime' %}Ontime{% else %}Ahead{% endif %}{% endif %}{% endwith %}{% else %}N/A{% endif %}{% endwith %}">
+                                    data-task-days-difference="{% with progress=task.task.progress.first %}{% if progress %}{{ progress.days_difference }} day{{ progress.days_difference|pluralize }} {% with progress=task.task.progress.first %}{% if progress %}{% if progress.completion_type == 'late' %}Late{% elif progress.completion_type == 'ontime' %}Ontime{% else %}Ahead{% endif %}{% endif %}{% endwith %}{% else %}N/A{% endif %}{% endwith %}">
                                     <i class="ri-eye-line text-lg"></i>
                                 </button>
                             </div>
@@ -101,12 +100,10 @@ Completed Tasks
                         <td colspan="6" class="noData py-8 text-center text-gray-400">
                             <img src="{% static 'Employee_App/Static_Imgs/outline.svg' %}" alt="No tasks"
                                 class="w-32 mx-auto mb-4">
-                            <p>No {% if request.path == pending_task_url %}Pending{% else %}Accepted{% endif %} tasks
-                                found</p>
+                            <p>No Completed tasks found</p>
                             <p class="mt-4 text-sm text-gray-500">Want to explore all tasks?</p>
-                            <a href="{% url 'HrApp:all_tasks' %}"
-                                class="text-purple-500 hover:text-purple-700 font-semibold transition duration-300 ease-in-out">View
-                                all tasks</a>
+                            <a href="{% url 'EmployeeApp:all_tasks' %}"
+                                class="text-purple-500 hover:text-purple-700 font-semibold transition duration-300 ease-in-out">View all tasks</a>
                         </td>
                     </tr>
 
@@ -154,7 +151,7 @@ Completed Tasks
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm mb-4">
                 <!-- Assigned to -->
                 <div class="bg-gray-700/30 rounded-lg p-3">
-                    <span class="block text-gray-400 font-medium">Assigned To:</span>
+                    <span class="block text-gray-400 font-medium">Assigned By:</span>
                     <p id="taskModalAssignedBy" class="text-white"></p>
                 </div>
                 <!-- Status -->

@@ -1,7 +1,7 @@
 from django.db import models
 from django.utils import timezone
-from django.contrib.auth.models import User
 import uuid
+from django.contrib.auth.models import User
 
 # Example department choices — you can modify as needed
 DEPARTMENT_CHOICES = [
@@ -83,13 +83,78 @@ class TeamLead(models.Model):
 
 # ✅ Company Model
 class Company(models.Model):
+    # Basic Company Info
     name = models.CharField(max_length=255, unique=True)
     domain = models.CharField(max_length=255, unique=True)
-    created_by = models.ForeignKey(TeamLead, on_delete=models.SET_NULL, related_name="created_companies", null=True, blank=True)
-    created_at = models.DateTimeField(null=True, blank=True)
-    
+
+    basic_settings_set = models.BooleanField(default=False)  # Indicates if basic settings are set
+
+    logo = models.ImageField(upload_to="company_logos/", null=True, blank=True)
+    description = models.TextField(null=True, blank=True, max_length=500)
+    website = models.URLField(null=True, blank=True)
+    founding_date = models.DateField(null=True, blank=True)
+    industry = models.CharField(max_length=100, null=True, blank=True)
+    company_size = models.CharField(
+        max_length=50,
+        choices=[
+            ("1-10", "1-10"),
+            ("11-50", "11-50"),
+            ("51-200", "51-200"),
+            ("201-500", "201-500"),
+            ("500+", "500+")
+        ],
+        null=True,
+        blank=True
+    )
+
+    # Contact Details
+    address = models.TextField(null=True, blank=True)
+    contact_number = models.CharField(max_length=15, null=True, blank=True)
+
+    # Administrative Fields
+    created_by = models.ForeignKey(
+        "TeamLead",
+        on_delete=models.SET_NULL,
+        related_name="created_companies",
+        null=True,
+        blank=True
+    )
+    created_at = models.DateTimeField(default=timezone.now)
+    is_active = models.BooleanField(default=True)
+
+    # Work Structure
+    total_days_to_work = models.IntegerField(default=30)
+    working_days = models.CharField(max_length=100, default="Mon,Tue,Wed,Thu,Fri")
+    working_hours = models.CharField(max_length=50, default="9:00 AM - 6:00 PM")
+    timezone = models.CharField(max_length=100, null=True, blank=True)
+    employee_limit = models.IntegerField(default=100)
+    task_limit_per_day = models.IntegerField(default=20)
+
+    # Hiring & HR Configs
+    auto_resume_review = models.BooleanField(default=True)
+    test_difficulty_level = models.CharField(
+        max_length=50,
+        choices=[("Easy", "Easy"), ("Medium", "Medium"), ("Hard", "Hard")],
+        default="Medium"
+    )
+    interview_mode = models.CharField(
+        max_length=20,
+        choices=[("Video", "Video"), ("In-Person", "In-Person"), ("Hybrid", "Hybrid")],
+        default="Video"
+    )
+
+    # Company Preferences / Settings
+    allow_custom_themes = models.BooleanField(default=False)
+    privacy_policy_url = models.URLField(null=True, blank=True)
+    terms_of_service_url = models.URLField(null=True, blank=True)
+    data_retention_period = models.IntegerField(default=365)  # days
+
+    # Optional Documents
+    brochure = models.FileField(upload_to="company_brochures/", null=True, blank=True)
+
     def __str__(self):
         return self.name
+
 
 
 # ✅ Employee Model
@@ -115,7 +180,7 @@ class Employee(models.Model):
     address = models.TextField(null=True, blank=True)
     emergency_contact = models.CharField(max_length=15, blank=True, null=True)
     status = models.CharField(max_length=20, choices=USER_STATUS_CHOICES, default='Inactive')
-    days_worked = models.IntegerField(default=0)  # Days worked in the current month
+    days_worked = models.IntegerField(default=0)
 
 
     def get_skills_list(self):
@@ -136,8 +201,6 @@ class Employee(models.Model):
 
     def __str__(self):
         return self.username
-
-
 
 
 # ✅ JobSeeker Model

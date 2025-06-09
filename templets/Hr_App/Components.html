@@ -109,6 +109,7 @@
         if (defaultFilter) {
             currentFilter = defaultFilter || 'all'; // Default to 'all' if no value is found
         }
+        
 
         const dataSearch = JSON.parse(document.getElementById('searchData').textContent);
         for (let i of dataSearch) {
@@ -187,6 +188,7 @@
                     online: () => rowStatus === 'Online',
                     offline: () => rowStatus === 'Offline',
                 };
+                
                 if (filterValues.includes(currentFilter) && filterBehaviors[currentFilter]) {
                     passFilter = filterBehaviors[currentFilter]();
                     
@@ -195,14 +197,10 @@
                 // Dropdown-based status filter
                 if (dropdownValues.includes(selectedFilterValue)) {
                     const matchesPriority = row.getAttribute('data-priority').toLowerCase() === selectedFilterValue;
-                    const matchesStatus = row.getAttribute('data-status').toLowerCase() === selectedFilterValue;
-
-                    console.log(`Row Status: ${rowStatus}, Selected Filter: ${selectedFilterValue}, Matches Priority: ${matchesPriority}, Matches Status: ${matchesStatus}`);
-                    
-                    
-                    
+                    const matchesStatus = row.getAttribute('data-status').toLowerCase() === selectedFilterValue;  
+                    console.log(row.getAttribute('data-status').toLowerCase());
+                              
                     passFilter = passFilter && (matchesPriority || matchesStatus);
-                    
                 }
 
 
@@ -212,6 +210,7 @@
                 const username = row.getAttribute('data-usernName')?.toLowerCase() || '';
                 const assignedBy = row.getAttribute('data-assignedto')?.toLowerCase() || '';
                 const priority = row.getAttribute('data-priority')?.toLowerCase() || '';
+                const status = row.getAttribute('data-status')?.toLowerCase() || '';
                 const role = row.getAttribute('data-role')?.toLowerCase() || '';
 
                 const dueDateObj = new Date(dataDueDate);
@@ -258,7 +257,7 @@
                     assignedBy.includes(searchTerm) ||
                     priority.includes(searchTerm) ||
                     role.includes(searchTerm) ||
-                    possibleDueSearches.some(dateStr => dateStr.includes(searchTerm));
+                    possibleDueSearches.some(dateStr => dateStr.includes(searchTerm)) || status.includes(searchTerm);
 
                 const showRow = passFilter && matchesSearch;
 
@@ -489,6 +488,8 @@
                 message.innerText = label;
                 completionType.innerText = typeLabel;
                 daysDiffer.innerText = days_difference;
+                console.log(days_difference);
+                
                 
 
                 // Set priority badge
