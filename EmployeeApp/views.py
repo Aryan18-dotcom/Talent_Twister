@@ -435,8 +435,8 @@ def pendingTask(request):
 
     for task in pending_task:
         if task.due_date:
-            task.daysLeft = (task.due_date - current_time.now().date()).days
-            print(f"Task: {task.title}, Days Left: {task.daysLeft}")
+            today = current_time.date()
+            task.daysLeft = (task.due_date - today).days
         else:
             task.daysLeft = None
     pending_task_count = pending_task.count()

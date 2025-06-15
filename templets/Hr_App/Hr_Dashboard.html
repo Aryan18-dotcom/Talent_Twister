@@ -124,17 +124,18 @@
 </div>
 
 <div class="mt-8 bg-gray-800 rounded-lg p-6">
-    <div class="flex items-center justify-between mb-6">
+    <div id="lastTasks" class="flex items-center justify-between mb-6">
         <h2 class="text-[2.8vw] font-semibold">Last Tasks</h2>
         <div class="flex bg-gray-700 rounded-full p-1">
             <a href="{{ dashboard_url }}"
-                class="px-4 py-1 rounded-full {% if request.path == dashboard_url %}bg-primary text-white{% else %}text-gray-400{% endif %} ">Today</a>
+            class="Links px-4 py-1 rounded-full {% if request.path == dashboard_url %}bg-primary text-white{% else %}text-gray-400{% endif %}">Today</a>
             <a href="{{ complete_task_url }}"
-                class="px-4 py-1 rounded-full {% if request.path == complete_task_url %}bg-primary text-white{% else %}text-gray-400{% endif %}">Completed</a>
+            class="Links px-4 py-1 rounded-full {% if request.path == complete_task_url %}bg-primary text-white{% else %}text-gray-400{% endif %}">Completed</a>
             <a href="{{ accepted_task_url }}"
-                class="px-4 py-1 rounded-full {% if request.path == accepted_task_url %}bg-primary text-white{% else %}text-gray-400{% endif %}">Accepted</a>
+            class="Links px-4 py-1 rounded-full {% if request.path == accepted_task_url %}bg-primary text-white{% else %}text-gray-400{% endif %}">Accepted</a>
         </div>
     </div>
+
     <div class="space-y-4" id="myTask">
         {% if request.path == dashboard_url %}
             {% if tasks %}
@@ -147,8 +148,7 @@
                             <p class="text-xs text-gray-500 mt-1">Assigned to {{ task.assigned_to }} on {{ task.created_at }}
                             </p>
                         </div>
-                        <span class="px-2 py-1 text-sm rounded-full bg-{{ task.color }}-500/20 text-{{ task.color }}-500">{{
-                            task.priority }}</span>
+                        <span class="px-2 py-1 text-sm rounded-full bg-{{ task.color }}-500/20 text-{{ task.color }}-500">{{ task.priority }}</span>
                     </div>
                     <div class="mt-4">
                         <div class="flex items-center justify-between text-sm text-gray-400">
@@ -178,30 +178,11 @@
                         <h3 class="text-xl font-semibold text-gray-200 mb-2">No new tasks assigned today</h3>
                         <p class="text-red-400 text-lg italic text-center mb-6">You haven't assigned any task yet!</p>
 
-
-                        <!-- Accepted Tasks Summary -->
-                        {% if accepted_task_count %}
-                            <div class="bg-gray-800/50 p-4 rounded-lg border border-gray-700">
-                                <div class="flex items-center justify-center space-x-3">
-                                    <span class="w-10 h-10 rounded-full bg-green-500/10 flex items-center justify-center">
-                                        <i class="ri-check-line text-green-500"></i>
-                                    </span>
-                                    <div>
-                                        <h4 class="text-sm font-medium text-gray-300">Accepted Tasks</h4>
-                                        <p class="text-lg font-semibold text-gray-100">
-                                            {{ tasks_due_today }} task assigned today
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                        {% endif %}
-
                         <!-- Optional Action Button -->
-                        <button onclick="window.location.reload()"
-                            class="px-5 py-2 bg-gray-600/50 hover:bg-gray-600/70 border border-gray-500/30 text-gray-300 rounded-lg transition-all flex items-center space-x-2 mx-auto hover:shadow-md hover:translate-y-[-2px]">
+                        <a href="{{ post_task_url }}" class="px-5 py-2 bg-gray-600/50 hover:bg-gray-600/70 border border-gray-500/30 text-gray-300 rounded-lg transition-all flex items-center justify-center space-x-2 mx-auto hover:shadow-md hover:translate-y-[-2px]">
                             <i class="ri-refresh-line"></i>
-                            <span>Check for New Tasks</span>
-                        </button>
+                            <span>Assign new Task</span>
+                        </a>
                     </div>
                 </div>
             {% endif %}
@@ -368,7 +349,7 @@
                             <button onclick="window.location.reload()"
                                 class="px-5 py-2 bg-gray-600/50 hover:bg-gray-600/70 border border-gray-500/30 text-gray-300 rounded-lg transition-all flex items-center space-x-2 mx-auto hover:shadow-md hover:translate-y-[-2px]">
                                 <i class="ri-refresh-line"></i>
-                                <span>Check for New Tasks</span>
+                                <span>Check for New Updates</span>
                             </button>
                         </div>
                 </div>
@@ -474,8 +455,13 @@
                         </div>
 
                         <!-- Primary Message -->
+                        {% if pending_task_count < 0 %}
                         <h3 class="text-xl font-semibold text-gray-200 mb-2">No assigned task has be accepted today</h3>
                         <p class="text-red-400 text-lg italic text-center mb-6">Employees haven't accepted any task yet!</p>
+                        {% else %}
+                        <h3 class="text-xl font-semibold text-gray-200 mb-2">{{ complete_task }} assigned task has be accepted today</h3>
+                        <p class="text-red-400 text-lg italic text-center mb-6">Employees haven't accepted any other task yet!</p>
+                        {% endif %}
 
 
                         <!-- Accepted Tasks Summary -->
@@ -497,9 +483,9 @@
 
                         <!-- Optional Action Button -->
                         <button onclick="window.location.reload()"
-                            class="px-5 py-2 bg-gray-600/50 hover:bg-gray-600/70 border border-gray-500/30 text-gray-300 rounded-lg transition-all flex items-center space-x-2 mx-auto hover:shadow-md hover:translate-y-[-2px]">
+                            class="px-5 py-2 bg-gray-600/50 hover:bg-gray-600/70 border border-gray-500/30 text-gray-300 rounded-lg transition-all flex items-center space-x-2 mx-auto hover:shadow-md hover:translate-y-[-2px] mt-2">
                             <i class="ri-refresh-line"></i>
-                            <span>Check for New Tasks</span>
+                            <span>Check for New Updates</span>
                         </button>
                     </div>
                 </div>
@@ -531,7 +517,7 @@
             </div>
         </div>
         <div class="mt-3">
-            <h3 class="text-gray-200 font-medium">Completed Tasks</h3>
+            <h3 class="text-gray-200 font-medium">Active Employees</h3>
             {% if total_remaining_percentage > 0 %}
             <p class="text-xs text-red-400 mt-1">
                 {% if total_remaining_percentage < 0 %}0{% else %}{{ total_remaining_percentage }}{% endif %}% Offline </p>

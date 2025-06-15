@@ -1,9 +1,25 @@
 from django.contrib import admin
 from django.utils.html import format_html
-from .models import Company, Employee, TeamLead, JobSeeker, Task, TaskProgress, WorkLeave
+from .models import Company, Employee, TeamLead, JobSeeker, Task, TaskProgress, WorkLeave, Skill, Education, Experience
+
 
 
 # admin.site.register([Chat, Message])
+
+class SkillInline(admin.TabularInline):
+    model = Skill
+    extra = 1
+
+
+class EducationInline(admin.TabularInline):
+    model = Education
+    extra = 1
+
+
+class ExperienceInline(admin.TabularInline):
+    model = Experience
+    extra = 1
+
 
 # Common mixin for image display
 class ImageDisplayMixin:
@@ -51,6 +67,7 @@ class EmployeeAdmin(admin.ModelAdmin, ImageDisplayMixin):
     list_filter = ('company', 'is_active', 'role')
     list_editable = ('is_active', 'role')
     list_per_page = 20
+    inlines = [SkillInline, EducationInline, ExperienceInline]
 
     def edit_link(self, obj):
         return format_html(
@@ -58,6 +75,7 @@ class EmployeeAdmin(admin.ModelAdmin, ImageDisplayMixin):
             f'{obj.id}/change/'
         )
     edit_link.short_description = ''
+
 
 @admin.register(JobSeeker)
 class JobSeekerAdmin(admin.ModelAdmin, ImageDisplayMixin):
@@ -138,4 +156,25 @@ class WorkLeaveAdmin(admin.ModelAdmin):
     def edit_link(self, obj):
         return format_html('<a href="{}">Edit</a>', f'{obj.id}/change/')
     edit_link.short_description = ''
+
+
+@admin.register(Skill)
+class SkillAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name', 'employee')
+    search_fields = ('name', 'employee__username')
+    list_filter = ('employee',)
+
+
+@admin.register(Education)
+class EducationAdmin(admin.ModelAdmin):
+    list_display = ('id', 'degree', 'institution', 'employee', 'start_year', 'end_year')
+    search_fields = ('degree', 'institution', 'employee__username')
+    list_filter = ('employee',)
+
+
+@admin.register(Experience)
+class ExperienceAdmin(admin.ModelAdmin):
+    list_display = ('id', 'job_title', 'company_name', 'employee', 'start_date', 'end_date')
+    search_fields = ('job_title', 'company_name', 'employee__username')
+    list_filter = ('employee',)
 

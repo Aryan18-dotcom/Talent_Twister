@@ -197,9 +197,7 @@
                 // Dropdown-based status filter
                 if (dropdownValues.includes(selectedFilterValue)) {
                     const matchesPriority = row.getAttribute('data-priority').toLowerCase() === selectedFilterValue;
-                    const matchesStatus = row.getAttribute('data-status').toLowerCase() === selectedFilterValue;  
-                    console.log(row.getAttribute('data-status').toLowerCase());
-                              
+                    const matchesStatus = row.getAttribute('data-status') ? row.getAttribute('data-status').toLowerCase() === selectedFilterValue : false;  
                     passFilter = passFilter && (matchesPriority || matchesStatus);
                 }
 
@@ -341,6 +339,7 @@
                 const completion = this.getAttribute('data-task-completion-date');
                 const completion_type = this.getAttribute('data-task-completion-type');
                 const days_difference = this.getAttribute('data-task-days-difference');
+                console.log(days_difference);
                 
 
 
@@ -379,20 +378,14 @@
                 const daysDiffer = document.getElementById('taskModalExcellentDays');
                 const message = document.getElementById('taskModalExcellentWork');
 
-                const containerPending = document.getElementById('taskModalExcellentWorkContainerPending');
-                const iconPending = document.getElementById('taskModalExcellentWorkIconPending');
-                const headingPending = document.getElementById('taskModalExcellentWorkHeadingPending');
-                const completionTypePending = document.getElementById('taskModalExcellentWorkPending');
-                const daysDifferPending = document.getElementById('taskModalExcellentWorkTypePending');
-                const messagePending = document.getElementById('taskModalExcellentDaysPending');
-
                 // Reset old classes
                 container.className = "flex items-center gap-4 p-4 rounded-lg bg-gradient-to-r shadow-lg";
                 icon.className = "w-10 h-10 rounded-full flex items-center justify-center text-white";
                 heading.className = "text-xs";
                 completionType.className = "text-xs";
                 daysDiffer.className = "font-semibold text-sm";
-
+                
+ 
                 let BgColor, iconBg, textColor, label, typeLabel;
 
                 // Set new styles and text based on completion_type
@@ -419,58 +412,56 @@
                     typeLabel = "Early Completion";
                     container.classList.remove("hidden");
                 } else {
-                    document.getElementById('taskModalCompletionDateContainer').classList.add("hidden");
+                    // document.getElementById('taskModalCompletionDateContainer').classList.add("hidden");
                     if (days_difference.includes('Overdue')) {
                         BgColor = "from-red-500/20 via-red-400/20 to-red-500/20";
                         iconBg = "bg-red-600";
                         textColor = "text-red-300";
                         label = "Needs Improvements!";
                         typeLabel = "Task Overdue";
-                        container.classList.add("hidden");
-                        containerPending.classList.remove("hidden");
+                        container.classList.remove("hidden");
 
-                        iconPending.classList.add(iconBg);
-                        headingPending.classList.add(textColor);
-                        completionTypePending.classList.add(textColor);
-                        daysDifferPending.classList.add(textColor);
+                        icon.classList.add(iconBg);
+                        heading.classList.add(textColor);
+                        completionType.classList.add(textColor);
+                        daysDiffer.classList.add(textColor);
 
-                        messagePending.innerText = label;
-                        completionTypePending.innerText = typeLabel;
-                        daysDifferPending.innerText = days_difference;
+                        message.innerText = label;
+                        completionType.innerText = typeLabel;
+                        daysDiffer.innerText = days_difference;
                     } else if(days_difference.includes('left')){
                         BgColor = "from-green-500/20 via-green-400/20 to-green-500/20";
                         iconBg = "bg-green-600";
                         textColor = "text-green-300";
                         label = "Excellent Work!";
                         typeLabel = "Task UnderDue";
-                        container.classList.add("hidden");
-                        containerPending.classList.remove("hidden");
+                        container.classList.remove("hidden");
 
-                        iconPending.classList.add(iconBg);
-                        headingPending.classList.add(textColor);
-                        completionTypePending.classList.add(textColor);
-                        daysDifferPending.classList.add(textColor);
+                        icon.classList.add(iconBg);
+                        heading.classList.add(textColor);
+                        completionType.classList.add(textColor);
+                        daysDiffer.classList.add(textColor);
 
-                        messagePending.innerText = label;
-                        completionTypePending.innerText = typeLabel;
-                        daysDifferPending.innerText = days_difference;
+                        message.innerText = label;
+                        completionType.innerText = typeLabel;
+                        daysDiffer.innerText = days_difference;
                     } else {
                         BgColor = "from-gray-500/20 via-gray-400/20 to-gray-500/20";
                         iconBg = "bg-gray-600";
                         textColor = "text-gray-300";
                         label = "Can be Better!";
                         typeLabel = "Task Due's Today";
-                        container.classList.add("hidden");
+                        // container.classList.add("hidden");
                         containerPending.classList.remove("hidden");
 
-                        iconPending.classList.add(iconBg);
-                        headingPending.classList.add(textColor);
-                        completionTypePending.classList.add(textColor);
-                        daysDifferPending.classList.add(textColor);
+                        icon.classList.add(iconBg);
+                        heading.classList.add(textColor);
+                        completionType.classList.add(textColor);
+                        daysDiffer.classList.add(textColor);
 
-                        messagePending.innerText = label;
-                        completionTypePending.innerText = typeLabel;
-                        daysDifferPending.innerText = days_difference;
+                        message.innerText = label;
+                        completionType.innerText = typeLabel;
+                        daysDiffer.innerText = days_difference;
                     }
                 }
                 
@@ -478,18 +469,14 @@
                 if (BgColor) {
                     container.classList.add(...BgColor.split(" "));
                 }
-                
                 icon.classList.add(iconBg);
                 heading.classList.add(textColor);
                 completionType.classList.add(textColor);
                 daysDiffer.classList.add(textColor);
                 
-
                 message.innerText = label;
                 completionType.innerText = typeLabel;
                 daysDiffer.innerText = days_difference;
-                console.log(days_difference);
-                
                 
 
                 // Set priority badge

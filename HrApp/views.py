@@ -20,7 +20,6 @@ india_timezone = pytz.timezone('Asia/Kolkata')
 current_time = now().astimezone(india_timezone)
 
 
-
 def progress_calculator(task):  
     if task.due_date and task.created_at:
         total_duration = (task.due_date - task.created_at.date()).days
@@ -61,6 +60,7 @@ def Dashboard(request):
     accepted_task_progress= 0
 
     if tasks.exists():
+        print("Entering tasks processing block")
         completed_task_progress = TaskProgress.objects.filter(
             task__in=tasks,
             completion_date__date=today,
@@ -68,17 +68,15 @@ def Dashboard(request):
         ).all()
 
         accepted_task_progress = TaskProgress.objects.filter(
-            task__in = tasks,
-            action_date=today,
+            task__in=tasks,
+            action_date__date=today,
             status="Accepted",
         ).all()
 
-
-        if accepted_task_progress:
-            for task_progress in accepted_task_progress:
-                task = task_progress.task
-                task.calculated_progress = progress_calculator(task)
-                task.days_remaining = (task.due_date - task.created_at.date()).days
+        for task_progress in accepted_task_progress:
+            task = task_progress.task
+            task.calculated_progress = progress_calculator(task)
+            task.days_remaining = (task.due_date - task.created_at.date()).days
         
 
         for task in completed_task_progress:
@@ -100,8 +98,6 @@ def Dashboard(request):
                 task.time_taken_display = f"{seconds} sec"
             else:
                 task.time_taken_display = f"{days:02d}days {hours:02d}hour {minutes:02d}min"
-
-
     
     all_Tasks = Task.objects.filter(assigned_by=profile).count()
 
@@ -244,8 +240,6 @@ def Post_Task(request):
 
     hr_companies = profile.created_companies.all()
     employees = Employee.objects.filter(company__in=hr_companies)
-    for emp in employees:
-        print(f"Employee: {emp.username}, Company: {emp.company.name}, role: {emp.role}")
     
     if request.method == "POST":
         task_title = request.POST.get("taskHeading")
@@ -276,7 +270,7 @@ def Post_Task(request):
 
     task_by_user = Task.objects.filter(assigned_by=profile, created_at__date=local_now).count()
 
-    next_url = request.POST.get('next') or request.META.get('HTTP_REFERER') or "HrApp:Dashboard"
+    next_url = "/TeamLead/Dashbord/"
 
 
     context = {
@@ -306,6 +300,8 @@ def Post_Task(request):
         'back_url': next_url,
         'profile':employee,
         'searchFilterBar': False,
+        'current_time': current_time.date(),
+        'employees': employees,
     }
 
     return render(request, "Hr_App/PostTask.html", context)
@@ -315,13 +311,15 @@ def Post_Task(request):
 def Manage_Team(request):
     login_user = request.session.get("username")
     employee_dets = get_object_or_404(TeamLead, username=login_user)
+    admin_count = TeamLead.objects.filter(created_companies__created_by=employee_dets).count()
+    manager_count = TeamLead.objects.filter(created_companies__created_by=employee_dets, role="Manager").count()
     employees = Employee.objects.filter(company__created_by=employee_dets).order_by('username')
     company_id = request.session.get("company_id")
     
     employee = TeamLead.objects.filter(username=login_user, created_companies=company_id).first()
     companys = Company.objects.filter(created_by=employee).first()
 
-    next_url = request.POST.get('next') or request.META.get('HTTP_REFERER') or "HrApp:Dashboard"
+    next_url = "/TeamLead/Dashbord/"
 
     context ={
         'employees': employees,
@@ -332,29 +330,14 @@ def Manage_Team(request):
         'page_title': 'Manage Your Team',
         'subtitle': companys,
         'unit': 'Employees',
-        'filters': [
-            {'value': 'all', 'label': 'All'},
-            {'value': 'week', 'label': 'This Week'},
-            {'value': 'month', 'label': 'This Month'},
-            {'value': 'year', 'label': 'This Year'},
-            {
-                'dropdown': True,
-                'label': 'Priority Filter',
-                'options': [
-                    {'value': 'high', 'label': 'High'},
-                    {'value': 'low', 'label': 'Low'},
-                    {'value': 'medium', 'label': 'Medium'},
-                ]
-            }
-        ],
-        'defaultFilter': 'all',
         'search_id': 'taskSearch',
-        'search_placeholder': 'Search tasks by name, due date or assigned to...',
+        'search_placeholder': 'Search employees by name, user name, email or role...',
         'back_url': next_url,
         'profile':employee,
-        'searchFilterBar': False,  
+        'admin_count': admin_count,
+        'manager_count': manager_count,
     }
-    return render(request, 'Hr_App/manageTeam.html', context)
+    return render(request, "Hr_App/manage_team.html", context)
 
 
 @login_required
@@ -368,8 +351,40 @@ def view_employee(request, employee_id):
     employee = TeamLead.objects.filter(username=login_user, created_companies=company_id).first()
     companys = Company.objects.filter(created_by=employee).first()
 
-    next_url = request.POST.get('next') or request.META.get('HTTP_REFERER') or "HrApp:Dashboard"
-    print(f"Next URL: {next_url}")
+    # Calculate work status
+    if company_employee:
+        total_tasks = Task.objects.filter(assigned_to=company_employee, status="Accepted").count()
+        completed_tasks = TaskProgress.objects.filter(task__assigned_to=company_employee, status="Completed").count()
+        if total_tasks > 0:
+            completion_percent = int((completed_tasks / total_tasks) * 100)
+        else:
+            completion_percent = 0
+
+        # Status message based on completion %
+        if completion_percent >= 90:
+            status_message = "🔥 Outstanding performance! Keep leading the way."
+            bar_color = "bg-green-600"
+        elif completion_percent >= 70:
+            status_message = "✅ Great job! Stay consistent."
+            bar_color = "bg-lime-500"
+        elif completion_percent >= 40:
+            status_message = "🕒 Decent progress, but you can do better."
+            bar_color = "bg-yellow-500"
+        elif completion_percent > 0:
+            status_message = "⚠️ Needs improvement. Try to focus more."
+            bar_color = "bg-amber-500"
+        else:
+            status_message = "❌ No task activity yet. Let's get started!"
+            bar_color = "bg-red-600"
+
+        work_status = {
+            "completion_percent": completion_percent,
+            "status_message": status_message,
+            "bar_color": bar_color
+        }
+
+
+    next_url = "/TeamLead/Dashbord//"
 
     context={
         "employee": company_employee,
@@ -400,18 +415,28 @@ def view_employee(request, employee_id):
         'back_url': next_url,
         'profile':employee,
         'searchFilterBar': False,
+        "company_employee": company_employee,
+        "employee": company_employee,
+        "work_status": work_status,
+
     }
     return render(request, "view_employee.html", context)
 
 
 @login_required
-@csrf_protect 
+@csrf_protect
 def delete_employee(request, employee_id):
     if request.method == "POST":
         employee = get_object_or_404(Employee, id=employee_id)
         company_name = employee.company.name
+        username = employee.username
         employee.delete()
-        return redirect("HrApp:Manage_Team")
+        messages.success(
+            request,
+            f"✅ Employee '{username}' from company '{company_name}' was deleted successfully!"
+        )
+    else:
+        messages.error(request, "❌ Invalid request method. Please try again.")
 
     return redirect("HrApp:Manage_Team")
 
@@ -434,7 +459,7 @@ def Build_Team(request):
     login_user = request.session.get("username")
     employee_dets = get_object_or_404(TeamLead, username=login_user)
     company_id = request.session.get("company_id")
-    
+
     employee = TeamLead.objects.filter(username=login_user, created_companies=company_id).first()
     companys = Company.objects.filter(created_by=employee).first()
 
@@ -444,20 +469,18 @@ def Build_Team(request):
     skipped_users = []
 
     if request.method == "POST":
-        # Handle employee creation
         usernames = request.POST.getlist("username[]") or []
         full_names = request.POST.getlist("full_name[]") or []
         passwords = request.POST.getlist("password[]") or []
 
         if not usernames or not full_names or not passwords:
-            return HttpResponse("<script>alert('Please provide at least one employee entry!'); window.location.href='/Hr/Build_Team/';</script>")
+            messages.error(request, "Please provide at least one employee entry.")
+            return redirect("HrApp:Build_Team")
 
         for username, full_name, password in zip(usernames, full_names, passwords):
             email = f"{username}@{companys.domain}"
-            
-            # Check if employee already exists in THIS COMPANY only
+
             if Employee.objects.filter(company=companys, username=username).exists():
-                print(f"Employee {username} already exists in {companys.name}.")
                 skipped_users.append(username)
                 continue
 
@@ -471,18 +494,23 @@ def Build_Team(request):
                 )
                 added_users.append(username)
             except IntegrityError:
-                print(f"Error creating employee {username}.")
                 skipped_users.append(username)
 
-        alert_message = ""
+        # Combine messages for feedback
         if added_users:
-            alert_message += f"Employees added successfully: {', '.join(added_users)}\n"
+            messages.success(
+                request,
+                f"Successfully added employees: {', '.join(added_users)}"
+            )
         if skipped_users:
-            alert_message += f"Skipped duplicate employees in your company: {', '.join(skipped_users)}\n"
+            messages.error(
+                request,
+                f"Skipped duplicate users already in your company: {', '.join(skipped_users)}"
+            )
 
-        return HttpResponse(f"<script>alert('{alert_message.strip()}'); window.location.href='/Hr/Build_Team/';</script>")
-    
-    next_url = request.POST.get('next') or request.META.get('HTTP_REFERER') or "HrApp:Dashboard"
+        return redirect("HrApp:Build_Team")
+
+    next_url = "/TeamLead/Dashbord/"
 
     context = {
         'employee_dets': employee_dets,
@@ -512,9 +540,10 @@ def Build_Team(request):
         'search_id': 'taskSearch',
         'search_placeholder': 'Search tasks by name, due date or assigned to...',
         'back_url': next_url,
-        'profile':employee,
+        'profile': employee,
         'searchFilterBar': False,
     }
+
     return render(request, 'Hr_App/buildTeam.html', context)
 
 
@@ -641,7 +670,7 @@ def teamMember(request):
 
     team_members_count = Employee.objects.filter(company=companys).count()
 
-    next_url = request.POST.get('next') or request.META.get('HTTP_REFERER') or "HrApp:Dashboard"
+    next_url = "/TeamLead/Dashbord/"
 
     context = {
         'employee_dets': profile,
@@ -677,7 +706,7 @@ def active_teams(request):
 
     team_members_count = Employee.objects.filter(company=companys).count()
 
-    next_url = request.POST.get('next') or request.META.get('HTTP_REFERER') or "HrApp:Dashboard"
+    next_url = "/TeamLead/Dashbord/"
 
     context = {
         'employee_dets': profile,
@@ -705,26 +734,20 @@ def active_teams(request):
 def pendingTask(request):
     login_user = request.session.get("username")
     company_id = request.session.get("company_id")
-    
-    employee = TeamLead.objects.filter(username=login_user, created_companies=company_id).first()
+
+    employee = get_object_or_404(TeamLead, username=login_user, created_companies=company_id)
     companys = Company.objects.filter(created_by=employee).first()
 
-    pending_task = Task.objects.filter(
-        assigned_by=employee, 
-        status="Pending"
-    ).order_by("-due_date")
+    pending_task = Task.objects.filter(assigned_by=employee, status="Pending").order_by("-due_date")
 
     for task in pending_task:
-        if task.due_date and task.created_at:
-            task.daysLeft = (task.due_date - task.created_at.date()).days
+        if task.due_date:
+            today = current_time.date()
+            task.daysLeft = (task.due_date - today).days
         else:
             task.daysLeft = None
-
-
-
     pending_task_count = pending_task.count()
-
-    next_url = request.META.get('HTTP_REFERER') or "/Employee/Dashboard/"
+    next_url = request.META.get('HTTP_REFERER') or "/TeamLead/Dashboard/"
 
     context = {
         'employee_dets': employee,
@@ -755,7 +778,7 @@ def pendingTask(request):
         'profile':employee,
         'searchFilterBar': True,
     }
-    return render(request, 'Employee_App/pending_task.html', context)
+    return render(request, 'Hr_App/pending_task.html', context)
 
 
 @login_required
@@ -774,7 +797,7 @@ def completedTask(request):
 
 
     pending_task_count = pending_task.count()
-    next_url = request.POST.get('next') or request.META.get('HTTP_REFERER') or "HrApp:Dashboard"
+    next_url = "/TeamLead/Dashbord/"
 
     context = {
         'employee_dets': employee,
@@ -813,7 +836,6 @@ def completedTask(request):
 
 @login_required
 def acceptedTask(request):
-    from django.utils.timezone import now
     current_time = now()
 
     login_user = request.session.get("username")
@@ -826,43 +848,45 @@ def acceptedTask(request):
     
     companys = Company.objects.filter(created_by=employee).first()
 
-    pending_task = Task.objects.filter(assigned_by=employee, status="Accepted", created_at__date=current_time.date())
-    progress_queryset = TaskProgress.objects.filter(task__in=pending_task)
+    # Get tasks created today
+    today_tasks = Task.objects.filter(assigned_by=employee, created_at__date=current_time.date())
+    
+    # Fetch progress related to today's tasks
+    progress_queryset = TaskProgress.objects.filter(task__in=today_tasks)
 
+    # Store all unique tasks being tracked (to avoid duplicates)
+    pending_task = list(set(progress_queryset.values_list("task", flat=True))) if progress_queryset.exists() else list(today_tasks)
+
+    # Prepare mapping of completed tasks
     completed_task = progress_queryset.filter(status="Completed")
     completed_task_ids = set(completed_task.values_list("task_id", flat=True))
 
-    for task in pending_task:
-        progress = task.progress.first()
-        if progress:
-            print(f"{task.title} → {progress.status} on {progress.action_date or progress.completion_date}")
-        else:
-            print(f"{task.title} → No progress data")
+    # Add status to each task
+    # for task in today_tasks:
+    #     task.updateStatus = 'Accepted & Completed' if task.id in completed_task_ids else 'Accepted'
 
-        # Add dynamic field for status
-        task.updateStatus = 'Accepted & Completed' if task.id in completed_task_ids else 'Accepted'
+    for task in pending_task:
+        if task.status == "Accepted":
+            for task in today_tasks:
+                task.updateStatus = 'Accepted & Completed' if task.id in completed_task_ids else 'Accepted'
+        else:
+            task.updateStatus = 'Pending' 
 
     context = {
         'employee_dets': employee,
-        'pending_tasks': pending_task,
-        'count': pending_task.count(),
+        'pending_tasks': today_tasks,
+        'count': today_tasks.count(),
         'page_title': 'All Accepted Tasks',
-        'page_subTitle': f"Display tasks for {current_time.date()} only",
+        'page_subTitle': f"Displaying tasks created on {current_time.date()}",
         'subtitle': companys,
         'unit': 'tasks',
-        'filters': [
-            {'value': 'all', 'label': 'All'},
-            {'value': 'week', 'label': 'This Week'},
-            {'value': 'year', 'label': 'This Year'},
-        ],
         'search_id': 'taskSearch',
         'search_placeholder': 'Search tasks by name, due date or assigned to...',
-        'back_url': request.POST.get('next') or request.META.get('HTTP_REFERER') or "HrApp:Dashboard",
+        'back_url': "/TeamLead/Dashbord/",
         'profile': employee,
         'completed_task': completed_task,
         'searchFilterBar': True,
     }
-
     return render(request, 'Hr_App/pending_task.html', context)
 
 
@@ -896,7 +920,7 @@ def AllTask(request):
 
     all_task_count = len(all_task)
 
-    next_url = request.POST.get('next') or request.META.get('HTTP_REFERER') or "HrApp:Dashboard"
+    next_url = "/TeamLead/Dashbord/"
 
     context = {
         'employee_dets': employee,
@@ -957,7 +981,7 @@ def EmployeeOnLeave(request):
     if 'TeamLead/modify_leave' in request.META.get('HTTP_REFERER'):
         next_url = "HrApp:Dashboard"
     else:
-        next_url = next_url = request.POST.get('next') or request.META.get('HTTP_REFERER') or "HrApp:Dashboard"
+        next_url = next_url = "/TeamLead/Dashbord/"
 
     context = {
         'employee_dets': user_on_leave,
@@ -1037,7 +1061,7 @@ def reject_leave(request, user_id):
         messages.error(request, f"Leave for {leave.user.full_name} has been rejected.Reason: \"{rejection_note}\"")      
         return redirect('HrApp:employees_on_leave')
     
-    next_url = request.POST.get('next') or request.META.get('HTTP_REFERER') or "HrApp:Dashboard"
+    next_url = "/TeamLead/Dashbord/"
 
     context = {
         'leave': leave,
@@ -1081,7 +1105,7 @@ def modify_leave(request, user_id):
         
         return redirect('HrApp:employees_on_leave')
     
-    next_url = request.POST.get('next') or request.META.get('HTTP_REFERER') or "HrApp:Dashboard"
+    next_url = "/TeamLead/Dashbord/"
 
     context ={
         'leave': leave,

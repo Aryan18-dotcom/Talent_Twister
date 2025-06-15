@@ -41,6 +41,42 @@ USER_STATUS_CHOICES = [
     ('terminated', 'Terminated'),
 ]
 
+#Helping models to avoid circular imports
+from django.db import models
+from django.utils import timezone
+import uuid
+
+class Skill(models.Model):
+    name = models.CharField(max_length=50)
+    employee = models.ForeignKey('Employee', on_delete=models.CASCADE, related_name='skills')
+
+    def __str__(self):
+        return self.name
+
+
+class Education(models.Model):
+    employee = models.ForeignKey('Employee', on_delete=models.CASCADE, related_name='education')
+    degree = models.CharField(max_length=100)
+    institution = models.CharField(max_length=150)
+    start_year = models.PositiveIntegerField()
+    end_year = models.PositiveIntegerField(null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.degree} at {self.institution}"
+
+
+class Experience(models.Model):
+    employee = models.ForeignKey('Employee', on_delete=models.CASCADE, related_name='experience')
+    job_title = models.CharField(max_length=100)
+    company_name = models.CharField(max_length=100)
+    start_date = models.DateField()
+    end_date = models.DateField(null=True, blank=True)
+    description = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.job_title} at {self.company_name}"
+
+
 # ✅ TeamLead Model
 class TeamLead(models.Model):
     username = models.CharField(max_length=150, unique=True)
@@ -123,7 +159,7 @@ class Company(models.Model):
     is_active = models.BooleanField(default=True)
 
     # Work Structure
-    total_days_to_work = models.IntegerField(default=30)
+    total_days_to_work = models.IntegerField(default=100)
     working_days = models.CharField(max_length=100, default="Mon,Tue,Wed,Thu,Fri")
     working_hours = models.CharField(max_length=50, default="9:00 AM - 6:00 PM")
     timezone = models.CharField(max_length=100, null=True, blank=True)
@@ -162,8 +198,8 @@ class Employee(models.Model):
     company = models.ForeignKey('Company', on_delete=models.CASCADE, related_name="employees")
     username = models.CharField(max_length=150)
     full_name = models.CharField(max_length=255)
-    email = models.EmailField(unique=True, blank=True)  # Allow blank email, auto-generated
-    password = models.CharField(max_length=255)  # Hashed password
+    email = models.EmailField(unique=True, blank=True)
+    password = models.CharField(max_length=255)
     image = models.ImageField(upload_to="employee_pics/", null=True, blank=True)
     is_active = models.BooleanField(default=False)
     role = models.CharField(max_length=50, default="Employee")
@@ -171,9 +207,8 @@ class Employee(models.Model):
     joining_date = models.DateField(default=timezone.now)
     phone_number = models.CharField(max_length=15, blank=True, null=True)
     last_login = models.DateTimeField(null=True, blank=True)
-    leave = models.IntegerField(default=0)  # Corrected spelling
+    leave = models.IntegerField(default=0)
     about = models.TextField(null=True, blank=True, max_length=175)
-    skills = models.TextField(blank=True, null=True)  # Comma-separated
     date_of_birth = models.DateField(null=True, blank=True)
     gender = models.CharField(max_length=10, choices=GENDER_CHOICES, default="Undisclosed", null=True, blank=True)
     employee_id = models.CharField(max_length=10, unique=True, null=True, blank=True)
@@ -182,21 +217,14 @@ class Employee(models.Model):
     status = models.CharField(max_length=20, choices=USER_STATUS_CHOICES, default='Inactive')
     days_worked = models.IntegerField(default=0)
 
-
     def get_skills_list(self):
-        """Returns a list of skills from a comma-separated string"""
-        return [skill.strip() for skill in self.skills.split(',')] if self.skills else []
+        return [skill.name for skill in self.skills.all()]
 
     def save(self, *args, **kwargs):
-        # Auto-generate email if not provided
         if not self.email and self.company:
             self.email = f"{self.username}@{self.company.domain}"
-
-        # Auto-generate employee ID if not set
         if not self.employee_id:
             self.employee_id = f"EMP{uuid.uuid4().hex[:6].upper()}"
-
-
         super().save(*args, **kwargs)
 
     def __str__(self):

@@ -6,11 +6,7 @@
 
 
 {% block title %}
-{% if request.path == pending_task_url %}
 Pending Tasks
-{% else %}
-Accepted Tasks
-{% endif %}
 {% endblock %}
 
 {% block content %}
@@ -27,132 +23,147 @@ Accepted Tasks
                         <th class="py-3 px-6 text-left">Assigned By</th>
                         <th class="py-3 px-6 text-left">Due Date</th>
                         <th class="py-3 px-6 text-left">Priority</th>
-                        {% if request.path == pending_task_url %}
-                            <th class="py-3 px-6 text-left">Days Left</th>
+                        {% if 'accepted_task' in request.path %}
+                            <th class="py-3 px-6 text-left">status</th>
                         {% else %}
-                            <th class="py-3 px-6 text-left">Days Difference</th>
+                            <th class="py-3 px-6 text-left">Days Left</th>
                         {% endif %}
                         <th class="py-3 px-6 text-left">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="text-white divide-y divide-gray-700" id="taskTableBody">
                     {% for task in pending_tasks %}
-                    <tr class="task-row hover:bg-gray-700/50 transition" data-name="{{ task.title|lower }}"
-                        data-assignedto="{{ task.assigned_to.full_name|lower }}"
-                        data-duedate="{{ task.due_date|date:'Y-m-d' }}" data-priority="{{ task.task_priority|lower }}"
-                        data-week="{% if task.due_date|date:'Y-W' == current_week %}true{% else %}false{% endif %}"
-                        data-month="{% if task.due_date|date:'Y-m' == current_month %}true{% else %}false{% endif %}"
-                        data-year="{% if task.due_date|date:'Y' == current_year %}true{% else %}false{% endif %}"
-                        data-description="{{ task.description }}"
-                        data-assigneddate="{{ task.assigned_date|date:'M d, Y' }}">
-                        <td class="py-4 px-6">
-                            <div class="flex items-center gap-3">
-                                <span class="text-xl">{{ forloop.counter }}.</span> <span class="text-sm font-medium">{{ task.title }}</span> 
-                            </div>
-                            
-                        </td>
-                        <td class="py-4 px-6">
-                            <div class="flex items-center gap-2">
-                                {% if task.assigned_to.image %}
-                                <img src="{{ task.assigned_to.image.url }}"
-                                    class="object-cover object-top w-6 h-6 rounded-full">
-                                {% else %}
-                                <div class="w-6 h-6 rounded-full bg-gray-600 flex items-center justify-center">
-                                    <i class="ri-user-line text-xs"></i>
+                        <tr class="task-row hover:bg-gray-700/50 transition" data-name="{{ task.title|lower }}"
+                            data-assignedto="{{ task.assigned_to.full_name|lower }}"
+                            data-duedate="{{ task.due_date|date:'Y-m-d' }}" data-priority="{{ task.task_priority|lower }}"
+                            data-week="{% if task.due_date|date:'Y-W' == current_week %}true{% else %}false{% endif %}"
+                            data-month="{% if task.due_date|date:'Y-m' == current_month %}true{% else %}false{% endif %}"
+                            data-year="{% if task.due_date|date:'Y' == current_year %}true{% else %}false{% endif %}"
+                            data-description="{{ task.description }}"
+                            data-assigneddate="{{ task.assigned_date|date:'M d, Y' }}">
+                            <td class="py-4 px-6">
+                                <div class="flex items-center gap-3">
+                                    <span class="text-xl">{{ forloop.counter }}.</span> <span class="text-sm font-medium">{{ task.title }}</span>
                                 </div>
-                                {% endif %}
-                                {{ task.assigned_to.full_name }}
-                            </div>
-                        </td>
-                        <td class="py-4 px-6">
-                            <div class="flex items-center gap-2">
-                                <i class="ri-calendar-line text-gray-400"></i>
-                                {{ task.due_date|date:"M d, Y" }}
-                                {% if task.due_date < today %} <span
-                                    class="text-xs bg-red-500/20 text-red-400 px-2 py-0.5 rounded-full">Overdue</span>
-                                    {% endif %}
-                            </div>
-                        </td>
-                        <td class="py-4 px-6">
-                            <span class="px-2 py-1 rounded-full text-xs 
-                                        {% if task.task_priority == 'High' %}bg-red-500/20 text-red-400
-                                        {% elif task.task_priority == 'Medium' %}bg-yellow-500/20 text-yellow-400
-                                        {% else %}bg-green-500/20 text-green-400{% endif %}">
-                                {{ task.task_priority }}
-                            </span>
-                        </td>
-                        <td class="py-4 px-6">
-                            {% if request.path == pending_task_url %}
-                                <span
-                                class="px-2 py-1 rounded-full text-xs
-                                    {% if task.daysLeft != None %}
-                                        {% if task.daysLeft > 3 %}
-                                            bg-green-500/20 text-green-400
-                                        {% elif task.daysLeft >= 1 %}
-                                            bg-amber-500/20 text-amber-400
-                                        {% elif task.daysLeft == 12 %}
-                                            bg-red-500/20 text-red-400
-                                        {% else %}
-                                            bg-gray-500/20 text-gray-400
-                                        {% endif %}
+
+                            </td>
+                            <td class="py-4 px-6">
+                                <div class="flex items-center gap-2">
+                                    {% if task.assigned_to.image %}
+                                    <img src="{{ task.assigned_to.image.url }}"
+                                        class="object-cover object-top w-6 h-6 rounded-full">
                                     {% else %}
-                                        bg-slate-400/20 text-slate-300
-                                    {% endif %}">
-                                {% if task.daysLeft != None %}
-                                    {{ task.daysLeft }} day{{ task.daysLeft|pluralize }}
+                                    <div class="w-6 h-6 rounded-full bg-gray-600 flex items-center justify-center">
+                                        <i class="ri-user-line text-xs"></i>
+                                    </div>
+                                    {% endif %}
+                                    {{ task.assigned_to.full_name }}
+                                </div>
+                            </td>
+                            <td class="py-4 px-6">
+                                <div class="flex items-center gap-2">
+                                    <i class="ri-calendar-line text-gray-400"></i>
+                                    {{ task.due_date|date:"M d, Y" }}
+                                    {% if task.due_date < today %} <span
+                                        class="text-xs bg-red-500/20 text-red-400 px-2 py-0.5 rounded-full">Overdue</span>
+                                        {% endif %}
+                                </div>
+                            </td>
+                            <td class="py-4 px-6">
+                                <span class="px-2 py-1 rounded-full text-xs 
+                                            {% if task.task_priority == 'High' %}bg-red-500/20 text-red-400
+                                            {% elif task.task_priority == 'Medium' %}bg-yellow-500/20 text-yellow-400
+                                            {% else %}bg-green-500/20 text-green-400{% endif %}">
+                                    {{ task.task_priority }}
+                                </span>
+                            </td>
+                            <td class="py-4 px-6">
+                                {% if 'accepted_task' in request.path %}
+                                    <span class="px-2 py-1 rounded-full text-xs font-medium">
+                                        {{ task.updateStatus|default:"Pending" }}
+                                    </span>
                                 {% else %}
-                                    Due Date Pass
-                                {% endif %}
-                                </span>
-                            {% else %}
-                                <span class="px-3 py-1 rounded-full text-xs text-center {% with time=task.progress.first %}{% if time %}{% if time.completion_type == 'late' %}bg-red-500/20 text-red-400{% elif time.completion_type == 'ontime' %}bg-yellow-500/20 text-yellow-400{% else %}bg-green-500/20 text-green-400{% endif %}{% endif %}{% endwith %}">
-                                    {% with progress=task.progress.first %}{% if progress %}{{ progress.days_difference }} Day{{ progress.days_difference|pluralize }} {% if progress.completion_type == 'late' %}Delayed{% elif progress.completion_type == 'ontime' %}On Time{% else %}Ahead{% endif %}{% else %}N/A{% endif %}{% endwith %}
-                                </span>
+                                    <span class="px-2 py-1 rounded-full text-xs font-medium
+                                        {% if task.daysLeft != None %}
+                                            {% if task.daysLeft < 0 %}
+                                                bg-red-500/20 text-red-400
+                                            {% elif task.daysLeft == 0 %}
+                                                bg-orange-500/20 text-orange-400
+                                            {% elif task.daysLeft <= 3 %}
+                                                bg-yellow-500/20 text-yellow-600
+                                            {% elif task.daysLeft > 3 %}
+                                                bg-green-500/20 text-green-500
+                                            {% else %}
+                                                bg-gray-500/20 text-gray-400
+                                            {% endif %}
+                                        {% else %}
+                                            bg-slate-400/20 text-slate-300
+                                        {% endif %}">
+
+                                        {% if task.daysLeft != None %}
+                                            {% if task.daysLeft < 0 %}
+                                                Overdue by {{ task.daysLeft|floatformat:"0"|cut:"-" }} day{{ task.daysLeft|floatformat:"0"|cut:"-"|pluralize }}
+                                            {% elif task.daysLeft == 0 %}
+                                                Due Today
+                                            {% elif task.daysLeft <= 3 %}
+                                                Due in {{ task.daysLeft }} day{{ task.daysLeft|pluralize }}
+                                            {% else %}
+                                                {{ task.daysLeft }} day{{ task.daysLeft|pluralize }} left
+                                            {% endif %}
+                                        {% else %}
+                                            Due Date Passed
+                                        {% endif %}
+                                    </span>
                                 {% endif %}
                             </td>
-                        <td class="py-4 px-6">
-                            <div class="flex gap-2">
-                                <button
-                                    class="view-task-btn action-btn hover:text-blue-400 hover:bg-blue-500/10 p-2 rounded-full transition"
-                                    data-tooltip="View details of task" 
-                                    data-task-id="{{ task.id }}" 
-                                    data-task-title="{{ task.title }}"
-                                    data-task-description="{{ task.description }}"
-                                    data-task-assigned-by="{{ task.assigned_to.full_name }}"
-                                    data-task-assigned-date="{{ task.created_at|date:'M d, Y' }}"
-                                    data-task-due-date="{{ task.due_date|date:'M d, Y' }}"
-                                    data-task-priority="{{ task.task_priority }}" 
-                                    data-task-status="{% if completed_task %}{{ task.updateStatus }}{% else %}{{ task.status }}{% endif %}"
-                                    data-task-id="{{ task.id }}"
-                                    data-task-completion-date="{% with progress=task.progress.first %}{% if progress %}{% if progress.status == 'Accepted' %}{{ progress.action_date }}{% elif progress.status == 'Completed' %}{{ progress.completion_date }}{% else %}N/A{% endif %}{% else %}N/A{% endif %}{% endwith %}"
-                                    data-task-completion-type="{% with progress=task.progress.first %}{% if progress %}{{progress.completion_type}}{% endif %}{% endwith %}"
-                                    data-task-days-differernce="{% with progress=task.progress.first %}{% if progress %}{{ progress.days_difference }} day{{ progress.days_difference|pluralize }} ahead{% else %}N/A{% endif %}{% endwith %}">
+                            <td class="py-4 px-6">
+                                <div class="flex gap-2">
+                                    <button
+                                        class="view-task-btn action-btn hover:text-blue-400 hover:bg-blue-500/10 p-2 rounded-full transition"
+                                        data-tooltip="View details of task" data-task-id="{{ task.id }}"
+                                        data-task-title="{{ task.title }}" data-task-description="{{ task.description }}"
+                                        data-task-assigned-by="{{ task.assigned_to.full_name }}"
+                                        data-task-assigned-date="{{ task.created_at|date:'M d, Y' }}"
+                                        data-task-due-date="{{ task.due_date|date:'M d, Y' }}"
+                                        data-task-priority="{{ task.task_priority }}"
+                                        data-task-status="{% if completed_task %}{{ task.updateStatus }}{% else %}{{ task.status }}{% endif %}"
+                                        data-task-id="{{ task.id }}"
+                                        data-task-completion-date="{% with progress=task.progress.first %}{% if progress %}{% if progress.status == 'Accepted' %}{{ progress.action_date }}{% elif progress.status == 'Completed' %}{{ progress.completion_date }}{% else %}N/A{% endif %}{% else %}N/A{% endif %}{% endwith %}"
+                                        data-task-completion-type="{% with progress=task.progress.first %}{% if progress %}{{progress.completion_type}}{% endif %}{% endwith %}"
+                                        data-task-days-difference="{% if task.daysLeft != None %}{% if task.daysLeft < 0 %}Overdue by {{ task.daysLeft|floatformat:"0"|cut:"-" }} day{{ task.daysLeft|floatformat:"0"|cut:"-"|pluralize }}{% elif task.daysLeft == 0 %}Due Today{% elif task.daysLeft <= 3 %}Due in {{ task.daysLeft }} day{{ task.daysLeft|pluralize }}{% else %}{{ task.daysLeft }} day{{ task.daysLeft|pluralize }} left{% endif %}{% else %}Due Date Passed{% endif %}">
 
-                                    <i class="ri-eye-line text-lg"></i>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
+                                        <i class="ri-eye-line text-lg"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
                     {% empty %}
-                    <tr>
-                        <td colspan="6" class="noData py-8 text-center text-gray-400">
-                            <img src="{% static 'Employee_App/Static_Imgs/outline.svg' %}" alt="No tasks"
-                                class="w-32 mx-auto mb-4">
-                            <p>No {% if request.path == pending_task_url %}Pending{% else %}Accepted{% endif %} tasks found</p>
-                            <p class="mt-4 text-sm text-gray-500">Want to explore all tasks?</p>
-                            <a href="{% url 'HrApp:all_tasks' %}" class="text-purple-500 hover:text-purple-700 font-semibold transition duration-300 ease-in-out">View all tasks</a>
-                        </td>
-                    </tr>
-                    
+
+                        <tr>
+                            <td colspan="6" class="noData py-8 text-center text-gray-400">
+                                <img src="{% static 'Employee_App/Static_Imgs/outline.svg' %}" alt="No tasks"
+                                    class="w-32 mx-auto mb-4">
+                                <p>No {% if request.path == pending_task_url %}Pending{% else %}Accepted{% endif %} tasks
+                                    found</p>
+                                <p class="mt-4 text-sm text-gray-500">Want to explore all tasks?</p>
+                                <a href="{% url 'HrApp:all_tasks' %}"
+                                    class="text-purple-500 hover:text-purple-700 font-semibold transition duration-300 ease-in-out">View
+                                    all tasks</a>
+                            </td>
+                        </tr>
+
                     {% endfor %}
                 </tbody>
             </table>
             <!-- No Results Message -->
             <div id="noResults" class="hidden py-8 text-center text-gray-400">
-                <img src="{% static 'Employee_App/Static_Imgs/outline.svg' %}" alt="No Results" class="w-32 mx-auto mb-4">
+                <img src="{% static 'Employee_App/Static_Imgs/outline.svg' %}" alt="No Results"
+                    class="w-32 mx-auto mb-4">
                 <h2>No Tasks Found</h2>
                 <p class="mt-4 text-sm text-gray-500">Try adjusting your search or filter options.</p>
-                <button class="text-purple-500 hover:text-purple-700 font-semibold transition duration-300 ease-in-out resetFilter" >Reset Filters</button>
+                <button
+                    class="text-purple-500 hover:text-purple-700 font-semibold transition duration-300 ease-in-out resetFilter">Reset
+                    Filters</button>
             </div>
         </div>
     </div>
@@ -161,8 +172,8 @@ Accepted Tasks
 <!-- Task Detail Modal -->
 <div id="taskDetailModal"
     class="fixed inset-0 z-50 hidden items-center justify-center bg-black/60 backdrop-blur-sm p-3">
-    <div
-        class="bg-gray-800 border border-gray-700 rounded-xl m-auto shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto  transition-transform duration-300 scale-0" id="taskDetailModalContent">
+    <div class="bg-gray-800 border border-gray-700 rounded-xl m-auto shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto  transition-transform duration-300 scale-0"
+        id="taskDetailModalContent">
 
         <!-- Task Head -->
         <div class="p-6 relative">

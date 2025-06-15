@@ -37,8 +37,8 @@
         }
     </script>
     <style>
-                /* Custom scrollbar for WebKit browsers (Chrome, Safari, Edge) */
-                ::-webkit-scrollbar {
+        /* Custom scrollbar for WebKit browsers (Chrome, Safari, Edge) */
+        ::-webkit-scrollbar {
             width: 12px;
         }
 
@@ -76,7 +76,7 @@
             scroll-behavior: smooth;
             scrollbar-color: #8E6FF7 #273342;
         }
-        
+
         :where([class^="ri-"])::before {
             content: "\f3c2";
         }
@@ -141,6 +141,7 @@
             color: white;
             border-radius: 5px;
         }
+
         [data-tooltip] {
             position: relative;
             cursor: pointer;
@@ -173,7 +174,8 @@
             border-color: #283141 transparent transparent transparent;
             z-index: 10000;
         }
-        .light{
+
+        .light {
             background-color: #969aa2;
         }
     </style>
@@ -191,15 +193,22 @@
 {% url 'HrApp:all_tasks' as all_tasks_url %}
 {% url 'HrApp:try' as try_url %}
 
+<!-- GSAP Core -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<!-- GSAP ScrollTrigger -->
+<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script> -->
+<!-- GSAP ScrollTo Plugin -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollToPlugin.min.js"></script>
+
 
 <body class="bg-gray-900 text-gray-100">
     <div class="max-w-7xl mx-auto px-4 mb-[16vh]">
         <header class="py-4 flex items-center justify-between border-b border-gray-800">
             <div class="flex items-center space-x-2">
-                <a href="{{ dashboard_url }}" 
-                class="text-2xl font-['Pacifico'] text-primary relative transition-all duration-400 ease-out hover:scale-105 hover:rotate-1 before:absolute before:inset-0 before:rounded-lg before:bg-primary/20 before:blur-md before:opacity-0 hover:before:opacity-100">
-                 Talent Twister
-             </a>
+                <a href="{{ dashboard_url }}"
+                    class="text-2xl font-['Pacifico'] text-primary relative transition-all duration-400 ease-out hover:scale-105 hover:rotate-1 before:absolute before:inset-0 before:rounded-lg before:bg-primary/20 before:blur-md before:opacity-0 hover:before:opacity-100">
+                    Talent Twister
+                </a>
             </div>
             <div class="flex items-center space-x-6">
                 <div class="relative">
@@ -239,28 +248,37 @@
 
     </div>
 
-    
+
     <nav class="fixed bottom-0 left-0 right-0 bg-gray-800 border-t border-gray-700">
         <div class="max-w-7xl mx-auto px-4">
             <div class="flex justify-around py-4">
-                <a href="{{ dashboard_url }}" class="flex flex-col items-center {% if request.path == dashboard_url %}text-primary{% else %}text-gray-400 hover:text-primary{% endif %}" data-tooltip="Go to Dashboard">
+                <a href="{{ dashboard_url }}"
+                    class="flex flex-col items-center {% if request.path == dashboard_url %}text-primary{% else %}text-gray-400 hover:text-primary{% endif %}"
+                    data-tooltip="Go to Dashboard">
                     <i class="ri-home-5-line text-xl"></i>
                     <span class="text-xs mt-1">Dashboard</span>
                 </a>
-                <a href="{{ all_tasks_url }}" class="flex flex-col items-center {% if request.path == all_tasks_url %}text-primary{% else %}text-gray-400 hover:text-primary{% endif %}" data-tooltip="View all tasks">
+                <a href="{{ all_tasks_url }}"
+                    class="flex flex-col items-center {% if request.path == all_tasks_url %}text-primary{% else %}text-gray-400 hover:text-primary{% endif %}"
+                    data-tooltip="View all tasks">
                     <i class="ri-task-line text-xl"></i>
                     <span class="text-xs mt-1">Tasks</span>
                 </a>
-                <a href="{{ team_members_url }}" class="flex flex-col items-center {% if request.path == team_members_url %}text-primary{% else %}text-gray-400 hover:text-primary{% endif %}" data-tooltip="View all users">
+                <a href="{{ team_members_url }}"
+                    class="flex flex-col items-center {% if request.path == team_members_url %}text-primary{% else %}text-gray-400 hover:text-primary{% endif %}"
+                    data-tooltip="View all users">
                     <i class="ri-team-line text-xl"></i>
                     <span class="text-xs mt-1">All Users</span>
                 </a>
-                <a href="{{ try_url }}" class="flex flex-col items-center {% if request.path == adashboard_url %}text-primary{% else %}text-gray-400 hover:text-primary{% endif %}" data-tooltip="Check your messages">
+                <a href="{{ try_url }}"
+                    class="flex flex-col items-center {% if request.path == adashboard_url %}text-primary{% else %}text-gray-400 hover:text-primary{% endif %}"
+                    data-tooltip="Check your messages">
                     <i class="ri-message-3-line text-xl"></i>
                     <span class="text-xs mt-1">Messages</span>
                 </a>
                 <a href="{{ settings_url }}"
-                    class="flex flex-col items-center {% if request.path == settings_url %}text-primary{% else %}text-gray-400 hover:text-primary{% endif %}" data-tooltip="Go to Settings">
+                    class="flex flex-col items-center {% if request.path == settings_url %}text-primary{% else %}text-gray-400 hover:text-primary{% endif %}"
+                    data-tooltip="Go to Settings">
                     <i class="ri-settings-3-line text-xl"></i>
                     <span class="text-xs mt-1">Settings</span>
                 </a>
@@ -269,187 +287,363 @@
     </nav>
 
     {% if request.path == dashboard_url %}
-    <!-- if not company_link -->
-        {% if not company_link %}
+
+        <!-- if not company_link -->
+        <!-- {% if company_link %} -->
         <!-- Company Creation Modal - Tailwind Version -->
-        <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-            <div class="w-full max-w-md mx-4">
-                <div
-                    class="bg-gray-800/90 backdrop-blur-lg rounded-xl shadow-2xl overflow-hidden border border-gray-700/50">
-                    <!-- Modal Header -->
-                    <div class="p-6 border-b border-gray-700/50">
-                        <h3
-                            class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-blue-500">
-                            Create Your Company
-                        </h3>
-                        <div class="w-16 h-1 bg-gradient-to-r from-purple-500 to-blue-600 mt-2 rounded-full"></div>
+        <!-- <div id="PopUpCreationDiv" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+                        <div id="CreationModel" class="w-full max-w-md mx-4 opacity-0 scale-75">
+                            <div
+                                class="bg-gray-800/90 backdrop-blur-lg rounded-xl shadow-2xl overflow-hidden border border-gray-700/50">
+                                <div class="p-6 border-b border-gray-700/50">
+                                    <h3
+                                        class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-blue-500">
+                                        Create Your Company
+                                    </h3>
+                                    <div class="w-16 h-1 bg-gradient-to-r from-purple-500 to-blue-600 mt-2 rounded-full"></div>
+                                </div>
+
+                                <form method="POST" action="" class="p-6">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="create_company" value="true">
+
+                                    <p class="text-gray-300 mb-6">You need to create a company before you can add employees.</p>
+
+                                    <div class="space-y-5">
+                                        <div
+                                            class="bg-gray-700/50 p-4 rounded-lg border border-gray-600/30 hover:border-purple-500/30 transition-all duration-300">
+                                            <label class="block text-sm font-medium text-gray-300 mb-2">Company Name</label>
+                                            <input type="text" id="new_company_name" name="new_company_name"
+                                                class="w-full px-4 py-2.5 bg-gray-800/70 border border-gray-600/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/50 text-white placeholder-gray-500 transition-all duration-300"
+                                                placeholder="Enter company name" required>
+                                        </div>
+
+                                        <div
+                                            class="bg-gray-700/50 p-4 rounded-lg border border-gray-600/30 hover:border-blue-500/30 transition-all duration-300">
+                                            <label class="block text-sm font-medium text-gray-300 mb-2">Company Domain</label>
+                                            <input type="text" id="new_company_domain" name="new_company_domain"
+                                                class="w-full px-4 py-2.5 bg-gray-800/70 border border-gray-600/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-white placeholder-gray-500 transition-all duration-300"
+                                                placeholder="example.com" required>
+                                            <p class="mt-1 text-xs text-gray-400">This will be used for employee emails
+                                                (username@domain)</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="mt-6 pt-4 border-t border-gray-700/50 flex justify-end">
+                                        <button type="submit"
+                                            class="px-6 py-2.5 bg-gradient-to-br from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-300 font-medium flex items-center shadow-lg hover:shadow-xl">
+                                            <i class="ri-building-2-line mr-2"></i> Create Company
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- Modal Body -->
-                     <h1>{ url 'Myapp:CreateCompany' }</h1>
-                    <form method="POST" action="" class="p-6">
-                        {% csrf_token %}
-                        <input type="hidden" name="create_company" value="true">
+                    <script>
+                        const popupCreationDiv = document.getElementById("PopUpCreationDiv");
+                        const creationModel = document.getElementById("CreationModel");
 
-                        <p class="text-gray-300 mb-6">You need to create a company before you can add employees.</p>
+                        // Animate in
+                        gsap.to(creationModel, { scale: 1, opacity: 1, duration: 0.6, ease: "power3.out" });
 
-                        <div class="space-y-5">
-                            <!-- Company Name Field -->
-                            <div
-                                class="bg-gray-700/50 p-4 rounded-lg border border-gray-600/30 hover:border-purple-500/30 transition-all duration-300">
-                                <label class="block text-sm font-medium text-gray-300 mb-2">Company Name</label>
-                                <input type="text" id="new_company_name" name="new_company_name"
-                                    class="w-full px-4 py-2.5 bg-gray-800/70 border border-gray-600/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/50 text-white placeholder-gray-500 transition-all duration-300"
-                                    placeholder="Enter company name" required>
-                            </div>
+                        // Close modal with animation
+                        function closeCreationModal() {
+                            gsap.to(creationModel, {
+                                scale: 0,
+                                opacity: 0,
+                                duration: 0.5,
+                                ease: "power3.in",
+                                onComplete: () => {
+                                    popupCreationDiv.classList.add("hidden");
+                                }
+                            });
+                        }
 
-                            <!-- Company Domain Field -->
-                            <div
-                                class="bg-gray-700/50 p-4 rounded-lg border border-gray-600/30 hover:border-blue-500/30 transition-all duration-300">
-                                <label class="block text-sm font-medium text-gray-300 mb-2">Company Domain</label>
-                                <input type="text" id="new_company_domain" name="new_company_domain"
-                                    class="w-full px-4 py-2.5 bg-gray-800/70 border border-gray-600/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-white placeholder-gray-500 transition-all duration-300"
-                                    placeholder="example.com" required>
-                                <p class="mt-1 text-xs text-gray-400">This will be used for employee emails
-                                    (username@domain)</p>
-                            </div>
-                        </div>
+                    </script> -->
+        <!-- {% endif %} -->
 
-                        <!-- Modal Footer -->
-                        <div class="mt-6 pt-4 border-t border-gray-700/50 flex justify-end">
-                            <button type="submit"
-                                class="px-6 py-2.5 bg-gradient-to-br from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-300 font-medium flex items-center shadow-lg hover:shadow-xl">
-                                <i class="ri-building-2-line mr-2"></i> Create Company
+        <!-- if company.basic_settings_set -->
+        {% if not company.basic_settings_set %}
+
+            <div id="PopUpDiv" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+                <div id="Model" class="w-full max-w-lg mx-4 opacity-0 scale-75">
+                    <div
+                        class="bg-gray-800/90 backdrop-blur-lg rounded-xl shadow-2xl overflow-hidden border border-gray-700/50">
+                        <!-- Modal Header -->
+                        <div class="p-6 border-b border-gray-700/50 relative">
+                            <h3
+                                class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-blue-500">
+                                Set Up Your Basic Company Settings
+                            </h3>
+                            <div class="w-40 h-1 bg-gradient-to-r from-purple-500 to-blue-600 mt-2 rounded-full"></div>
+                            <button onclick="closeModal()"
+                                class="absolute top-4 right-4 text-gray-400 hover:text-white text-2xl focus:outline-none">
+                                <i class="ri-close-line"></i>
                             </button>
                         </div>
-                    </form>
+
+                        <!-- Modal Body -->
+                        <div class="p-6">
+                            <p id="infoPara" class="text-gray-300 mb-4">
+                                Before adding employees or assigning tasks, it's important to fill in your company's basic
+                                information. This helps personalize your experience, enable internal tools, and ensure smooth
+                                communication across your team.
+                            </p>
+                            <div id="warningMessage" class="mb-4 text-red-400 text-sm hidden">
+                                ⚠️ This popup will keep appearing every time you log in until the company details are completed.
+                                <br><br>
+                                👉 Go to: <strong>Dashboard → Settings → Company Settings → Basic Company info</strong> to
+                                complete your company setup.
+                            </div>
+                            <p class="text-gray-400 text-sm mb-6 italic">
+                                Things like working days, hours, task limits, and company branding need to be configured first.
+                            </p>
+
+                            <!-- Action Buttons -->
+                            <div class="flex justify-end space-x-4">
+                                <button id="noBtn"
+                                    class="px-4 py-2 text-red-400 hover:text-red-500 border border-red-500/40 rounded-lg text-sm transition-all">
+                                    No, Maybe Later
+                                </button>
+                                <a href=""
+                                    class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition-all">
+                                    Yes, Let's Do It
+                                </a>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
+
+            <script>
+                const today = new Date().toISOString().split("T")[0]; // yyyy-mm-dd
+                const hideDate = localStorage.getItem("company_popup_hide_date");
+
+                const popupDiv = document.getElementById("PopUpDiv");
+                const model = document.getElementById("Model");
+                const noBtn = document.getElementById("noBtn");
+                const warningMsg = document.getElementById("warningMessage");
+                const infoPara = document.getElementById("infoPara");
+
+                let click_count = 0;
+
+                // Show popup only if not dismissed today
+                if (hideDate !== today) {
+                    // Animate in
+                    gsap.to(model, { scale: 1, opacity: 1, duration: 0.6, ease: "power3.out" });
+
+                    // Close modal with animation
+                    function closeModal() {
+                        gsap.to(model, {
+                            scale: 0,
+                            opacity: 0,
+                            duration: 0.5,
+                            ease: "power3.in",
+                            onComplete: () => {
+                                popupDiv.classList.add("hidden");
+                                localStorage.setItem("company_popup_hide_date", today); // Hide for today
+                            }
+                        });
+                    }
+
+                    noBtn.addEventListener("click", () => {
+                        click_count += 1;
+                        if (click_count === 1) {
+                            infoPara.classList.add("hidden");
+                            warningMsg.classList.remove("hidden");
+                            noBtn.textContent = "Close";
+                        } else {
+                            closeModal();
+                        }
+                    });
+
+                    // Make closeModal function globally available for the X button
+                    window.closeModal = closeModal;
+                } else {
+                    popupDiv.classList.add("hidden");
+                }
+            </script>
+
         {% endif %}
-        {% if company_link %}
-{% if not company.basic_settings_set %}
-<div id="PopUpDiv" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm transition-transform duration-500 scale-100">
-    <div id="Model" class="w-full max-w-lg mx-4">
-        <div class="bg-gray-800/90 backdrop-blur-lg rounded-xl shadow-2xl overflow-hidden border border-gray-700/50">
-            <!-- Modal Header -->
-            <div class="p-6 border-b border-gray-700/50">
-                <h3 class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-blue-500">
-                    Set Up Your Basic Company Settings
-                </h3>
-                <div class="w-40 h-1 bg-gradient-to-r from-purple-500 to-blue-600 mt-2 rounded-full"></div>
-            </div>
 
-            <!-- Modal Body -->
-            <div class="p-6">
-                <p id="infoPara" class="text-gray-300 mb-4">
-                    Before adding employees or assigning tasks, it's important to fill in your company's basic information. This helps personalize your experience, enable internal tools, and ensure smooth communication across your team.
-                </p>
-                <p class="text-gray-400 text-sm mb-6 italic">
-                    Things like working days, hours, task limits, and company branding need to be configured first.
-                </p>
-
-                <!-- Action Buttons -->
-                <div class="flex justify-end space-x-4">
-                    <!-- No Button -->
-                    <button id="noBtn" class="px-4 py-2 text-red-400 hover:text-red-500 border border-red-500/40 rounded-lg text-sm transition-all">
-                        No, Maybe Later
-                    </button>
-
-                    <!-- Yes Button -->
-                    <a href="" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition-all">
-                        Yes, Let's Do It
-                    </a>
-                </div>
-
-                <!-- Warning Message (Initially Hidden) -->
-                <div id="warningMessage" class="mt-6 p-4 bg-yellow-900/40 border border-yellow-600/50 rounded-lg text-yellow-300 text-sm hidden">
-                    ⚠️ This popup will keep appearing every time you log in until the company details are completed.
-                    <br><br>
-                    👉 Go to: <strong>Dashboard → Company Settings → Fill all required fields</strong> to complete your company setup.
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- JavaScript for Delayed Hide with Scale -->
-<script>
-    const noBtn = document.getElementById("noBtn");
-    const warningMsg = document.getElementById("warningMessage");
-    const infoPara = document.getElementById("infoPara");
-    const popupDiv = document.getElementById("PopUpDiv");
-    const model = document.getElementById("Model");
-
-    noBtn.addEventListener("click", () => {
-        // Hide info, show warning
-        infoPara.classList.add("hidden");
-        warningMsg.classList.remove("hidden");
-
-        // After 60 seconds, scale to 0 and hide
-        setTimeout(() => {
-            model.classList.add("scale-0", "transition-transform", "duration-500");
-            setTimeout(() => {
-                popupDiv.classList.add("hidden");
-            }, 500); // Wait for transition (scale)
-        }, 6000); // 1 minute
-
-    });
-</script>
-{% endif %}
-
-
-        {% endif %}
     {% endif %}
 
 
-    {% if messages %}
-    <div id="alert-container" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div id="alert-box" class="p-6 rounded-lg shadow-lg text-center w-80 bg-gray-700">
-            {% for message in messages %}
-            <p class="text-lg">{{ message }}</p>
-            <button id="alert-ok-btn" class="mt-4 px-6 py-2 rounded shadow cursor-pointer
-                {% for message in messages %}
-                    {% if message.tags == 'success' %} bg-green-500 text-white
-                        {% elif message.tags == 'warning' %} bg-yellow-500 text-black
-                        {% elif message.tags == 'error' %} bg-red-500 text-white
-                        {% elif message.tags == 'info' %} bg-blue-500 text-white
-                        {% else %} bg-gray-500 text-white
-                    {% endif %}
-                {% endfor %}
-                ">
-                OK
-            </button>
-            {% endfor %}
+    <!-- Confirm Modal -->
+    <div id="confirm-modal" class="fixed flex inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="p-6 rounded-lg shadow-lg bg-gray-800 text-white w-96 text-center m-auto">
+            <p id="confirm-message" class="text-lg mb-4">Are you sure?</p>
+            <div class="flex justify-center gap-4">
+                <button id="confirm-yes" class="px-4 py-2 bg-red-600 rounded hover:bg-red-700">Yes</button>
+                <button id="confirm-no" class="px-4 py-2 bg-gray-600 rounded hover:bg-gray-700">Cancel</button>
+            </div>
         </div>
     </div>
-
+    <!-- Confirm Modal Logic -->
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const alertBox = document.getElementById("alert-box");
-            const alertOkBtn = document.getElementById("alert-ok-btn");
-            const alertContainer = document.getElementById("alert-container");
+        document.addEventListener("DOMContentLoaded", function () {
+            const confirmModal = document.getElementById("confirm-modal");
+            const confirmYesBtn = document.getElementById("confirm-yes");
+            const confirmNoBtn = document.getElementById("confirm-no");
+            const confirmMessage = document.getElementById("confirm-message");
+            const deleteButtons = document.querySelectorAll(".delete-btn");
 
-            function closeAlert() {
-                alertContainer.remove();
-            }
+            let formToSubmit = null;
 
-            // Close alert on button click
-            alertOkBtn.addEventListener("click", closeAlert);
+            deleteButtons.forEach(button => {
+                button.addEventListener("click", function () {
+                    const name = this.getAttribute("data-confirm-name") || this.getAttribute("data-employee-name") || "this item";
+                    const message = this.getAttribute("data-message") || `Are you sure you want to delete "${name}"?`;
+                    confirmMessage.textContent = message;
+                    confirmModal.classList.remove("hidden");
+                    formToSubmit = this.closest("form");
+                });
+            });
 
-            // Close alert when pressing Enter key
-            document.addEventListener("keydown", function (event) {
-                if (event.key === "Enter") {
-                    closeAlert();
+            confirmYesBtn.addEventListener("click", () => {
+                if (formToSubmit) {
+                    formToSubmit.submit();
                 }
             });
 
-            // Auto-focus the OK button so Enter key works immediately
-            alertOkBtn.focus();
+            confirmNoBtn.addEventListener("click", () => {
+                confirmModal.classList.add("hidden");
+                formToSubmit = null;
+            });
+
+            document.addEventListener("keydown", function (e) {
+                if (e.key === "Escape") {
+                    confirmModal.classList.add("hidden");
+                    formToSubmit = null;
+                }
+            });
         });
     </script>
+
+
+    {% if not default_message %}
+        {% if messages %}
+        
+            <!-- Alert Container -->
+            <div id="alert-container" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                <div id="alert-box" class="p-6 rounded-lg shadow-lg text-center w-80 bg-gray-700">
+                    <p id="alert-message" class="text-lg text-white mb-4"></p>
+                    <div id="alert-buttons" class="flex justify-center gap-4">
+                        <button id="alert-ok-btn"
+                            class="px-6 py-2 rounded shadow cursor-pointer bg-gray-500 text-white">OK</button>
+                        <button id="alert-cancel-btn"
+                            class="px-6 py-2 rounded shadow cursor-pointer bg-gray-500 text-white hidden">Cancel</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Prepare Django Messages -->
+            <script>
+                const messagesQueue = [
+                    {% for message in messages %}
+                {
+                    text: `{{ message|escapejs }}`,
+                        type: `{{ message.tags }}`
+                },
+                {% endfor %}
+            ];
+            </script>
+
+            <!-- Alert Logic -->
+            <script>
+                document.addEventListener('DOMContentLoaded', function () {
+                    const alertContainer = document.getElementById("alert-container");
+                    const alertBox = document.getElementById("alert-box");
+                    const alertMessage = document.getElementById("alert-message");
+                    const alertOkBtn = document.getElementById("alert-ok-btn");
+                    const alertCancelBtn = document.getElementById("alert-cancel-btn");
+
+                    let currentMessageIndex = 0;
+                    let isTransitioning = false;
+
+                    function applyStyle(type) {
+                        const colorMap = {
+                            success: ["bg-green-500", "text-white"],
+                            error: ["bg-red-500", "text-white"],
+                            warning: ["bg-yellow-500", "text-black"],
+                            info: ["bg-blue-500", "text-white"],
+                            default: ["bg-gray-500", "text-white"]
+                        };
+
+                        const [bgClass, textClass] = colorMap[type.split(' ')[0]] || colorMap.default;
+
+                        alertOkBtn.className = `px-6 py-2 rounded shadow cursor-pointer ${bgClass} ${textClass}`;
+                        alertCancelBtn.className = `px-6 py-2 rounded shadow cursor-pointer ${bgClass} ${textClass}`;
+                    }
+
+                    function isConfirmation(type) {
+                        return type.includes("confirm");
+                    }
+
+                    function showMessage(index) {
+                        if (index >= messagesQueue.length) {
+                            alertContainer.remove();
+                            return;
+                        }
+
+                        const message = messagesQueue[index];
+                        alertMessage.textContent = message.text;
+                        applyStyle(message.type);
+
+                        if (isConfirmation(message.type)) {
+                            alertCancelBtn.classList.remove("hidden");
+                        } else {
+                            alertCancelBtn.classList.add("hidden");
+                        }
+
+                        gsap.set(alertBox, { scale: 0.8, opacity: 0 });
+                        gsap.to(alertBox, {
+                            scale: 1,
+                            opacity: 1,
+                            duration: 0.4,
+                            ease: "back.out(1.7)",
+                            onComplete: () => {
+                                isTransitioning = false;
+                                alertOkBtn.focus();
+                            }
+                        });
+                    }
+
+                    function closeMessage(next = true) {
+                        if (isTransitioning) return;
+                        isTransitioning = true;
+
+                        gsap.to(alertBox, {
+                            scale: 0.8,
+                            opacity: 0,
+                            duration: 0.3,
+                            ease: "power2.inOut",
+                            onComplete: () => {
+                                if (next) {
+                                    currentMessageIndex++;
+                                    showMessage(currentMessageIndex);
+                                } else {
+                                    alertContainer.remove();
+                                }
+                            }
+                        });
+                    }
+
+                    alertOkBtn.addEventListener("click", () => closeMessage(true));
+                    alertCancelBtn.addEventListener("click", () => closeMessage(false));
+
+                    document.addEventListener("keydown", function (event) {
+                        if (event.key === "Enter") closeMessage(true);
+                        if (event.key === "Escape") closeMessage(false);
+                    });
+
+                    showMessage(currentMessageIndex);
+                });
+            </script>
+
+        {% endif %}
     {% endif %}
 </body>
 
 </html>
-hii from new branch 

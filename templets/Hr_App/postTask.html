@@ -58,8 +58,7 @@
                     <label for="taskDate" class="block text-sm font-medium text-gray-400">Due Date</label>
                     <div class="relative">
                         <input type="date" name="taskDate" required
-                            class="task-input w-full bg-gray-800/70 text-gray-400 p-3.5 rounded-lg border border-[#3E3E52] focus:outline-none focus:border-primary pl-11"
-                            min="{{ now|date:'Y-m-d' }}">
+                            class="task-input w-full bg-gray-800/70 text-gray-400 p-3.5 rounded-lg border border-[#3E3E52] focus:outline-none focus:border-primary pl-11" min="{{ current_time|date:'Y-m-d' }}">
                         <i
                             class="ri-calendar-line absolute left-3.5 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
                     </div>
@@ -107,7 +106,7 @@
         </form>
     </div>
 </main>
-{% if messages %}
+<!-- {% if messages %}
 <div id="message-container" class="fixed top-4 left-0 right-0 z-50 flex flex-col items-center space-y-2">
     {% for message in messages %}
     <div
@@ -186,5 +185,5 @@
             }
         });
     });
-</script>
+</script> -->
 {% endblock %}
