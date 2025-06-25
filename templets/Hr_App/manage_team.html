@@ -1,7 +1,5 @@
 {% extends 'Hr_App/base.html' %}
 {% load static %}
-{% url 'HrApp:pending_task' as pending_task_url %}
-{% url 'HrApp:all_tasks' as all_tasks_url %}
 
 {% block title %}
 Manage Team
@@ -10,7 +8,7 @@ Manage Team
 {% block content %}
 {% include 'Hr_App/Components.html' %}
 
-<div class="min-h-screen pb-8">
+<div class="min-h-96 pb-8">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <!-- Stats Cards -->
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
@@ -47,14 +45,17 @@ Manage Team
                     </div>
                 </div>
             </div>
-            <div class="bg-gray-800/50 rounded-xl p-4 border border-gray-500/80 hover:border-primary/50 transition-all group">
+            <div
+                class="bg-gray-800/50 rounded-xl p-4 border border-gray-500/80 hover:border-primary/50 transition-all group">
                 <a href="{% url 'HrApp:Build_Team' %}" class="h-full flex items-center justify-between gap-3">
                     <div class="text-center">
                         <h3 class="font-medium text-white group-hover:text-primary transition-colors">Add Employees</h3>
                         <p class="text-xs text-gray-400 mt-1">Expand your team</p>
                     </div>
-                    <div class="w-12 h-12 rounded-full bg-primary/10 border-2 border-dashed border-primary/30 group-hover:border-primary/50 flex items-center justify-center transition-all">
-                        <i class="ri-user-add-line text-primary text-2xl group-hover:scale-110 transition-transform"></i>
+                    <div
+                        class="w-12 h-12 rounded-full bg-primary/10 border-2 border-dashed border-primary/30 group-hover:border-primary/50 flex items-center justify-center transition-all">
+                        <i
+                            class="ri-user-add-line text-primary text-2xl group-hover:scale-110 transition-transform"></i>
                     </div>
                 </a>
             </div>
@@ -62,21 +63,6 @@ Manage Team
 
         <!-- Main Table Card -->
         <div class="bg-gray-800/40 rounded-xl shadow-lg border border-gray-700 overflow-hidden">
-            <!-- Table Header with Search -->
-            <div
-                class="px-6 py-4 bg-gray-800/60 border-b border-gray-700 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <div class="flex-grow basis-[300px] relative">
-                    <i class="ri-search-line absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg"></i>
-                    <input type="text" id="searchInput"
-                        placeholder="{{ search_placeholder|default:'Search...' }}"
-                        class="w-[70%] pl-10 pr-4 py-2 rounded-lg bg-gray-800 border border-gray-700 text-sm text-white focus:outline-none focus:ring-2 focus:ring-primary">
-                </div>
-                <div class="flex items-center gap-2 text-sm text-gray-400">
-                    <i class="ri-information-line"></i>
-                    <span>{{ employees|length }} employee{{ employees|pluralize }}</span>
-                </div>
-            </div>
-
             <!-- Table Content -->
             <div class="overflow-x-auto">
                 <table class="w-full">
@@ -90,7 +76,8 @@ Manage Team
                     </thead>
                     <tbody class="text-white divide-y divide-gray-700/50" id="employeeTableBody">
                         {% for employee in employees %}
-                        <tr class="hover:bg-gray-800/30 transition">
+                        <tr class="task-row hover:bg-gray-800/30 transition"
+                            data-search="{{ employee.full_name }} {{ employee.username }} {{ employee.email }} {{ employee.role }}">
                             <td class="px-6 py-4">
                                 <div class="flex items-center gap-3">
                                     {% if employee.image %}
@@ -125,10 +112,10 @@ Manage Team
                                         title="View Profile">
                                         <i class="ri-eye-line"></i>
                                     </a>
-                                    <form method="post" action="{% url 'HrApp:delete_employee' employee.id %}" class="delete-employee-form">
+                                    <form method="post" action="{% url 'HrApp:delete_employee' employee.id %}"
+                                        class="delete-employee-form">
                                         {% csrf_token %}
-                                        <button type="button"
-                                            data-confirm-name="{{ employee.name }}"
+                                        <button type="button" data-confirm-name="{{ employee.name }}"
                                             class="delete-btn p-2 rounded-lg hover:bg-gray-700/50 text-red-400 hover:text-red-300 transition"
                                             title="Delete Employee">
                                             <i class="ri-delete-bin-line"></i>
@@ -157,11 +144,21 @@ Manage Team
                         {% endfor %}
                     </tbody>
                 </table>
+                <!-- No Results Message -->
+            <div id="noResults" class="hidden py-8 text-center text-gray-400">
+                <img src="{% static 'Employee_App/Static_Imgs/outline.svg' %}" alt="No Results"
+                    class="w-32 mx-auto mb-4">
+                <h2>No Tasks Found</h2>
+                <p class="mt-4 text-sm text-gray-500">Try adjusting your search or filter options.</p>
+                <button
+                    class="text-purple-500 hover:text-purple-700 px-6 py-2 font-semibold transition duration-300 ease-in-out resetFilter" onclick="reset()">Reset
+                    Filters</button>
+            </div>
             </div>
 
             <!-- Danger Zone (for company deletion) -->
             {% if employees %}
-            <div class="p-6 border-t border-gray-700/50">
+            <div id="dangerButton" class="p-6 border-t border-gray-700/50">
                 <div class="bg-red-900/10 border border-red-900/30 rounded-lg p-4">
                     <h3 class="font-medium text-red-300 flex items-center gap-2 mb-2">
                         <i class="ri-alert-line"></i> Danger Zone
@@ -183,32 +180,5 @@ Manage Team
         </div>
     </div>
 </div>
-
-
-
-<script>
-    // Simple search functionality
-    document.getElementById('searchInput').addEventListener('input', function (e) {
-        const searchValue = e.target.value.toLowerCase();
-        const rows = document.querySelectorAll('#employeeTableBody tr');
-        let hasResults = false;
-
-        rows.forEach(row => {
-            const text = row.textContent.toLowerCase();
-            
-            if (text.includes(searchValue)) {
-                row.style.display = '';
-                hasResults = true;
-            } else {
-                row.style.display = 'none';
-            }
-        });
-
-        document.getElementById('noResults').classList.toggle('hidden', hasResults || searchValue === '');
-    });
-
-    // Show the comformation message when the company/Employee is deleted
-</script>
-
 
 {% endblock %}

@@ -1,0 +1,98 @@
+{% extends 'Hr_App/base.html' %}
+{% load static %}
+{% url 'HrApp:pending_task' as pending_task_url %}
+{% url 'HrApp:all_tasks' as all_tasks_url %}
+
+
+
+{% block title %}
+Completed Tasks
+{% endblock %}
+
+{% block content %}
+{% include 'Hr_App/Components.html' %}
+<div class="w-full max-w-2xl bg-gray-800 p-8 rounded-lg shadow-lg space-y-6 m-auto">
+    <h1 class="text-2xl font-bold text-primary-400">Edit Team: <span class="text-white">{{ team.id }} ~ {{ team.name }}</span></h1>
+
+    <form method="post" action="{% url 'HrApp:edit_active_teams' team.id %}">
+        {% csrf_token %}
+
+        <div class="mb-6">
+            <label class="block text-sm font-medium text-white mb-1">Team Name</label>
+            <input type="text" name="teamName" value="{{ team.name }}"
+                class="w-full px-4 py-2 rounded-lg bg-gray-700 border border-gray-600 text-white focus:outline-none">
+        </div>
+
+        <div class="mb-6">
+            <label class="block text-sm font-medium text-white mb-1">Team Description</label>
+            <textarea name="teamDescription"
+                class="w-full px-4 py-2 rounded-lg bg-gray-700 border border-gray-600 text-white focus:outline-none">
+                {{ team.discription }}
+            </textarea>
+        </div>
+
+        <!-- Groom Team Members Section -->
+        <div class="mb-6">
+            <label class="block text-sm font-medium text-white mb-2">Groom Team Members</label>
+            <div
+                class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-60 overflow-y-auto bg-gray-700 p-4 rounded-lg border border-gray-600">
+                {% for employee in all_employees %}
+                <label class="flex items-center space-x-2 text-white">
+                    <input type="checkbox" name="teamMembers" value="{{ employee.id }}" {% if employee in team.members.all %}checked{% endif %} class="form-checkbox text-blue-500 bg-gray-800 rounded">
+                    <span>{{ employee.full_name }}</span>
+                </label>
+                {% empty %}
+                <p class="text-gray-400">No employees available.</p>
+                {% endfor %}
+            </div>
+
+            <!-- ✅ Info Message -->
+            <p class="mt-2 text-sm text-gray-400 italic">
+                Checked employees are already part of this team.
+            </p>
+        </div>
+
+        <div class="mb-6">
+            <label class="block text-sm font-medium text-white mb-2">
+                Status of the Team (Active / Inactive)
+            </label>
+            <label class="inline-flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" name="teamStatus" id="teamStatusCheckbox"
+                    class="form-checkbox h-5 w-5 text-blue-600" {% if team.is_active %}checked{% endif %}>
+                <span class="text-white">Active</span>
+            </label>
+            <p class="ml-6 -mt-1 text-sm text-gray-400 italic">
+                Currently Team is {% if team.is_active %}Active{% else %}Inactive{% endif %}
+            </p>
+        </div>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const statusCheckbox = document.getElementById('teamStatusCheckbox');
+
+                statusCheckbox.addEventListener('change', function () {
+                    if (!this.checked) {
+                        const confirmDeactivate = confirm("Are you sure you want to mark this team as inactive?\nInactive teams will not be assignable until reactivated.");
+                        if (!confirmDeactivate) {
+                            // Re-check the box if user cancels
+                            this.checked = true;
+                        }
+                    }
+                });
+            });
+        </script>
+
+        <div class="flex justify-end gap-4">
+            <button type="submit"
+                class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2 rounded-lg transition duration-300">
+                Save Changes
+            </button>
+            <a href="{{ back_url }}"
+                class="bg-red-600 hover:bg-red-700 text-white font-semibold px-6 py-2 rounded-lg transition duration-300">
+                Cancle
+            </a>
+        </div>
+    </form>
+
+</div>
+{% endblock %}

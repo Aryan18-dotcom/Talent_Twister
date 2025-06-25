@@ -1,0 +1,499 @@
+{% extends 'Hr_App/base.html' %}
+
+{% load static %}
+
+{% block title %}
+User Profile
+{% endblock %}
+
+{% block content %}
+{% include 'Hr_App/Components.html' %}
+
+<div class="min-h-screen pb-8 px-4">
+    <div class="max-w-6xl mx-auto">
+        <!-- Main Profile Card -->
+        <div
+            class="bg-gray-800/40 rounded-xl shadow-lg border border-gray-400 overflow-hidden">
+            <!-- Card Header -->
+            <div class="bg-gradient-to-r from-primary to-purple-600 px-6 py-4">
+                <h3 class="text-xl font-semibold text-white">{{ user.full_name }}</h3>
+            </div>
+
+            <!-- Card Body -->
+            <div class="p-6">
+                <div class="flex flex-col md:flex-row gap-6">
+                    <!-- Left Column - Profile Image and Basic Info -->
+                    <div
+                        class="md:w-1/3 md:border-r md:border-gray-400 md:pr-6">
+                        <div class="flex flex-col items-center mb-6">
+                            {% if user.image %}
+                            <img src="{{ user.image.url }}"
+                                class="w-40 h-40 rounded-full object-cover border-4 border-primary/30 mb-4"
+                                alt="{{ user.full_name }}">
+                            {% else %}
+                            <div
+                                class="w-40 h-40 rounded-full bg-gray-700 flex items-center justify-center mb-4">
+                                <i
+                                    class="ri-user-line text-6xl text-gray-400"></i>
+                            </div>
+                            {% endif %}
+
+                            <span
+                                class="inline-flex items-center px-4 py-1 rounded-full text-sm font-medium 
+                            {% if user.role == 'Admin' %}bg-purple-900/50 text-purple-300
+                            {% elif user.role == 'Manager' %}bg-yellow-900/50 text-yellow-300
+                            {% else %}bg-gray-700 text-gray-300{% endif %}">
+                                {{ user.role }}
+                            </span>
+                        </div>
+
+                        <div class="space-y-4">
+                            <div>
+                                <h4
+                                    class="flex items-center text-textLight font-medium mb-2">
+                                    <i
+                                        class="ri-id-card-line text-primary mr-2"></i>Department
+                                </h4>
+                                <p class="pl-8 text-gray-400">{{ user.department|default:"N/A" }}</p>
+                            </div>
+
+                            <div>
+                                <h4
+                                    class="flex items-center text-textLight font-medium mb-2">
+                                    <i
+                                        class="ri-building-2-line text-primary mr-2"></i>
+                                        Company Position
+                                </h4>
+                                <p class="pl-8 text-gray-400">{{ user.position }}</p>
+                            </div>
+
+                            <div>
+                                <h4
+                                    class="flex items-center text-textLight font-medium mb-2">
+                                    <i
+                                        class="ri-building-2-line text-primary mr-2"></i>
+                                        Is Online
+                                </h4>
+                                <p
+                                    class="inline-block ml-8 py-1 px-4 rounded-xl bg-gray-700 text-gray-300/70 relative">
+                                    {% if user.is_active %}Online{% else %}Offline{% endif %}
+                                    <span
+                                        class="absolute -bottom-1 -right-[2px] mb-1 ml-1 h-3 w-3 rounded-full {% if user.is_active %}bg-green-500/80{% else %}bg-red-500/80{% endif %}"></span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column - Detailed Information -->
+                    <div class="md:w-2/3">
+                        <div class="grid grid-cols-1 gap-6">
+                            <!-- Personal Details Card -->
+                            <div
+                                class="bg-gray-800/50 rounded-xl border border-gray-400/30 overflow-hidden">
+                                <div
+                                    class="bg-gray-700/50 px-4 py-3 border-b border-gray-400/30">
+                                    <h4
+                                        class="flex items-center text-textLight font-medium">
+                                        <i
+                                            class="ri-user-line text-primary mr-2"></i>Personal
+                                        Details
+                                    </h4>
+                                </div>
+                                <div class="p-4">
+                                    <div class="space-y-4">
+                                        <div
+                                            class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div>
+                                                <p
+                                                    class="text-sm text-gray-400 mb-1">Username</p>
+                                                <p
+                                                    class="font-medium text-white bg-gray-700/30 px-3 py-2 rounded">{{ user.username }}</p>
+                                            </div>
+                                            <div>
+                                                <p
+                                                    class="text-sm text-gray-400 mb-1">Full
+                                                    Name</p>
+                                                <p
+                                                    class="font-medium text-white bg-gray-700/30 px-3 py-2 rounded">{{ user.full_name }}</p>
+                                            </div>
+                                        </div>
+                                        <div
+                                            class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div>
+                                                <p
+                                                    class="text-sm text-gray-400 mb-1">Email</p>
+                                                <p
+                                                    class="font-medium text-white bg-gray-700/30 px-3 py-2 rounded">{{ user.email }}</p>
+                                            </div>
+                                            <div>
+                                                <p
+                                                    class="text-sm text-gray-400 mb-1">Phone</p>
+                                                <p
+                                                    class="font-medium text-white bg-gray-700/30 px-3 py-2 rounded">{{ user.phone_number|default:"N/A" }}</p>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <p
+                                                class="text-sm text-gray-400 mb-1">Gender</p>
+                                            <p
+                                                class="font-medium text-white bg-gray-700/30 px-3 py-2 rounded">{{ user.gender|capfirst|default:"N/A" }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Account Status Card -->
+                            <div
+                                class="bg-gray-800/50 rounded-xl border border-gray-400/30 overflow-hidden">
+                                <div
+                                    class="bg-gray-700/50 px-4 py-3 border-b border-gray-400/30">
+                                    <h4
+                                        class="flex items-center text-textLight font-medium">
+                                        <i
+                                            class="ri-shield-user-line text-primary mr-2"></i>Account
+                                        Status
+                                    </h4>
+                                </div>
+                                <div class="p-4">
+                                    <div
+                                        class="flex flex-col md:flex-row gap-6">
+                                        <div class="flex-1">
+                                            <div class="rounded-lg p-4 mb-4 
+                            {% if user.is_active %}
+                                bg-green-900/30 border border-green-800/50 text-green-300
+                            {% else %}
+                                bg-red-900/30 border border-red-800/50 text-red-300
+                            {% endif %}">
+                                                <div
+                                                    class="flex items-center gap-3">
+                                                    <i
+                                                        class="ri-{% if user.is_active %}checkbox-circle-line{% else %}close-circle-line{% endif %} text-xl"></i>
+                                                    <div>
+                                                        <h5 class="font-medium">
+                                                            {% if user.is_active %}
+                                                            Account is active
+                                                            and in good standing
+                                                            {% else %}
+                                                            Account is Inactive
+                                                            {% endif %}
+                                                        </h5>
+                                                        <p
+                                                            class="text-sm mt-1 opacity-80">
+                                                            {% if user.is_active %}
+                                                            Last login: {{ user.last_login|timesince }} ago
+                                                            {% else %}
+                                                            Account is currently
+                                                            disabled
+                                                            {% endif %}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="flex-1">
+                                            <div class="grid grid-cols-2 gap-4">
+                                                <div>
+                                                    <p
+                                                        class="text-sm text-gray-400 mb-1">Employee
+                                                        ID</p>
+                                                    <p
+                                                        class="font-medium text-white bg-gray-700/30 px-3 py-2 rounded text-center">{{ user.employee_id|default:"N/A" }}</p>
+                                                </div>
+                                                <div>
+                                                    <p
+                                                        class="text-sm text-gray-400 mb-1">Company</p>
+                                                    <p
+                                                        class="font-medium text-white bg-gray-700/30 px-3 py-2 rounded text-center">{{ user.company.name }}</p>
+                                                </div>
+                                            </div>
+                                            <div class="mt-4">
+                                                <p
+                                                    class="text-sm text-gray-400 mb-1">Status</p>
+                                                <div
+                                                    class="flex items-center gap-2 bg-gray-700/30 px-3 py-2 rounded">
+                                                    <span
+                                                        class="h-3 w-3 rounded-full {% if user.is_active %}bg-green-500/80{% else %}bg-red-500/80{% endif %}"></span>
+                                                    <span
+                                                        class="font-medium text-white">
+                                                        {% if user.is_active %}Active{% else %}Inactive{% endif %}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-6 md:border-t border-gray-400">
+                <div class="h-full w-full col-span-2">
+                    <h4
+                        class="flex items-center text-textLight font-medium mb-3">
+                        <i class="ri-team-line text-primary mr-2"></i> 
+                        {% if user.teams.all %}Team Details{% else %}Company Details{% endif %}
+                    </h4>
+                    <div
+                        class="bg-gray-800/50 rounded-lg p-4 border border-gray-400/30">
+                        {% if user.teams.all %}
+                        {% for team in user.teams.all %}
+                        <div class="mb-6 last:mb-0">
+                            <!-- Team Header -->
+                            <div
+                                class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
+                                <div>
+                                    <h3
+                                        class="text-lg font-semibold text-white">{{ team.name }}</h3>
+                                    {% if team.slogan %}
+                                    <p
+                                        class="text-sm text-primary italic">"{{ team.slogan }}"</p>
+                                    {% endif %}
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <span
+                                        class="px-3 py-1 rounded-full text-sm font-medium bg-gray-700 text-gray-300">
+                                        <i class="ri-user-line mr-1"></i> {{ team.total_members }} member{{ team.total_members|pluralize }}
+                                    </span>
+                                    <span
+                                        class="px-3 py-1 rounded-full text-sm font-medium 
+                                {% if team.is_active %}bg-green-900/50 text-green-300{% else %}bg-red-900/50 text-red-300{% endif %}">
+                                        {% if team.is_active %}Active{% else %}Inactive{% endif %}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Team Description -->
+                            {% if team.description %}
+                            <div class="mb-4">
+                                <p class="text-gray-300">{{ team.description }}</p>
+                            </div>
+                            {% endif %}
+
+                            <!-- Team Info Grid -->
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div class="bg-gray-700/30 p-3 rounded-lg">
+                                    <p class="text-sm text-gray-400">Created
+                                        By</p>
+                                    <p class="font-medium text-white">
+                                        {{ team.created_by.full_name }}
+                                    </p>
+                                    <p class="text-xs text-gray-500 mt-1">
+                                        {{ team.created_at|date:"M d, Y" }}
+                                    </p>
+                                </div>
+
+                                <div class="bg-gray-700/30 p-3 rounded-lg">
+                                    <p class="text-sm text-gray-400">Company</p>
+                                    <p class="font-medium text-white">
+                                        {{ team.company.name }}
+                                    </p>
+                                </div>
+
+                                <div class="bg-gray-700/30 p-3 rounded-lg">
+                                    <p class="text-sm text-gray-400">Team
+                                        Lead</p>
+                                    <p class="font-medium text-white">
+                                        {{ team.created_by.full_name }}
+                                    </p>
+                                    <p class="text-xs text-gray-500 mt-1">
+                                        {{ team.created_by.email }}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Team Members Preview -->
+                            <div class="mt-6">
+                                <h5
+                                    class="text-sm font-medium text-gray-400 mb-3">Team
+                                    Members</h5>
+                                <div class="flex flex-wrap gap-3">
+                                    {% for member in team.members.all %}
+                                    <div
+                                        class="flex items-center space-x-2 bg-gray-700/50 px-3 py-2 rounded-full">
+                                        {% if member.image %}
+                                        <img src="{{ member.image.url }}"
+                                            class="w-6 h-6 rounded-full object-cover"
+                                            alt="{{ member.full_name }}">
+                                        {% else %}
+                                        <div
+                                            class="w-6 h-6 rounded-full bg-gray-600 flex items-center justify-center">
+                                            <i
+                                                class="ri-user-line text-xs text-gray-400"></i>
+                                        </div>
+                                        {% endif %}
+                                        <span class="text-sm text-gray-300">{{ member.full_name }}</span>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        {% else %}
+                            <div class="bg-gray-700/30 rounded-lg p-4">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-left">
+                                        <div>
+                                            <p class="text-sm text-gray-400">Company Name</p>
+                                            <p class="font-medium text-white">{{ user.company.name }}</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-gray-400">Domain</p>
+                                            <p class="font-medium text-white">{{ user.company.domain }}</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-gray-400">Industry</p>
+                                            <p class="font-medium text-white">{{ user.company.industry|default:"Not specified" }}</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-gray-400">Company Size</p>
+                                            <p class="font-medium text-white">{{ user.company.company_size|default:"Not specified" }}</p>
+                                        </div>
+                                        <div class="md:col-span-2">
+                                            <p class="text-sm text-gray-400">Description</p>
+                                            <p class="font-medium text-white">{{ user.company.description|default:"No description available" }}</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-gray-400">Working Hours</p>
+                                            <p class="font-medium text-white">{{ user.company.working_hours }}</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-gray-400">Working Days</p>
+                                            <p class="font-medium text-white">{{ user.company.working_days }}</p>
+                                        </div>
+                                </div>
+                                    
+                                {% if user.company.website %}
+                                <div class="mt-4">
+                                    <a href="{{ user.company.website }}" target="_blank" class="inline-flex items-center text-primary hover:text-primary/80">
+                                        <i class="ri-external-link-line mr-2"></i> Visit Company Website
+                                    </a>
+                                </div>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Additional Profile Sections -->
+            <div class="p-6 md:border-t border-gray-400 space-y-6">
+                <!-- About Section -->
+                <div>
+                    <h4
+                        class="flex items-center text-textLight font-medium mb-3">
+                        <i
+                            class="ri-information-line text-primary mr-2"></i>About
+                    </h4>
+                    <div
+                        class="bg-gray-800/50 rounded-lg p-4 border border-gray-400/30">
+                        {% if user.about %}
+                        <p class="text-gray-300">{{ user.about }}</p>
+                        {% else %}
+                        <p class="text-gray-500 italic">No information
+                            provided</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Skills Section -->
+                <div>
+                    <h4
+                        class="flex items-center text-textLight font-medium mb-3">
+                        <i class="ri-tools-line text-primary mr-2"></i>{% if user.teams.all %}Skills{% else %}Co-Curricular Active{% endif %}
+                    </h4>
+                    <div
+                        class="bg-gray-800/50 rounded-lg p-4 border border-gray-400/30">
+                        {% if user.teams.all %}
+                            {% if user.skills.all %}
+                            <div class="flex flex-wrap gap-2">
+                                {% for skill in user.skills.all %}
+                                <span
+                                    class="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm">
+                                    {{ skill.name }}
+                                </span>
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            <p class="text-gray-500 italic">No skills listed</p>
+                            {% endif %}
+                        {% else %}
+                            {% if user.co_curricular %}
+                            <div class="flex flex-wrap gap-2">
+                                {% for skill in user.co_curricular %}
+                                <span
+                                    class="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm">
+                                    {{ skill.name }}
+                                </span>
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            <p class="text-gray-500 italic">No activites listed</p>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Work Experience Section -->
+                <div>
+                    <h4
+                        class="flex items-center text-textLight font-medium mb-3">
+                        <i
+                            class="ri-briefcase-4-line text-primary mr-2"></i>Work
+                        Experience
+                    </h4>
+                    <div
+                        class="bg-gray-800/50 rounded-lg p-4 border border-gray-400/30">
+                        {% if user.experience.all %}
+                        <div class="space-y-6">
+                            {% for exp in user.experience.all %}
+                            <div
+                                class="relative pl-5 border-l-2 border-primary">
+                                <!-- Timeline Dot -->
+                                <div
+                                    class="absolute -left-2 top-1 w-4 h-4 rounded-full bg-primary border-4 border-gray-800">
+                                </div>
+
+                                <!-- Job Info -->
+                                <div
+                                    class="flex justify-between flex-col md:flex-row mb-1">
+                                    <div>
+                                        <h5
+                                            class="font-medium text-textLight">{{
+                                            exp.job_title }}</h5>
+                                        <p class="text-gray-400 text-sm">{{
+                                            exp.company_name }}</p>
+                                    </div>
+                                    <p
+                                        class="text-sm text-gray-500 mt-1 md:mt-0">
+                                        {{ exp.start_date|date:"M Y" }} –
+                                        {% if exp.end_date %}{{
+                                        exp.end_date|date:"M Y" }}{% else
+                                        %}Present{% endif %}
+                                    </p>
+                                </div>
+
+                                {% if exp.description %}
+                                <p class="text-sm text-gray-300 mt-2">{{
+                                    exp.description }}</p>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <p class="text-gray-500 italic">No work experience
+                            listed</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{{ meta|json_script:"meta-data" }}
+
+<script>
+    const meta = JSON.parse(document.getElementById('meta-data').textContent);
+    console.log(meta);
+</script>
+{% endblock %}

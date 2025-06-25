@@ -5,8 +5,8 @@
 {% url 'HrApp:Dashboard' as dashboard_url %}
 {% url 'HrApp:Completed_Task' as complete_task_url %}
 {% url 'HrApp:Accepted_Task' as accepted_task_url %}
-{% url 'HrApp:team_members' as team_members_url %}
 {% url 'HrApp:active_teams' as active_teams_url %}
+{% url 'HrApp:active_members' as active_members_url %}
 {% url 'HrApp:pending_task' as pending_task_url %}
 {% url 'HrApp:completed_task' as completed_task_url %}
 {% url 'HrApp:accepted_task' as all_accepted_task_url %}
@@ -14,7 +14,7 @@
 {% url 'HrApp:Manage_Team' as manage_team_url %}
 {% url 'HrApp:Post_Task' as post_task_url %}
 {% url 'HrApp:Build_Team' as build_team_url %}
-{% url 'HrApp:employees_on_leave' as employees_leave_url %}
+{% url 'HrApp:EmployeeStatus' as employees_leave_url %}
 
 
 <div class="grid grid-cols-4 gap-6 mt-8 h-40">
@@ -496,9 +496,9 @@
 
 <div class="grid grid-cols-4 gap-6 mt-8 h-36">
     <!-- Active Employees -->
-    <a href="{{ team_members_url }}"
+    <a href="{{ active_members_url }}"
         class="bg-gray-800 p-6 rounded-lg cursor-pointer shadow-lg transition-all transform hover:scale-[1.025] hover:-translate-y-2 hover:border-2 border-blue-500"
-        data-tooltip="View all Active Employees">
+        data-tooltip="View Active Employees for all teams">
         <div class="flex items-center justify-between">
             <div class="w-12 h-12 rounded-full bg-blue-500/10 flex items-center justify-center">
                 <i class="ri-team-line text-2xl text-blue-400"></i>
@@ -548,16 +548,17 @@
             <div class="w-12 h-12 rounded-full bg-yellow-400/10 flex items-center justify-center">
                 <i class="ri-folder-line text-2xl text-yellow-400"></i>
             </div>
-            <span class="text-4xl font-semibold text-yellow-400">
-                {% if employee_on_leave %}
-                    {{ employee_on_leave }}
-                {% else %}
-                    All Present
-                {% endif %}
-            </span>
+            <div class="text-right">
+                <span class="text-4xl font-semibold text-yellow-400">{{ employee_on_leave }}</span>
+                <span class="text-xl text-gray-400">of {{ total_employees }}</span>
+                <div class="text-xs mt-1 {% if employee_on_leave > 0 %}text-red-400{% else %}text-green-400{% endif %}">
+                    {% if employee_on_leave > 0 %}Some employees on leave{% else %}All employees are present{% endif %}
+                </div>
+            </div>
+
         </div>
         <div class="mt-3">
-            <h3 class="text-gray-200 font-medium">Employees on Leave</h3>
+            <h3 class="text-gray-200 font-medium">Employees Status</h3>
         </div>
     </a>
 

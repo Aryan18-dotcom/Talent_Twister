@@ -4,88 +4,268 @@
     <div id="SettingsContainer"
         class="fixed top-0 left-full w-full h-screen bg-gray-900 text-white shadow-lg transform transition-transform duration-500 ease-in-out">
         <div id="settingsPanel"
-            class=" h-full w-full bg-[#111827] text-white shadow-lg p-6">
-            <a href="{% url 'HrApp:Dashboard' %}" id="Back">
-                <i class="ri-close-fill text-3xl cursor-pointer absolute top-4 right-4 hover:text-primary"></i>
+            class="h-full w-full bg-[#111827] text-white shadow-lg p-6 overflow-y-auto">
+            <a href="{% url 'HrApp:Dashboard' %}" id="Back" class="absolute top-4 right-4">
+                <i class="ri-close-fill text-3xl cursor-pointer hover:text-primary transition-colors"></i>
             </a>
 
-            <h2 class="text-2xl font-semibold mb-4 text-center">Settings</h2>
+            <div class="text-center mb-6">
+                <h2 class="text-2xl font-semibold mb-1">Settings</h2>
+                <p class="text-gray-400 text-sm">Manage your Talent Twister account</p>
+            </div>
 
-            <!-- Profile Section Button -->
-            <a href="{% url 'HrApp:profile_settings' %}"
-                class="flex items-center gap-4 p-4 bg-gray-800 rounded-lg mb-4 cursor-pointer"
-                onclick="openSection('profileSettings')">
-                <div class="w-16 h-16 rounded-full bg-gray-700 flex items-center justify-center overflow-hidden"
-                    id="avatarContainer">
-                    {% if employee_dets.image %}
-                    <img src="{{ employee_dets.image.url }}" id="avatarImage"
-                        class="w-full h-full object-cover object-top">
-                    {% else %}
-                    <i class="ri-user-line text-xl" id="avatarPlaceholder"></i>
-                    {% endif %}
+            <!-- Profile Section -->
+            <div class="mb-6">
+                <a href="{% url 'HrApp:profile_settings' %}"
+                    class="flex items-center gap-4 p-4 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors cursor-pointer group">
+                    <div class="w-16 h-16 rounded-full bg-gray-700 flex items-center justify-center overflow-hidden border-2 border-primary/50 group-hover:border-primary transition-colors"
+                        id="avatarContainer">
+                        {% if employee_dets.image %}
+                        <img src="{{ employee_dets.image.url }}" id="avatarImage"
+                            class="w-full h-full object-cover object-top">
+                        {% else %}
+                        <i class="ri-user-line text-2xl text-gray-400"></i>
+                        {% endif %}
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-lg font-medium" id="profileName">{{ employee_dets.username }}</p>
+                        <p class="text-sm text-gray-400" id="Username">{{ employee_dets.email }}</p>
+                    </div>
+                    <i class="ri-arrow-right-s-line text-xl text-gray-400 group-hover:text-primary transition-colors"></i>
+                </a>
+            </div>
+
+            <!-- Account Settings Section -->
+            <div class="mb-6">
+                <h3 class="text-gray-400 text-xs uppercase tracking-wider mb-3 px-2">Account Settings</h3>
+                
+                <div class="space-y-2">
+                    <!-- Talent Profile Visibility -->
+                    <a href="{ url 'HrApp:profile_visibility' }"
+                        class="flex items-center justify-between p-3 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors cursor-pointer group">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                                <i class="ri-eye-line text-primary"></i>
+                            </div>
+                            <div>
+                                <p class="font-medium">Profile Visibility</p>
+                                <p class="text-sm text-gray-400">Control who sees your talent profile</p>
+                            </div>
+                        </div>
+                        <i class="ri-arrow-right-s-line text-gray-400 group-hover:text-primary transition-colors"></i>
+                    </a>
+                    
+                    <!-- Password and Security -->
+                    <a href="{ url 'HrApp:security_settings' }"
+                        class="flex items-center justify-between p-3 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors cursor-pointer group">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                                <i class="ri-lock-line text-primary"></i>
+                            </div>
+                            <div>
+                                <p class="font-medium">Password & Security</p>
+                                <p class="text-sm text-gray-400">Change password and security settings</p>
+                            </div>
+                        </div>
+                        <i class="ri-arrow-right-s-line text-gray-400 group-hover:text-primary transition-colors"></i>
+                    </a>
+                    
+                    <!-- Personal Details -->
+                    <a href="{% url 'HrApp:personal_details' %}"
+                        class="flex items-center justify-between p-3 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors cursor-pointer group">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                                <i class="ri-user-3-line text-primary"></i>
+                            </div>
+                            <div>
+                                <p class="font-medium">Personal Details</p>
+                                <p class="text-sm text-gray-400">Update your personal information</p>
+                            </div>
+                        </div>
+                        <i class="ri-arrow-right-s-line text-gray-400 group-hover:text-primary transition-colors"></i>
+                    </a>
                 </div>
-                <div>
-                    <p class="text-lg font-medium" id="profileName">{{ employee_dets.username }}</p>
-                    <p class="text-sm text-gray-400" id="Username">{{ employee_dets.email }}</p>
+            </div>
+
+            <!-- Talent Preferences Section -->
+            <div class="mb-6">
+                <h3 class="text-gray-400 text-xs uppercase tracking-wider mb-3 px-2">Talent Preferences</h3>
+                
+                <div class="space-y-2">
+                    <!-- Skill Preferences -->
+                    <a href="{ url 'HrApp:skill_preferences' }"
+                        class="flex items-center justify-between p-3 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors cursor-pointer group">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                                <i class="ri-star-line text-primary"></i>
+                            </div>
+                            <div>
+                                <p class="font-medium">Skill Preferences</p>
+                                <p class="text-sm text-gray-400">Manage your skills and expertise</p>
+                            </div>
+                        </div>
+                        <i class="ri-arrow-right-s-line text-gray-400 group-hover:text-primary transition-colors"></i>
+                    </a>
+                    
+                    <!-- Job Alerts -->
+                    <a href="{ url 'HrApp:job_alerts' }"
+                        class="flex items-center justify-between p-3 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors cursor-pointer group">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                                <i class="ri-notification-3-line text-primary"></i>
+                            </div>
+                            <div>
+                                <p class="font-medium">Job Alerts</p>
+                                <p class="text-sm text-gray-400">Configure your job notifications</p>
+                            </div>
+                        </div>
+                        <i class="ri-arrow-right-s-line text-gray-400 group-hover:text-primary transition-colors"></i>
+                    </a>
                 </div>
-            </a>
-
-            <!-- Connected Experiences Button -->
-            <div class="bg-gray-800 p-3 rounded-lg mb-2 flex items-center justify-between cursor-pointer"
-                onclick="openSection('shareProfile')">
-                <span>Sharing across profiles</span>
-                <i class="ri-arrow-right-s-line"></i>
             </div>
 
-            <!-- Account Settings Buttons -->
-            <div class="bg-gray-800 p-3 rounded-lg mb-2 flex items-center justify-between cursor-pointer"
-                onclick="openSection('securitySettings')">
-                <span>Password and Security</span>
-                <i class="ri-arrow-right-s-line"></i>
+            <!-- Privacy & Permissions Section -->
+            <div class="mb-6">
+                <h3 class="text-gray-400 text-xs uppercase tracking-wider mb-3 px-2">Privacy & Permissions</h3>
+                
+                <div class="space-y-2">
+                    <!-- Information & Permissions -->
+                    <a href="{ url 'HrApp:info_permissions' }"
+                        class="flex items-center justify-between p-3 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors cursor-pointer group">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                                <i class="ri-shield-keyhole-line text-primary"></i>
+                            </div>
+                            <div>
+                                <p class="font-medium">Information & Permissions</p>
+                                <p class="text-sm text-gray-400">Control your data and access</p>
+                            </div>
+                        </div>
+                        <i class="ri-arrow-right-s-line text-gray-400 group-hover:text-primary transition-colors"></i>
+                    </a>
+                    
+                    <!-- Connected Accounts -->
+                    <a href="{ url 'HrApp:connected_accounts' }"
+                        class="flex items-center justify-between p-3 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors cursor-pointer group">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                                <i class="ri-share-line text-primary"></i>
+                            </div>
+                            <div>
+                                <p class="font-medium">Connected Accounts</p>
+                                <p class="text-sm text-gray-400">Manage linked social accounts</p>
+                            </div>
+                        </div>
+                        <i class="ri-arrow-right-s-line text-gray-400 group-hover:text-primary transition-colors"></i>
+                    </a>
+                </div>
             </div>
-            <div class="bg-gray-800 p-3 rounded-lg mb-2 flex items-center justify-between cursor-pointer"
-                onclick="openSection('personalDetails')">
-                <span>Personal Details</span>
-                <i class="ri-arrow-right-s-line"></i>
+
+            <!-- System Section -->
+            <div class="mb-6">
+                <h3 class="text-gray-400 text-xs uppercase tracking-wider mb-3 px-2">System</h3>
+                
+                <div class="space-y-2">
+                    <!-- Notifications -->
+                    <a href="{ url 'HrApp:notification_settings' }"
+                        class="flex items-center justify-between p-3 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors cursor-pointer group">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                                <i class="ri-notification-line text-primary"></i>
+                            </div>
+                            <div>
+                                <p class="font-medium">Notifications</p>
+                                <p class="text-sm text-gray-400">Customize your notification preferences</p>
+                            </div>
+                        </div>
+                        <i class="ri-arrow-right-s-line text-gray-400 group-hover:text-primary transition-colors"></i>
+                    </a>
+                    
+                    <!-- Display & Language -->
+                    <a href="{ url 'HrApp:display_settings' }"
+                        class="flex items-center justify-between p-3 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors cursor-pointer group">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                                <i class="ri-palette-line text-primary"></i>
+                            </div>
+                            <div>
+                                <p class="font-medium">Display & Language</p>
+                                <p class="text-sm text-gray-400">Theme, font size, and language</p>
+                            </div>
+                        </div>
+                        <i class="ri-arrow-right-s-line text-gray-400 group-hover:text-primary transition-colors"></i>
+                    </a>
+                </div>
             </div>
-            <div class="bg-gray-800 p-3 rounded-lg mb-2 flex items-center justify-between cursor-pointer"
-                onclick="openSection('infoPermissions')">
-                <span>Your Information and Permissions</span>
-                <i class="ri-arrow-right-s-line"></i>
-            </div>
-            <div class="bg-gray-800 p-3 rounded-lg mb-2 flex items-center justify-between cursor-pointer"
-                onclick="openSection('adPreferences')">
-                <span>Ad Preferences</span>
-                <i class="ri-arrow-right-s-line"></i>
+
+            <!-- Help & Support Section -->
+            <div class="mb-6">
+                <h3 class="text-gray-400 text-xs uppercase tracking-wider mb-3 px-2">Help & Support</h3>
+                
+                <div class="space-y-2">
+                    <!-- Help Center -->
+                    <a href="{ url 'HrApp:help_center' }"
+                        class="flex items-center justify-between p-3 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors cursor-pointer group">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                                <i class="ri-question-line text-primary"></i>
+                            </div>
+                            <div>
+                                <p class="font-medium">Help Center</p>
+                                <p class="text-sm text-gray-400">Find answers to common questions</p>
+                            </div>
+                        </div>
+                        <i class="ri-arrow-right-s-line text-gray-400 group-hover:text-primary transition-colors"></i>
+                    </a>
+                    
+                    <!-- Contact Support -->
+                    <a href="{ url 'HrApp:contact_support' }"
+                        class="flex items-center justify-between p-3 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors cursor-pointer group">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                                <i class="ri-customer-service-2-line text-primary"></i>
+                            </div>
+                            <div>
+                                <p class="font-medium">Contact Support</p>
+                                <p class="text-sm text-gray-400">Get help from our support team</p>
+                            </div>
+                        </div>
+                        <i class="ri-arrow-right-s-line text-gray-400 group-hover:text-primary transition-colors"></i>
+                    </a>
+                </div>
             </div>
 
             <!-- Logout Button -->
-            <form action="{% url 'HrApp:logout' %}" method="post">
+            <form action="{% url 'HrApp:logout' %}" method="post" class="mt-8">
                 {% csrf_token %}
-                <button class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg logout"
-                    type="submit">Logout</button>
+                <button class="w-full flex items-center justify-center gap-2 bg-red-600/10 hover:bg-red-600/20 text-red-500 hover:text-red-400 font-medium py-3 px-4 rounded-lg transition-colors"
+                    type="submit">
+                    <i class="ri-logout-box-r-line"></i>
+                    <span>Logout</span>
+                </button>
             </form>
-            {% if message %}
-                <h2>message</h2>
-            {% endif %}
+
+            <!-- App Version -->
+            <div class="mt-6 text-center">
+                <p class="text-gray-500 text-xs">Talent Twister v1.0.0</p>
+            </div>
         </div>
     </div>
+
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             if (!localStorage.getItem("SettingsAnimationPlayed")) {
                 setTimeout(() => {
                     gsap.to("#SettingsContainer", {
                         left: 0,
-                        duration: .3,
+                        duration: 0.3,
                         ease: "power2.out"
                     });
-
                     localStorage.setItem("SettingsAnimationPlayed", "true");
                 }, 200);
             } else {
                 document.getElementById("SettingsContainer").style.left = "0";
             }
-
 
             const backButton = document.getElementById("Back");
             if (backButton) {
@@ -94,6 +274,5 @@
                 });
             }
         });
-
     </script>
 {% endblock %}

@@ -1,0 +1,128 @@
+{% extends 'Employee_App/Settings/base.html' %}
+
+{% block content %}
+<div id="SettingsContainer" class="fixed top-0 left-full w-full h-screen bg-gray-900 text-white shadow-lg transform transition-transform duration-500 ease-in-out">
+    <div id="settingsPanel" class="h-full w-full bg-[#111827] text-white shadow-lg p-6 overflow-y-auto">
+        <!-- Back button -->
+        <div class="flex items-center mb-6">
+            <a href="{% url 'HrApp:profile_settings' %}" class="mr-4">
+                <i class="ri-arrow-left-line text-2xl"></i>
+            </a>
+            <h2 class="text-2xl font-semibold">Profile Visibility</h2>
+        </div>
+
+        <div class="space-y-6">
+            <!-- Main Profile Visibility -->
+            <div class="bg-gray-800 rounded-lg p-4">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-medium">Profile Visibility Mode</h3>
+                    <div class="relative">
+                        <select class="appearance-none bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 pr-8 focus:outline-none focus:ring-2 focus:ring-primary">
+                            <option value="public" selected>Public</option>
+                            <option value="connections">Connections Only</option>
+                            <option value="private">Private</option>
+                        </select>
+                        <i class="ri-arrow-down-s-line absolute right-3 top-2.5 text-gray-400"></i>
+                    </div>
+                </div>
+                <p class="text-gray-400 text-sm">
+                    Control who can see your talent profile. Public profiles are visible to anyone on Talent Twister.
+                </p>
+            </div>
+
+            <!-- Section-Specific Visibility -->
+            <div class="bg-gray-800 rounded-lg p-4">
+                <h3 class="font-medium mb-4">Section Visibility</h3>
+                
+                <div class="space-y-4">
+                    <!-- Contact Information -->
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <p class="font-medium">Contact Information</p>
+                            <p class="text-gray-400 text-sm">Email, phone number, and location</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" class="sr-only peer" checked>
+                            <div class="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                        </label>
+                    </div>
+                    
+                    <!-- Skills -->
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <p class="font-medium">Skills & Expertise</p>
+                            <p class="text-gray-400 text-sm">Your listed skills and proficiency levels</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" class="sr-only peer" checked>
+                            <div class="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                        </label>
+                    </div>
+                    
+                    <!-- Work Experience -->
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <p class="font-medium">Work Experience</p>
+                            <p class="text-gray-400 text-sm">Your employment history and roles</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" class="sr-only peer" checked>
+                            <div class="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Visibility Exceptions -->
+            <div class="bg-gray-800 rounded-lg p-4">
+                <h3 class="font-medium mb-4">Visibility Exceptions</h3>
+                
+                <div class="mb-4">
+                    <label class="block text-gray-400 text-sm mb-2">Hide Profile From Specific Companies</label>
+                    <div class="flex gap-2">
+                        <input type="text" class="flex-1 bg-gray-700 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-primary" placeholder="Search companies...">
+                        <button class="px-4 py-2 rounded-lg bg-primary hover:bg-primary-dark">Add</button>
+                    </div>
+                </div>
+                
+                <div class="space-y-2">
+                    <div class="flex justify-between items-center p-2 bg-gray-700 rounded">
+                        <span>Acme Corp</span>
+                        <button class="text-red-500 hover:text-red-400">
+                            <i class="ri-close-line"></i>
+                        </button>
+                    </div>
+                    <div class="flex justify-between items-center p-2 bg-gray-700 rounded">
+                        <span>TechSolutions Inc</span>
+                        <button class="text-red-500 hover:text-red-400">
+                            <i class="ri-close-line"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Save Button -->
+            <button class="w-full py-3 rounded-lg bg-primary hover:bg-primary-dark font-medium transition-colors">
+                Save Visibility Settings
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        if (!localStorage.getItem("SettingsAnimationPlayed")) {
+            setTimeout(() => {
+                gsap.to("#SettingsContainer", {
+                    left: 0,
+                    duration: .3,
+                    ease: "power2.out"
+                });
+                localStorage.setItem("SettingsAnimationPlayed", "true");
+            }, 200);
+        } else {
+            document.getElementById("SettingsContainer").style.left = "0";
+        }
+    });
+</script>
+{% endblock %}

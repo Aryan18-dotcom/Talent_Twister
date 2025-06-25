@@ -341,11 +341,12 @@ Completed Tasks
                 <!-- Card Footer with Action Buttons -->
                 <div class="bg-gray-800/50 px-6 py-4 border-t border-gray-400">
                     <div class="flex justify-end">
-                        <form method="post" action="{% url 'HrApp:delete_employee' employee.id %}">
+                        <form method="post" action="{% url 'HrApp:delete_employee' employee.id %}"
+                            class="delete-employee-form">
                             {% csrf_token %}
-                            <button type="submit"
-                                class="flex items-center space-x-2 bg-red-900/50 hover:bg-red-900/70 border border-red-700 text-red-300 hover:text-red-200 px-4 py-2 rounded-lg transition"
-                                onclick="return confirm('Permanently delete {{ employee.full_name|escapejs }}?')">
+                            <button type="button" data-message='<p>Are you sure you want to remove </br><strong>{{ employee.full_name }}</strong> from the team?</p>'
+                                class="delete-btn p-2 rounded-lg hover:bg-gray-700/50 text-red-400 hover:text-red-300 transition"
+                                title="Delete Employee">
                                 <i class="ri-delete-bin-line"></i>
                                 <span>Delete Employee</span>
                             </button>

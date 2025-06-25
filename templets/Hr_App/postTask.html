@@ -7,183 +7,246 @@
 <style>
     .custom-select {
         background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23CBD5E0'%3E%3Cpath d='M12 15l-5-5h10l-5 5z'/%3E%3C/svg%3E");
-        background-position: right 0.75rem center;
+        background-position: right 1rem center;
         background-repeat: no-repeat;
-        background-size: 1.5em;
+        background-size: 1.25em;
     }
 
-    .task-input:focus {
-        box-shadow: 0 0 0 2px rgba(142, 111, 247, 0.5);
+    .form-input {
+        transition: all 0.3s ease;
+        background-color: rgba(30, 41, 59, 0.7);
+        border: 1px solid rgba(71, 85, 105, 0.5);
+    }
+
+    .form-input:focus {
+        box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
+        border-color: rgba(139, 92, 246, 0.8);
+    }
+
+    .gradient-header {
+        background: linear-gradient(135deg, rgba(109, 40, 217, 0.8) 0%, rgba(124, 58, 237, 0.9) 100%);
+    }
+
+    .submit-btn {
+        background: linear-gradient(135deg, rgba(109, 40, 217, 0.9) 0%, rgba(124, 58, 237, 1) 100%);
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .submit-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(124, 58, 237, 0.3);
+        background: linear-gradient(135deg, rgba(109, 40, 217, 1) 0%, rgba(124, 58, 237, 1) 100%);
+    }
+
+    .glass-card {
+        background: rgba(30, 41, 59, 0.8);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .input-icon {
+        color: rgba(148, 163, 184, 0.8);
     }
 </style>
 
 <!-- Main Content -->
 <main class="flex-1 flex items-center justify-center p-6">
-    <div class="w-full max-w-xl bg-gray-800 rounded-xl shadow-xl border border-[#3E3E52] overflow-hidden">
+    <div class="w-full max-w-2xl glass-card rounded-xl shadow-2xl overflow-hidden">
         <!-- Form Header -->
-        <div class="bg-gradient-to-r from-purple-600/50 to-purple-700 px-8 py-5">
-            <h2 class="text-2xl font-bold text-white flex items-center">
-                <i class="ri-task-line mr-3"></i>
-                Assign New Task
-            </h2>
-            <p class="text-sm text-purple-200 mt-1">Assign tasks to your team members with deadlines</p>
+        <div class="gradient-header px-8 py-6">
+            <div class="flex items-center space-x-4">
+                <div class="p-3 rounded-lg bg-white/10 backdrop-blur-sm">
+                    <i class="ri-task-line text-2xl text-white"></i>
+                </div>
+                <div>
+                    <h2 class="text-2xl font-bold text-white">Assign New Task</h2>
+                    <p class="text-sm text-purple-100/90 mt-1">Streamline your workflow with clear task assignments</p>
+                </div>
+            </div>
         </div>
 
         <!-- Task Form -->
         <form id="taskForm" action="{% url 'HrApp:Post_Task' %}" method="POST" class="p-8 space-y-6">
             {% csrf_token %}
             <!-- Task Heading -->
-            <div class="space-y-2">
-                <label for="taskHeading" class="block text-sm font-medium text-gray-400">Task Title</label>
+            <div class="space-y-3">
+                <label for="taskHeading" class="block text-sm font-medium text-gray-300">Task Title</label>
                 <div class="relative">
-                    <input name="taskHeading" type="text" placeholder="Enter task title" required
-                        class="task-input w-full bg-gray-800/70 text-gray-400 p-3.5 rounded-lg border border-[#3E3E52] focus:outline-none focus:border-primary pl-11">
-                    <i class="ri-text-block absolute left-3.5 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                    <input name="taskHeading" type="text" placeholder="Enter a clear, concise title" required
+                        class="form-input w-full text-gray-200 p-3.5 rounded-lg focus:outline-none pl-12">
+                    <i class="ri-text-block absolute left-4 top-1/2 transform -translate-y-1/2 input-icon"></i>
                 </div>
             </div>
 
             <!-- Task Description -->
-            <div class="space-y-2">
-                <label for="taskDescription" class="block text-sm font-medium text-gray-400">Description</label>
+            <div class="space-y-3">
+                <label for="taskDescription" class="block text-sm font-medium text-gray-300">Description</label>
                 <div class="relative">
-                    <textarea name="taskDescription" placeholder="Enter detailed description" required rows="4"
-                        class="task-input w-full bg-gray-800/70 text-gray-400 p-3.5 rounded-lg border border-[#3E3E52] focus:outline-none focus:border-primary pl-11 resize-none"></textarea>
-                    <i class="ri-file-text-line absolute left-3.5 top-4 text-gray-400"></i>
+                    <textarea name="taskDescription" placeholder="Provide detailed instructions and expectations" required rows="4"
+                        class="form-input w-full text-gray-200 p-3.5 rounded-lg focus:outline-none pl-12 resize-none"></textarea>
+                    <i class="ri-file-text-line absolute left-4 top-4 input-icon"></i>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Team Selection -->
+                <div class="space-y-3">
+                    <label for="taskDate" class="block text-sm font-medium text-gray-300">Team</label>
+                    <div class="relative">
+                        <select id="teamSelect" required
+                                class="custom-select form-input w-full text-gray-200 p-3.5 rounded-lg focus:outline-none appearance-none pl-12 pr-10">
+                                <option value="" selected disabled>Select Team</option>
+                                {% if teams %}
+                                    {% for team in teams %}
+                                        <option teamName="{{ team.name }}" employess="{% if employess %}{{ employees }}{% else %}null{% endif %}">{{ team.name }}</option>
+                                    {% endfor %}
+                                {% else %}
+                                    <option value="">No Team available</option>
+                                {% endif %}
+                            </select>
+                            <i class="ri-team-line absolute left-4 top-1/2 transform -translate-y-1/2 input-icon"></i>
+                    </div>
+                </div>
+
+                <!-- Assign To -->
+                <div class="space-y-3">
+                    <label for="employeeSelect" class="block text-sm font-medium text-gray-300">Assign To</label>
+                    <div class="relative">
+                        <select id="employeeSelect" name="employeeSelect" required
+                            class="custom-select form-input w-full text-gray-200 p-3.5 rounded-lg focus:outline-none appearance-none pl-12 pr-10">
+                            <option value="" selected disabled>Select Team First</option>
+                        </select>
+                        <i class="ri-user-line absolute left-4 top-1/2 transform -translate-y-1/2 input-icon"></i>
+                    </div>
                 </div>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <!-- Due Date -->
-                <div class="space-y-2">
-                    <label for="taskDate" class="block text-sm font-medium text-gray-400">Due Date</label>
+                <div class="space-y-3">
+                    <label for="taskDate" class="block text-sm font-medium text-gray-300">Due Date</label>
                     <div class="relative">
                         <input type="date" name="taskDate" required
-                            class="task-input w-full bg-gray-800/70 text-gray-400 p-3.5 rounded-lg border border-[#3E3E52] focus:outline-none focus:border-primary pl-11" min="{{ current_time|date:'Y-m-d' }}">
-                        <i
-                            class="ri-calendar-line absolute left-3.5 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                            class="form-input w-full text-gray-200 p-3.5 rounded-lg focus:outline-none pl-12" min="{{ current_time|date:'Y-m-d' }}">
+                        <i class="ri-calendar-line absolute left-4 top-1/2 transform -translate-y-1/2 input-icon"></i>
                     </div>
                 </div>
 
-                <!-- Assign To -->
-                <div class="space-y-2">
-                    <label for="employeeSelect" class="block text-sm font-medium text-gray-400">Assign To</label>
+                <!-- Priority -->
+                <div class="space-y-3">
+                    <label for="taskPriority" class="block text-sm font-medium text-gray-300">Priority</label>
                     <div class="relative">
-                        <select name="employeeSelect" required
-                            class="custom-select w-full bg-gray-800 text-gray-400 p-3.5 rounded-lg border border-[#3E3E52] focus:outline-none focus:border-primary appearance-none pl-11 pr-10">
-                            <option value="" selected disabled>Select Employee</option>
-                            {% if employees %}
-                            {% for emp in employees %}
-                            <option value="{{ emp.id }}">{{ emp.username }} ({{ emp.role }})</option>
-                            {% endfor %}
-                            {% else %}
-                            <option value="">No employees available</option>
-                            {% endif %}
+                        <select name="Taskpriority" required
+                            class="custom-select form-input w-full text-gray-200 p-3.5 rounded-lg focus:outline-none appearance-none pl-12 pr-10">
+                            <option value="" selected disabled>Select Priority</option>
+                            <option value="Low" class="bg-gray-800 text-green-400">Low Priority</option>
+                            <option value="Medium" class="bg-gray-800 text-yellow-400">Medium Priority</option>
+                            <option value="High" class="bg-gray-800 text-red-400">High Priority</option>
                         </select>
-                        <i class="ri-user-line absolute left-3.5 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                        <i class="ri-flag-line absolute left-4 top-1/2 transform -translate-y-1/2 input-icon"></i>
                     </div>
-                </div>
-            </div>
-            <div class="space-y-2">
-                <label for="taskPriority" class="block text-sm font-medium text-gray-400">Task Priority</label>
-                <div class="relative">
-                    <select name="Taskpriority" required
-                        class="custom-select w-full bg-gray-800 text-gray-400 p-3.5 rounded-lg border border-[#3E3E52] focus:outline-none focus:border-primary appearance-none pl-11 pr-10">
-                        <option value="" selected disabled>Select Priority</option>
-                        <option value="Low" class="text-green-400">Low Priority</option>
-                        <option value="Medium" class="text-yellow-400">Medium Priority</option>
-                        <option value="High" class="text-red-400">High Priority</option>
-                    </select>
-                    <i class="ri-flag-line absolute left-3.5 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
                 </div>
             </div>
 
             <!-- Submit Button -->
-            <button type="submit"
-                class="w-full mt-6 bg-gradient-to-r from-purple-600/50 to-purple-700 text-white py-3.5 rounded-lg font-medium hover:from-purple-600 hover:to-primary transition-all duration-300 flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl">
-                <i class="ri-send-plane-line"></i>
-                <span>Assign Task</span>
-            </button>
+            <div class="pt-4">
+                <button type="submit"
+                    class="w-full submit-btn text-white py-3.5 rounded-lg font-medium flex items-center justify-center space-x-2">
+                    <i class="ri-send-plane-line"></i>
+                    <span>Assign Task</span>
+                </button>
+            </div>
         </form>
     </div>
 </main>
-<!-- {% if messages %}
-<div id="message-container" class="fixed top-4 left-0 right-0 z-50 flex flex-col items-center space-y-2">
-    {% for message in messages %}
-    <div
-        class="message-alert {% if message.tags %}{{ message.tags }}{% endif %} px-6 py-3 rounded-lg shadow-lg text-white font-medium text-sm flex items-center justify-between min-w-[300px] max-w-[90%]">
-        <span>
-            {% if message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS %}
-            <i class="ri-checkbox-circle-fill mr-2"></i>
-            {% elif message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}
-            <i class="ri-close-circle-fill mr-2"></i>
-            {% elif message.level == DEFAULT_MESSAGE_LEVELS.WARNING %}
-            <i class="ri-error-warning-fill mr-2"></i>
-            {% else %}
-            <i class="ri-information-fill mr-2"></i>
-            {% endif %}
-            {{ message }}
-        </span>
-        <button onclick="this.parentElement.remove()" class="ml-4">
-            <i class="ri-close-line"></i>
-        </button>
-    </div>
-    {% endfor %}
-</div>
-{% endif %}
 
-<style>
-    .message-alert {
-        transition: all 0.3s ease;
-    }
-
-    .success {
-        background-color: #10B981;
-        /* Green */
-    }
-
-    .error {
-        background-color: #EF4444;
-        /* Red */
-    }
-
-    .warning {
-        background-color: #F59E0B;
-        /* Yellow */
-    }
-
-    .info {
-        background-color: #3B82F6;
-        /* Blue */
-    }
-</style>
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const messages = document.querySelectorAll('.message-alert');
-        messages.forEach(message => {
-            setTimeout(() => {
-                message.style.transition = 'opacity 0.5s ease';
-                message.style.opacity = '0';
-                setTimeout(() => message.remove(), 500);
-            }, 5000);
-        });
-    });
-    document.addEventListener('DOMContentLoaded', function () {
-        const today = new Date().toISOString().split('T')[0];
-        document.getElementById('taskDate').min = today;
+    document.addEventListener('DOMContentLoaded', function() {
+        const teamSelect = document.getElementById("teamSelect");
+        const employeeSelect = document.getElementById("employeeSelect");
+        const allTeamsEmployees = JSON.parse('{{ all_teams_employees_json|escapejs }}');
+        
+        // Debug: Log the team-employee data
+        console.log("Team-Employee Data:", allTeamsEmployees);
+        
+        // Initialize employee select as disabled
+        employeeSelect.disabled = true;
+        employeeSelect.innerHTML = '<option value="" selected disabled>Select Team First</option>';
 
-        // Optional: Add validation feedback
-        document.getElementById('taskDate').addEventListener('change', function () {
-            const selectedDate = new Date(this.value);
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-
-            if (selectedDate < today) {
-                this.setCustomValidity('Due date cannot be in the past');
-                this.reportValidity();
+        teamSelect.addEventListener('change', function() {
+            const selectedTeam = this.value.trim(); // Trim whitespace from selection
+            console.log("Selected Team:", selectedTeam);
+            
+            // Clear and disable employee select initially
+            employeeSelect.innerHTML = '';
+            employeeSelect.disabled = true;
+            
+            if (selectedTeam) {
+                // Find team data (case-insensitive and space-insensitive)
+                const teamKey = Object.keys(allTeamsEmployees).find(
+                    key => key.trim().toLowerCase() === selectedTeam.toLowerCase()
+                );
+                
+                const teamMembers = teamKey ? allTeamsEmployees[teamKey] : [];
+                console.log("Team Members:", teamMembers);
+                
+                if (teamMembers.length > 0) {
+                    // Create default option
+                    const defaultOption = document.createElement('option');
+                    defaultOption.value = "";
+                    defaultOption.textContent = "Select Employee";
+                    defaultOption.selected = true;
+                    defaultOption.disabled = true;
+                    employeeSelect.appendChild(defaultOption);
+                    
+                    // Add team members
+                    teamMembers.forEach(member => {
+                        const option = document.createElement('option');
+                        option.value = member.id;
+                        option.textContent = `${member.username} (${member.role})`;
+                        employeeSelect.appendChild(option);
+                    });
+                    
+                    // Enable the select
+                    employeeSelect.disabled = false;
+                } else {
+                    // No members in this team
+                    const noMembersOption = document.createElement('option');
+                    noMembersOption.value = "";
+                    noMembersOption.textContent = "No members in this team";
+                    noMembersOption.disabled = true;
+                    employeeSelect.appendChild(noMembersOption);
+                }
             } else {
-                this.setCustomValidity('');
+                // No team selected
+                const selectTeamOption = document.createElement('option');
+                selectTeamOption.value = "";
+                selectTeamOption.textContent = "Select Team First";
+                selectTeamOption.disabled = true;
+                employeeSelect.appendChild(selectTeamOption);
             }
         });
+
+        // Form validation
+        document.getElementById('taskForm').addEventListener('submit', function(e) {
+            if (!teamSelect.value) {
+                e.preventDefault();
+                alert('Please select a team first');
+                return;
+            }
+            
+            if (employeeSelect.disabled || !employeeSelect.value) {
+                e.preventDefault();
+                alert('Please select an employee from the team');
+            }
+        });
+
+        // Trigger change event if a team is pre-selected
+        if (teamSelect.value) {
+            teamSelect.dispatchEvent(new Event('change'));
+        }
     });
-</script> -->
+</script>
 {% endblock %}

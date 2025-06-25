@@ -1,0 +1,201 @@
+{% extends 'Hr_App/Base.html' %}
+
+{% block content %}
+<div id="SettingsContainer"
+    class="fixed top-0 left-full w-full h-screen bg-gray-900 text-white shadow-lg transform transition-transform duration-500 ease-in-out">
+    <div id="settingsPanel" class="h-full w-full bg-[#111827] text-white shadow-lg p-6 overflow-y-auto">
+        <!-- Back button -->
+        <div class="flex items-center mb-6">
+            <a href="{% url 'HrApp:profile_settings' %}" class="mr-4">
+                <i class="ri-arrow-left-line text-2xl"></i>
+            </a>
+            <h2 class="text-2xl font-semibold">Skill Preferences</h2>
+        </div>
+
+        <div class="space-y-6">
+            <!-- Add New Skill -->
+            <div class="bg-gray-800 rounded-lg p-4">
+                <h3 class="font-medium mb-4">Add New Skill</h3>
+
+                <div class="flex flex-col md:flex-row gap-4 mb-4">
+                    <div class="flex-1">
+                        <input type="text" id="skillInput"
+                            class="w-full bg-gray-700 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-primary"
+                            placeholder="Enter skill name...">
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-gray-400 whitespace-nowrap">Proficiency:</span>
+                        <select id="proficiencySelect"
+                            class="bg-gray-700 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-primary">
+                            <option value="1">1 - Beginner</option>
+                            <option value="2">2 - Basic</option>
+                            <option value="3">3 - Intermediate</option>
+                            <option value="4">4 - Advanced</option>
+                            <option value="5" selected>5 - Expert</option>
+                        </select>
+                        <button type="button" id="addSkillBtn"
+                            class="px-4 py-3 rounded-lg bg-primary hover:bg-primary-dark whitespace-nowrap">Add
+                            Skill</button>
+                    </div>
+                </div>
+
+                <!-- Recently Added Skills Preview -->
+                <div class="flex flex-wrap gap-2 mb-4">
+                    <h4 class="w-full text-gray-400 text-sm mb-1">Recently Added:</h4>
+                    <div id="recentSkillsList" class="flex flex-wrap gap-2">
+                        <span class="px-3 py-1 bg-gray-700 rounded-full text-sm flex items-center gap-1">
+                            No skills added yet
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Your Skills -->
+            <div class="bg-gray-800 rounded-lg p-4">
+                <h3 class="font-medium mb-4">Your Skills</h3>
+
+                <div class="space-y-4" id="skillsList">
+                    {% for skill in user.get_skills_list %}
+                    <div class="p-3 bg-gray-700 rounded-lg skill-item">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="font-medium">{{ skill.name }}</span>
+                            <button class="text-red-500 hover:text-red-400 remove-skill-btn" data-skill-id="{{ skill.id }}">
+                                <i class="ri-delete-bin-line"></i>
+                            </button>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-gray-400 text-sm">Proficiency:</span>
+                            <div class="flex gap-1 proficiency-stars">
+                                {% for i in "12345" %}
+                                <span
+                                    class="w-6 h-6 rounded-full {% if forloop.counter <= skill.proficiency %}bg-primary{% else %}bg-gray-600{% endif %} flex items-center justify-center text-xs">
+                                    {{ forloop.counter }}
+                                </span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="p-3 bg-gray-700 rounded-lg">
+                        <p class="text-gray-400">You haven't added any skills yet. Add your first skill above!</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Save Button with Hidden Form -->
+            <form id="saveSkillsForm" action="{% url 'HrApp:skill_preferences' %}" method="post">
+                {% csrf_token %}
+                <input type="hidden" id="skillsData" name="skills_data" value="">
+                <button type="submit"
+                    class="w-full py-3 rounded-lg bg-primary hover:bg-primary-dark font-medium transition-colors">
+                    Save Skill Preferences
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="h-[20vh]"></div>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Animation logic
+        if (!localStorage.getItem("SettingsAnimationPlayed")) {
+            setTimeout(() => {
+                gsap.to("#SettingsContainer", {
+                    left: 0,
+                    duration: .3,
+                    ease: "power2.out"
+                });
+                localStorage.setItem("SettingsAnimationPlayed", "true");
+            }, 200);
+        } else {
+            document.getElementById("SettingsContainer").style.left = "0";
+        }
+
+        // Skill management
+        const skillInput = document.getElementById('skillInput');
+        const proficiencySelect = document.getElementById('proficiencySelect');
+        const addSkillBtn = document.getElementById('addSkillBtn');
+        const recentSkillsList = document.getElementById('recentSkillsList');
+        const saveSkillsForm = document.getElementById('saveSkillsForm');
+        const skillsDataInput = document.getElementById('skillsData');
+        
+        let skillsList = [];
+
+        function updateRecentSkillsDisplay() {
+            if (skillsList.length === 0) {
+                recentSkillsList.innerHTML = `
+                    <span class="px-3 py-1 bg-gray-700 rounded-full text-sm flex items-center gap-1">
+                        No skills added yet
+                    </span>`;
+                return;
+            }
+
+            recentSkillsList.innerHTML = '';
+            skillsList.forEach((skill, index) => {
+                const skillElement = document.createElement('span');
+                skillElement.className = 'px-3 py-1 bg-gray-700 rounded-full text-sm flex items-center gap-1';
+                skillElement.innerHTML = `
+                    ${skill.name} <span class="text-primary">level: ${skill.proficiency}</span>
+                    <button class="text-gray-400 hover:text-white remove-temp-skill" data-index="${index}">
+                        <i class="ri-close-line ml-1"></i>
+                    </button>
+                `;
+                recentSkillsList.appendChild(skillElement);
+            });
+
+            // Add event listeners to remove buttons
+            document.querySelectorAll('.remove-temp-skill').forEach(button => {
+                button.addEventListener('click', function() {
+                    const index = parseInt(this.getAttribute('data-index'));
+                    skillsList.splice(index, 1);
+                    updateRecentSkillsDisplay();
+                });
+            });
+        }
+
+        // Add skill button handler
+        addSkillBtn.addEventListener('click', function() {
+            const skillName = skillInput.value.trim();
+            const proficiency = proficiencySelect.value;
+            
+            if (!skillName) return;
+
+            // Check for duplicates
+            if (skillsList.some(skill => skill.name.toLowerCase() === skillName.toLowerCase())) {
+                alert('This skill has already been added');
+                return;
+            }
+
+            // Add to skills list
+            skillsList.push({
+                name: skillName,
+                proficiency: proficiency
+            });
+
+            // Clear input
+            skillInput.value = '';
+            proficiencySelect.value = '5';
+
+            // Update display
+            updateRecentSkillsDisplay();
+        });
+
+        // Form submission handler
+        saveSkillsForm.addEventListener('submit', function(e) {
+            // Convert skills list to JSON and store in hidden input
+            skillsDataInput.value = JSON.stringify(skillsList);
+            
+            // If no skills added, prevent submission
+            if (skillsList.length === 0) {
+                e.preventDefault();
+                alert('Please add at least one skill before saving');
+            }
+        });
+
+        // Initialize display
+        updateRecentSkillsDisplay();
+    });
+</script>
+
+{% endblock %}

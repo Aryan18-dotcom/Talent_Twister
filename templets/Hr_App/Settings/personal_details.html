@@ -1,0 +1,184 @@
+{% extends 'Employee_App/Settings/base.html' %}
+
+{% block content %}
+<div id="SettingsContainer" class="fixed top-0 left-full w-full h-screen bg-gray-900 text-white shadow-lg transform transition-transform duration-500 ease-in-out">
+    <div id="settingsPanel" class="h-full w-full bg-[#111827] text-white shadow-lg p-6 overflow-y-auto">
+        <!-- Back button -->
+        <div class="flex items-center mb-6">
+            <a href="{% url 'HrApp:profile_settings' %}" class="mr-4">
+                <i class="ri-arrow-left-line text-2xl"></i>
+            </a>
+            <h2 class="text-2xl font-semibold">Personal Details</h2>
+        </div>
+
+        <!-- Profile Information -->
+        <div class="bg-gray-800 rounded-lg p-4 mb-4">
+            <h3 class="font-medium mb-4">Profile Information</h3>
+            
+            <!-- Name -->
+            <div class="mb-4">
+                <div class="flex justify-between items-center mb-2">
+                    <label class="text-gray-400">Full Name</label>
+                    <button class="text-primary hover:text-primary-dark text-sm font-medium" onclick="showEditForm('nameForm')">Edit</button>
+                </div>
+                <p class="font-medium">{{ employee_dets.username }}</p>
+                
+                <!-- Edit Name Form (Hidden by default) -->
+                <form id="nameForm" class="hidden mt-4">
+                    <div class="mb-4">
+                        <label class="block text-gray-400 text-sm mb-2">First Name</label>
+                        <input type="text" value="{{ employee_dets.first_name }}" class="w-full bg-gray-700 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-primary">
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-gray-400 text-sm mb-2">Last Name</label>
+                        <input type="text" value="{{ employee_dets.last_name }}" class="w-full bg-gray-700 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-primary">
+                    </div>
+                    <div class="flex justify-end gap-2">
+                        <button type="button" class="px-4 py-2 rounded-lg border border-gray-600 hover:bg-gray-700" onclick="hideEditForm('nameForm')">Cancel</button>
+                        <button type="submit" class="px-4 py-2 rounded-lg bg-primary hover:bg-primary-dark">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Email -->
+            <div class="mb-4">
+                <div class="flex justify-between items-center mb-2">
+                    <label class="text-gray-400">Email</label>
+                    <button class="text-primary hover:text-primary-dark text-sm font-medium" onclick="showEditForm('emailForm')">Edit</button>
+                </div>
+                <p class="font-medium">{{ employee_dets.email }}</p>
+                
+                <!-- Edit Email Form (Hidden by default) -->
+                <form id="emailForm" class="hidden mt-4">
+                    <div class="mb-4">
+                        <label class="block text-gray-400 text-sm mb-2">Email Address</label>
+                        <input type="email" value="{{ employee_dets.email }}" class="w-full bg-gray-700 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-primary">
+                    </div>
+                    <div class="flex justify-end gap-2">
+                        <button type="button" class="px-4 py-2 rounded-lg border border-gray-600 hover:bg-gray-700" onclick="hideEditForm('emailForm')">Cancel</button>
+                        <button type="submit" class="px-4 py-2 rounded-lg bg-primary hover:bg-primary-dark">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Phone -->
+            <div>
+                <div class="flex justify-between items-center mb-2">
+                    <label class="text-gray-400">Phone Number</label>
+                    <button class="text-primary hover:text-primary-dark text-sm font-medium" onclick="showEditForm('phoneForm')">Edit</button>
+                </div>
+                <p class="font-medium">{{ employee_dets.phone_number|default:"Not provided" }}</p>
+                
+                <!-- Edit Phone Form (Hidden by default) -->
+                <form id="phoneForm" class="hidden mt-4">
+                    <div class="mb-4">
+                        <label class="block text-gray-400 text-sm mb-2">Phone Number</label>
+                        <input type="tel" value="{{ employee_dets.phone_number }}" class="w-full bg-gray-700 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-primary" placeholder="+1 (___) ___-____">
+                    </div>
+                    <div class="flex justify-end gap-2">
+                        <button type="button" class="px-4 py-2 rounded-lg border border-gray-600 hover:bg-gray-700" onclick="hideEditForm('phoneForm')">Cancel</button>
+                        <button type="submit" class="px-4 py-2 rounded-lg bg-primary hover:bg-primary-dark">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Work Information -->
+        <div class="bg-gray-800 rounded-lg p-4 mb-4">
+            <h3 class="font-medium mb-4">Work Information</h3>
+            
+            <!-- Position -->
+            <div class="mb-4">
+                <label class="text-gray-400 block mb-2">Position</label>
+                <p class="font-medium">{{ employee_dets.position|default:"Not specified" }}</p>
+            </div>
+            
+            <!-- Department -->
+            <div class="mb-4">
+                <label class="text-gray-400 block mb-2">Department</label>
+                <p class="font-medium">{{ employee_dets.department|default:"Not specified" }}</p>
+            </div>
+            
+            <!-- Employee ID -->
+            <div>
+                <label class="text-gray-400 block mb-2">Employee ID</label>
+                <p class="font-medium">{{ employee_dets.employee_id|default:"Not assigned" }}</p>
+            </div>
+        </div>
+
+        <!-- Address -->
+        <div class="bg-gray-800 rounded-lg p-4">
+            <h3 class="font-medium mb-4">Address</h3>
+            
+            <div class="flex justify-between items-center mb-2">
+                <label class="text-gray-400">Current Address</label>
+                <button class="text-primary hover:text-primary-dark text-sm font-medium" onclick="showEditForm('addressForm')">Edit</button>
+            </div>
+            <p class="font-medium">{{ employee_dets.address|default:"Not provided" }}</p>
+            
+            <!-- Edit Address Form (Hidden by default) -->
+            <form id="addressForm" class="hidden mt-4">
+                <div class="mb-4">
+                    <label class="block text-gray-400 text-sm mb-2">Street Address</label>
+                    <input type="text" value="{{ employee_dets.address }}" class="w-full bg-gray-700 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-primary">
+                </div>
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-gray-400 text-sm mb-2">City</label>
+                        <input type="text" value="{{ employee_dets.city }}" class="w-full bg-gray-700 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-primary">
+                    </div>
+                    <div>
+                        <label class="block text-gray-400 text-sm mb-2">State/Province</label>
+                        <input type="text" value="{{ employee_dets.state }}" class="w-full bg-gray-700 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-primary">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-gray-400 text-sm mb-2">Postal Code</label>
+                        <input type="text" value="{{ employee_dets.postal_code }}" class="w-full bg-gray-700 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-primary">
+                    </div>
+                    <div>
+                        <label class="block text-gray-400 text-sm mb-2">Country</label>
+                        <select class="w-full bg-gray-700 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-primary">
+                            <option>{{ employee_dets.country|default:"Select country" }}</option>
+                            <option>United States</option>
+                            <option>Canada</option>
+                            <option>United Kingdom</option>
+                            <!-- More countries -->
+                        </select>
+                    </div>
+                </div>
+                <div class="flex justify-end gap-2">
+                    <button type="button" class="px-4 py-2 rounded-lg border border-gray-600 hover:bg-gray-700" onclick="hideEditForm('addressForm')">Cancel</button>
+                    <button type="submit" class="px-4 py-2 rounded-lg bg-primary hover:bg-primary-dark">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function showEditForm(formId) {
+        document.getElementById(formId).classList.remove('hidden');
+    }
+    
+    function hideEditForm(formId) {
+        document.getElementById(formId).classList.add('hidden');
+    }
+    
+    document.addEventListener("DOMContentLoaded", function () {
+        if (!localStorage.getItem("SettingsAnimationPlayed")) {
+            setTimeout(() => {
+                gsap.to("#SettingsContainer", {
+                    left: 0,
+                    duration: .3,
+                    ease: "power2.out"
+                });
+                localStorage.setItem("SettingsAnimationPlayed", "true");
+            }, 200);
+        } else {
+            document.getElementById("SettingsContainer").style.left = "0";
+        }
+    });
+</script>
+{% endblock %}

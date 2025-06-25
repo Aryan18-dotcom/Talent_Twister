@@ -1,0 +1,189 @@
+{% extends 'Hr_App/base.html' %}
+{% load static %}
+{% url 'HrApp:pending_task' as pending_task_url %}
+{% url 'HrApp:all_tasks' as all_tasks_url %}
+
+
+
+{% block title %}
+Completed Tasks
+{% endblock %}
+
+{% block content %}
+{% include 'Hr_App/Components.html' %}
+
+<!-- Main Content Container -->
+<div class="container mx-auto px-4 py-8 w-[90%] max-w-6xl">
+    <!-- Form Container with Glass Morphism Effect -->
+    <div class="bg-gray-800/80 backdrop-blur-lg rounded-xl shadow-2xl overflow-hidden border border-gray-700/50">
+        <form method="POST" class="p-8">
+            {% csrf_token %}
+
+            <!-- Title with Gradient Text -->
+            <div class="text-center mb-8">
+                <h3
+                    class="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-blue-500">
+                    Register Employees
+                </h3>
+                <div class="w-20 h-1 bg-gradient-to-r from-purple-500 to-blue-600 mx-auto mt-3 rounded-full">
+                </div>
+            </div>
+
+            <!-- Company Info Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <div
+                    class="bg-gray-700/50 p-5 rounded-lg border border-gray-600/30 hover:border-purple-500/30 transition-all duration-300">
+                    <label class="block text-sm font-medium text-gray-300 mb-2">Company Name</label>
+                    <input type="text" value="{{ company }}" disabled
+                        class="w-full px-4 py-3 bg-gray-800/50 text-gray-300 border border-gray-600/30 rounded-lg cursor-not-allowed focus:ring-2 focus:ring-purple-500/50" />
+                </div>
+                <div
+                    class="bg-gray-700/50 p-5 rounded-lg border border-gray-600/30 hover:border-blue-500/30 transition-all duration-300">
+                    <label class="block text-sm font-medium text-gray-300 mb-2">Company Domain</label>
+                    <input type="text" value="{{ company.domain }}" disabled
+                        class="w-full px-4 py-3 bg-gray-800/50 text-gray-300 border border-gray-600/30 rounded-lg cursor-not-allowed focus:ring-2 focus:ring-blue-500/50" />
+                </div>
+            </div>
+
+            <div class="mb-8">
+                    <!-- Existing Team Selection -->
+                    <div class="bg-gray-700/50 p-5 rounded-lg border border-gray-600/30 hover:border-purple-500/30 transition-all duration-300">
+                        <label class="block text-sm font-medium text-gray-300 mb-2">Select Existing Team</label>
+                        <select id="existing-team" class="w-full px-4 py-3 bg-gray-800/70 text-gray-300 border border-gray-600/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/50">
+                            <option value="">-- Select a team --</option>
+                            {% for team in teams %}
+                            <option value="{{ team.id }}">{{ team.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+            </div>
+
+            <!-- Employee Section -->
+            <div class="mb-8">
+                <h5 class="text-xl font-semibold text-center text-gray-200 mb-6">
+                    <span class="relative px-4">
+                        Employee Details
+                        <span
+                            class="absolute inset-x-0 -bottom-1 h-0.5 bg-gradient-to-r from-transparent via-purple-500 to-transparent"></span>
+                    </span>
+                </h5>
+
+                <!-- Employee Input Fields Container -->
+                <div id="employee-container" class="space-y-4 max-h-[400px] overflow-y-auto pr-3 custom-scrollbar">
+                    <!-- Initial Employee Row -->
+                    <div
+                        class="grid grid-cols-1 md:grid-cols-12 gap-4 bg-gray-700/40 p-5 rounded-xl border border-gray-600/30 hover:border-purple-500/30 transition-all duration-300 employee-row">
+                        <div class="md:col-span-3">
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Username</label>
+                            <input type="text" name="username[]"
+                                class="w-full px-4 py-2.5 bg-gray-800/70 border border-gray-600/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/50 text-white placeholder-gray-500 transition-all duration-300"
+                                placeholder="employee123" required />
+                        </div>
+                        <div class="md:col-span-5">
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Full Name</label>
+                            <input type="text" name="full_name[]"
+                                class="w-full px-4 py-2.5 bg-gray-800/70 border border-gray-600/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-white placeholder-gray-500 transition-all duration-300"
+                                placeholder="John Doe" required />
+                        </div>
+                        <div class="md:col-span-3">
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Password</label>
+                            <div class="relative">
+                                <input type="password" name="password[]"
+                                    class="w-full px-4 py-2.5 bg-gray-800/70 border border-gray-600/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-white placeholder-gray-500 transition-all duration-300 pr-10"
+                                    placeholder="••••••••" required />
+                                <button type="button"
+                                    class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-blue-400 transition">
+                                    <i class="ri-eye-line"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="md:col-span-1 flex items-end justify-center">
+                            <button type="button"
+                                class="remove-employee w-full py-2.5 bg-gradient-to-br from-red-600 to-red-700 text-white rounded-lg hover:from-red-700 hover:to-red-800 transition-all duration-300 flex items-center justify-center shadow-md hover:shadow-lg">
+                                <i class="ri-delete-bin-line mr-1"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="space-y-4">
+                <button type="button" id="add-employee"
+                    class="w-full py-3 bg-gradient-to-br from-green-600 to-green-700 text-white rounded-lg hover:from-green-700 hover:to-green-800 transition-all duration-300 font-medium flex items-center justify-center shadow-lg hover:shadow-xl">
+                    <i class="ri-user-add-line mr-2"></i> Add More Employees
+                </button>
+
+                <button type="submit"
+                    class="w-full py-3 bg-gradient-to-br from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-300 font-medium flex items-center justify-center shadow-lg hover:shadow-xl">
+                    <i class="ri-team-line mr-2"></i> Register Employees
+                </button>
+
+                <a href="{% url 'HrApp:Manage_Team' %}"
+                    class="block w-full py-3 bg-gradient-to-br from-gray-700 to-gray-800 text-white rounded-lg hover:from-gray-800 hover:to-gray-900 transition-all duration-300 font-medium text-center shadow-md hover:shadow-lg">
+                    <i class="ri-group-line mr-2"></i> View All Employees
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.getElementById("add-employee").addEventListener("click", function () {
+        const container = document.getElementById("employee-container");
+
+        const newRow = document.createElement("div");
+        newRow.className = "grid grid-cols-1 md:grid-cols-12 gap-4 bg-gray-700/40 p-5 rounded-xl border border-gray-600/30 hover:border-purple-500/30 transition-all duration-300 employee-row";
+        newRow.innerHTML = `
+                <div class="md:col-span-3">
+                    <label class="block text-sm font-medium text-gray-300 mb-2">Username</label>
+                    <input type="text" name="username[]" 
+                        class="w-full px-4 py-2.5 bg-gray-800/70 border border-gray-600/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/50 text-white placeholder-gray-500 transition-all duration-300" 
+                        placeholder="employee123" required />
+                </div>
+                <div class="md:col-span-5">
+                    <label class="block text-sm font-medium text-gray-300 mb-2">Full Name</label>
+                    <input type="text" name="full_name[]" 
+                        class="w-full px-4 py-2.5 bg-gray-800/70 border border-gray-600/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-white placeholder-gray-500 transition-all duration-300" 
+                        placeholder="John Doe" required />
+                </div>
+                <div class="md:col-span-3">
+                    <label class="block text-sm font-medium text-gray-300 mb-2">Password</label>
+                    <div class="relative">
+                        <input type="password" name="password[]" 
+                            class="w-full px-4 py-2.5 bg-gray-800/70 border border-gray-600/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-white placeholder-gray-500 transition-all duration-300 pr-10" 
+                            placeholder="••••••••" required />
+                        <button type="button" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-blue-400 transition">
+                            <i class="ri-eye-line"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="md:col-span-1 flex items-end justify-center">
+                    <button type="button" 
+                        class="remove-employee w-full py-2.5 bg-gradient-to-br from-red-600 to-red-700 text-white rounded-lg hover:from-red-700 hover:to-red-800 transition-all duration-300 flex items-center justify-center shadow-md hover:shadow-lg">
+                        <i class="ri-delete-bin-line mr-1"></i>
+                    </button>
+                </div>
+            `;
+        container.appendChild(newRow);
+
+        // Scroll to the newly added row
+        newRow.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+        // Add password toggle functionality
+        const eyeBtn = newRow.querySelector('.relative button');
+        const passwordInput = newRow.querySelector('input[type="password"]');
+        eyeBtn.addEventListener('click', () => {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            eyeBtn.innerHTML = type === 'password' ? '<i class="ri-eye-line"></i>' : '<i class="ri-eye-off-line"></i>';
+        });
+    });
+
+    document.addEventListener("click", function (e) {
+        if (e.target && (e.target.classList.contains("remove-employee") || e.target.closest(".remove-employee"))) {
+            e.target.closest(".employee-row").remove();
+        }
+    });
+</script>
+{% endblock %}

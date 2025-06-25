@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from Myapp.models import Company, TeamLead, Employee, Task, TaskProgress, WorkLeave
+from Myapp.models import Company, TeamLead, Employee, Task, TaskProgress, WorkLeave, Team, HR, Co_Curricular
 from django.utils.timezone import now
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
@@ -15,6 +15,7 @@ from django.views.decorators.csrf import csrf_protect
 from datetime import timedelta
 import pytz
 from django.db.models import Q
+import json
 
 india_timezone = pytz.timezone('Asia/Kolkata')
 current_time = now().astimezone(india_timezone)
@@ -60,7 +61,6 @@ def Dashboard(request):
     accepted_task_progress= 0
 
     if tasks.exists():
-        print("Entering tasks processing block")
         completed_task_progress = TaskProgress.objects.filter(
             task__in=tasks,
             completion_date__date=today,
@@ -162,18 +162,17 @@ def Dashboard(request):
 
     # Get logged-in user's profile (if exists)
     Employees_On_Work = Employee.objects.count()
-    Companys_On_Going = Company.objects.filter(created_by=profile).count()
+    Companys_On_Going = Team.objects.filter(created_by=profile, is_active=True).count()
 
     company_for_user = Company.objects.filter(created_by=profile).first()
-    print(f"Company for user: {company_for_user}")
     company_link = True if company_for_user else False
-    print(f"Company Link: {company_link}")
 
     employee_on_leave = Employee.objects.filter(company=company_for_user, status="onleave").count()
     if employee_on_leave:
         employee_on_leave = Employee.objects.filter(company=company_for_user, status="onleave").count()
     else:
         employee_on_leave = 0
+
 
 
     return render(request, 'Hr_App/Hr_Dashboard.html', {
@@ -211,7 +210,6 @@ def create_company(request):
     if request.method == "POST":
         company_name = request.POST.get("new_company_name")
         company_domain = request.POST.get("new_company_domain")
-        print(f"Company Name: {company_name}, Domain: {company_domain}")
         
         if company_name and company_domain:
             Company.objects.create(
@@ -225,22 +223,36 @@ def create_company(request):
 
 
 @login_required
-def Post_Task(request):  
+def Post_Task(request):
     login_user = request.session.get("username")
     profile = TeamLead.objects.filter(username=login_user).first()
     company_id = request.session.get("company_id")
-    
-    employee = TeamLead.objects.filter(username=login_user, created_companies=company_id).first()
-    companys = Company.objects.filter(created_by=employee).first()
 
+    employee_dets = TeamLead.objects.filter(username=login_user, created_companies=company_id).first()
+    companys = Company.objects.filter(created_by=employee_dets).first()
     local_now = current_time.now()
 
     if not profile:
-        return redirect("/")  
+        return redirect("/")
 
-    hr_companies = profile.created_companies.all()
-    employees = Employee.objects.filter(company__in=hr_companies)
-    
+    # Initialize empty dictionary for team-employee mapping
+    all_teams_data = {}
+    teams_queryset = Team.objects.filter(created_by=profile, is_active=True)
+
+    # Build team-employee mapping with trimmed team names
+    for team in teams_queryset:
+        team_members = []
+        for member in team.members.all():
+            team_members.append({
+                'id': member.id,
+                'username': member.full_name,
+                'role': member.role
+            })
+        # Use strip() to ensure no leading/trailing spaces
+        all_teams_data[team.name.strip()] = team_members
+
+    print(all_teams_data)
+
     if request.method == "POST":
         task_title = request.POST.get("taskHeading")
         task_description = request.POST.get("taskDescription")
@@ -260,23 +272,20 @@ def Post_Task(request):
                     task_priority=task_priority,
                     created_at=local_now
                 )
-                messages.success(request, f'Task successfully assigned to {assigned_employee.username}!')
+                messages.success(request, f'Task successfully assigned to {assigned_employee.full_name}!')
                 return redirect('HrApp:Post_Task')
-            
             except Employee.DoesNotExist:
                 messages.error(request, "Error assigning task. Selected employee does not exist!")
             except Exception as e:
                 messages.error(request, f"Error assigning task: {str(e)}")
 
     task_by_user = Task.objects.filter(assigned_by=profile, created_at__date=local_now).count()
-
     next_url = "/TeamLead/Dashbord/"
 
-
     context = {
-        'employee_dets': employee,
+        'employee_dets': employee_dets,
         'count': task_by_user,
-        'page_title': 'Build Your Team',
+        'page_title': 'Assign New Task',
         'subtitle': companys,
         'unit': 'Tasks for today',
         'filters': [
@@ -298,10 +307,11 @@ def Post_Task(request):
         'search_id': 'taskSearch',
         'search_placeholder': 'Search tasks by name, due date or assigned to...',
         'back_url': next_url,
-        'profile':employee,
+        'profile': profile,
         'searchFilterBar': False,
         'current_time': current_time.date(),
-        'employees': employees,
+        'teams': teams_queryset,
+        'all_teams_employees_json': json.dumps(all_teams_data),
     }
 
     return render(request, "Hr_App/PostTask.html", context)
@@ -310,34 +320,37 @@ def Post_Task(request):
 @login_required
 def Manage_Team(request):
     login_user = request.session.get("username")
+    company_id = request.session.get("company_id")
+    employee = TeamLead.objects.filter(username=login_user, created_companies=company_id).first()
+    companys = Company.objects.filter(created_by=employee).first()
+
     employee_dets = get_object_or_404(TeamLead, username=login_user)
     admin_count = TeamLead.objects.filter(created_companies__created_by=employee_dets).count()
     manager_count = TeamLead.objects.filter(created_companies__created_by=employee_dets, role="Manager").count()
-    employees = Employee.objects.filter(company__created_by=employee_dets).order_by('username')
-    company_id = request.session.get("company_id")
+
+    teams = Team.objects.filter(created_by=employee)
     
-    employee = TeamLead.objects.filter(username=login_user, created_companies=company_id).first()
-    companys = Company.objects.filter(created_by=employee).first()
 
     next_url = "/TeamLead/Dashbord/"
 
     context ={
-        'employees': employees,
+        'teams': teams,
         'profile': employee,
         'company_name': companys,
         'employee_dets': employee,
-        'count': employees.count(),
+        'count': teams.count(),
         'page_title': 'Manage Your Team',
         'subtitle': companys,
         'unit': 'Employees',
-        'search_id': 'taskSearch',
+        'search_id': 'employeeSearch',
         'search_placeholder': 'Search employees by name, user name, email or role...',
         'back_url': next_url,
         'profile':employee,
         'admin_count': admin_count,
         'manager_count': manager_count,
+
     }
-    return render(request, "Hr_App/manage_team.html", context)
+    return render(request, "Hr_App/manageTeam.html", context)
 
 
 @login_required
@@ -384,7 +397,7 @@ def view_employee(request, employee_id):
         }
 
 
-    next_url = "/TeamLead/Dashbord//"
+    next_url = request.META.get('HTTP_REFERER', '')
 
     context={
         "employee": company_employee,
@@ -457,66 +470,57 @@ def delete_company(request, company_id):
 @login_required
 def Build_Team(request):
     login_user = request.session.get("username")
-    employee_dets = get_object_or_404(TeamLead, username=login_user)
-    company_id = request.session.get("company_id")
+    user_dets = get_object_or_404(TeamLead, username=login_user)
 
-    employee = TeamLead.objects.filter(username=login_user, created_companies=company_id).first()
-    companys = Company.objects.filter(created_by=employee).first()
-
+    companys = Company.objects.filter(created_by=user_dets).first()
     members_count = Employee.objects.filter(company=companys).count()
 
-    added_users = []
-    skipped_users = []
+    teams = Team.objects.filter(created_by=user_dets)
+    # emp_ids = teams.values_list('members__id', flat=True).distinct()
+    # unassigned_employees = Employee.objects.filter(company=companys).exclude(id__in=emp_ids)
+    unassigned_employees = Employee.objects.filter(company=companys)
 
-    if request.method == "POST":
-        usernames = request.POST.getlist("username[]") or []
-        full_names = request.POST.getlist("full_name[]") or []
-        passwords = request.POST.getlist("password[]") or []
+    if request.method == 'POST':
+        team_name = request.POST.get("team_name")
+        team_description = request.POST.get("team_description")
+        team_slogan = request.POST.get("team_slogan")
+        team_members = request.POST.getlist("team_members")
 
-        if not usernames or not full_names or not passwords:
+        if not team_members:
             messages.error(request, "Please provide at least one employee entry.")
             return redirect("HrApp:Build_Team")
+        teams_created = Team.objects.all()
+        for teams in teams_created:
+            if teams.name == team_name:
+                try:
+                    # Step 1: Create the team without members
+                    team = Team.objects.create(
+                        name=team_name,
+                        description=team_description,
+                        slogan=team_slogan,
+                        created_by=user_dets,
+                        company=companys,
+                        is_active=True,
+                    )
 
-        for username, full_name, password in zip(usernames, full_names, passwords):
-            email = f"{username}@{companys.domain}"
+                    # Step 2: Add members using .set()
+                    team.members.set(team_members)
 
-            if Employee.objects.filter(company=companys, username=username).exists():
-                skipped_users.append(username)
-                continue
+                    messages.success(request, f'Team "{team_name}" created successfully with {len(team_members)} members.')
+                    return redirect("HrApp:Manage_Team")
+                except Exception as e:
+                    messages.error(request, f'Error for creating Team {team_name}, Sorrry of the in convinence plese create again.')
+                    return redirect("HrApp:Build_Team")
+            else:
+                messages.error(request, f'Team with the name {team_name} is already created so use some other name.')
+                return redirect("HrApp:Build_Team")
 
-            try:
-                Employee.objects.create(
-                    company=companys,
-                    username=username,
-                    full_name=full_name,
-                    password=password,
-                    email=email
-                )
-                added_users.append(username)
-            except IntegrityError:
-                skipped_users.append(username)
 
-        # Combine messages for feedback
-        if added_users:
-            messages.success(
-                request,
-                f"Successfully added employees: {', '.join(added_users)}"
-            )
-        if skipped_users:
-            messages.error(
-                request,
-                f"Skipped duplicate users already in your company: {', '.join(skipped_users)}"
-            )
-
-        return redirect("HrApp:Build_Team")
-
-    next_url = "/TeamLead/Dashbord/"
-
+                
     context = {
-        'employee_dets': employee_dets,
+        'employee_dets': user_dets,
         'company': companys,
         "show_company_form": not Company.objects.exists(),
-        'employee_dets': employee,
         'count': members_count,
         'page_title': 'Build Your Team',
         'subtitle': companys,
@@ -539,9 +543,11 @@ def Build_Team(request):
         'defaultFilter': 'all',
         'search_id': 'taskSearch',
         'search_placeholder': 'Search tasks by name, due date or assigned to...',
-        'back_url': next_url,
-        'profile': employee,
+        # 'back_url': next_url,
+        'profile': user_dets,
         'searchFilterBar': False,
+        'teams': teams,
+        'unassigned_employees':unassigned_employees,
     }
 
     return render(request, 'Hr_App/buildTeam.html', context)
@@ -572,7 +578,6 @@ def profile_settings(request):
 # function to update the profile pic, full name, username(according to username email, auto changes), password if user enters the old one correct
 @login_required
 def update_profile(request):
-    print(request.user)
     if request.method == 'POST':
         try:
             # ✅ Get Form Data
@@ -659,16 +664,20 @@ def update_profile(request):
 
 
 @login_required
-def teamMember(request):
+def active_memebrs(request):
     login_user = request.session.get("username")
     company_id = request.session.get("company_id")
     
     profile = TeamLead.objects.filter(username=login_user, created_companies=company_id).first()
     companys = Company.objects.filter(created_by=profile).first()
 
-    team_members = Employee.objects.filter(company=companys)
+    teams = Team.objects.filter(created_by=profile, is_active=True)
+    team_members = []
+    team_members_count = 0
+    for team in teams:
+        team_members += team.members.all()
+        team_members_count += team.total_members()
 
-    team_members_count = Employee.objects.filter(company=companys).count()
 
     next_url = "/TeamLead/Dashbord/"
 
@@ -676,7 +685,7 @@ def teamMember(request):
         'employee_dets': profile,
         'count': team_members_count,
         'team_members': team_members,
-        'page_title': 'Team Members',
+        'page_title': 'Active Members',
         'subtitle': companys,
         'unit': 'members',
         'filters': [
@@ -691,7 +700,7 @@ def teamMember(request):
         'profile':profile,
         'searchFilterBar': True,
     }
-    return render(request, 'Hr_App/team_members.html', context)
+    return render(request, 'Hr_App/active_members.html', context)
 
 
 @login_required
@@ -702,32 +711,95 @@ def active_teams(request):
     profile = TeamLead.objects.filter(username=login_user, created_companies=company_id).first()
     companys = Company.objects.filter(created_by=profile).first()
 
-    team_members = Employee.objects.filter(company=companys)
+    teams = Team.objects.filter(created_by=profile, is_active=True).all()
 
-    team_members_count = Employee.objects.filter(company=companys).count()
+    teams_count = teams.count()
+    
 
-    next_url = "/TeamLead/Dashbord/"
+    next_url = '/TeamLead/Dashbord/'
 
     context = {
         'employee_dets': profile,
-        'count': team_members_count,
-        'team_members': team_members,
-        'page_title': 'Team Members',
+        'count': teams_count,
+        'Teams': teams,
+        'page_title': "Active Team's",
         'subtitle': companys,
-        'unit': 'members',
-        'filters': [
-            {'value': 'all', 'label': 'All'},
-            {'value': 'online', 'label': 'Online'},
-            {'value': 'offline', 'label': 'Offline'},
-        ],
+        'unit': 'Team',
         'defaultFilter': 'all',
-        'search_id': 'memberSearch',
-        'search_placeholder': 'Search Team by its name or ...',
+        'search_id': 'employeeSearch',
+        'search_placeholder': 'Search Team by its name ...',
         'back_url': next_url,
         'profile':profile,
         'searchFilterBar': True,
     }
-    return render(request, 'Hr_App/team_members.html', context)
+    return render(request, 'Hr_App/active_teams.html', context)
+
+
+@login_required
+def edit_active_teams(request, team_id):
+    team = Team.objects.get(id=team_id)
+    login_user = request.session.get("username")
+    company_id = request.session.get("company_id")
+    
+    profile = TeamLead.objects.filter(username=login_user, created_companies=company_id).first()
+    all_employees = Employee.objects.filter(company=team.company)
+
+    if request.method == "POST":
+        # Get incoming values
+        selected_ids = request.POST.getlist('teamMembers')
+        new_name = request.POST.get('teamName')
+        new_description = request.POST.get('teamDescription')
+        new_status = 'teamStatus' in request.POST  # Checkbox presence means it's checked (i.e., active)
+
+        # Track changes
+        has_changes = False
+
+        # Check for name change
+        if new_name != team.name:
+            team.name = new_name
+            has_changes = True
+
+        # Check for description change
+        if new_description != team.description:
+            team.description = new_description
+            has_changes = True
+
+        # Check for team status change (Active/Inactive)
+        if new_status != team.is_active:
+            team.is_active = new_status
+            has_changes = True
+
+        # Check for team members change
+        current_member_ids = list(team.members.values_list('id', flat=True))
+        selected_ids_int = list(map(int, selected_ids))  # Ensure both lists are int
+
+        if sorted(current_member_ids) != sorted(selected_ids_int):
+            team.members.set(Employee.objects.filter(id__in=selected_ids_int))
+            has_changes = True
+
+        # Save if anything changed
+        if has_changes:
+            team.save()
+            messages.success(request, f'Team updates were applied successfully to "{team.name}".')
+        else:
+            messages.info(request, f'There were no changes or major updates in the team "{team.name}".')
+
+        return redirect('HrApp:active_teams')
+
+
+    referer = request.META.get('HTTP_REFERER')
+
+    context = {
+        'page_title':"Update Team",
+        'subtitle':team.name,
+        'count':team.total_members(),
+        'unit':'Members',
+        'team':team,
+        'all_employees': all_employees,
+        'back_url': referer,
+        'profile':profile,
+    }
+    return render(request, 'Hr_App/edit_active_team.html', context)
 
 
 @login_required
@@ -808,8 +880,8 @@ def completedTask(request):
         'unit': 'tasks',
         'filters': [
             {'value': 'month', 'label': 'This Month'},
-            {'value': 'all', 'label': 'All Time'},
             {'value': 'year', 'label': 'This Year'},
+            {'value': 'all', 'label': 'All Time'},
             {
                 'dropdown': True,
                 'label': 'Status Filter',
@@ -923,7 +995,7 @@ def AllTask(request):
     next_url = "/TeamLead/Dashbord/"
 
     context = {
-        'employee_dets': employee,
+        'profile':employee,
         'all_tasks': all_task,
         'count': all_task_count,
         'page_title': 'All Tasks',
@@ -954,29 +1026,17 @@ def AllTask(request):
 
 
 @login_required
-def EmployeeOnLeave(request):
+def EmployeeStatus(request):
     login_user = request.session.get("username")
     company_id = request.session.get("company_id")
     
     employee = TeamLead.objects.filter(username=login_user, created_companies=company_id).first()
     companys = Company.objects.filter(created_by=employee).first()
 
-    user_on_leave = WorkLeave.objects.filter(user__company=companys).exclude(status='Reconsidred').select_related('user')
-    user_on_leave_count = WorkLeave.objects.filter(user__company=companys).count()
+    # user_on_leave = WorkLeave.objects.filter(user__company=companys, user__status="onleave")
+    user_on_leave = Employee.objects.filter(company=companys)
+    user_on_leave_count = user_on_leave.count()
 
-    # Collect user IDs on leave
-    on_leave_employees = user_on_leave.values_list('user', flat=True)
-
-    for emp in user_on_leave:
-        task = Task.objects.filter(assigned_by=employee, assigned_to=emp.user).all()
-
-        emp.task_count = task.count()
-        emp.task_completed = TaskProgress.objects.filter(task__in=task, task__assigned_by=employee, status="Completed").count()
-            
-
-    # Aggregate tasks for those users
-    employee_task = Task.objects.filter(assigned_by=employee, assigned_to__in=on_leave_employees).count()
-    employee_task_completed = TaskProgress.objects.filter(task__assigned_by=employee, task__assigned_to__in=on_leave_employees, task=employee_task, status="Completed").count()
 
     if 'TeamLead/modify_leave' in request.META.get('HTTP_REFERER'):
         next_url = "HrApp:Dashboard"
@@ -985,32 +1045,19 @@ def EmployeeOnLeave(request):
 
     context = {
         'employee_dets': user_on_leave,
-        'employee_task': employee_task,
-        'employee_task_completed': employee_task_completed,
         'count': user_on_leave_count,
-        'page_title': 'All Leave Requests by Employees',
+        'page_title': 'Employees Currently on Leave',
         'subtitle': companys,
         'unit': 'Employees',
         'filters': [
-            {'value': 'month', 'label': 'This Month'},
-            {'value': 'week', 'label': 'This Week'},
-            {'value': 'year', 'label': 'This Year'},
             {'value': 'all', 'label': 'All'},
-            {
-                'dropdown': True,
-                'label': 'Status Filter',
-                'options': [
-                    {'value': 'pending', 'label': 'Pending'},
-                    {'value': 'approved', 'label': 'Approved'},
-                    {'value': 'rejected', 'label': 'Rejected'},
-                    {'value': 'modified', 'label': 'Modified'},
-                    {'value': 'reconsidered', 'label': 'Reconsidered'},
-                ]
-            }
+            {'value': 'week', 'label': 'This Week'},
+            {'value': 'month', 'label': 'This Month'},
+            {'value': 'year', 'label': 'This Year'},
         ],
-        'defaultFilter': 'month',
+        'defaultFilter': 'all',
         'search_id': 'taskSearch',
-        'search_placeholder': 'Search tasks by name, start date or end date...',
+        'search_placeholder': 'Search tasks by name, username, full name or employee id...',
         'back_url': next_url,
         'profile':employee,
         'searchFilterBar': True,
@@ -1087,7 +1134,6 @@ def modify_leave(request, user_id):
         new_start_date = request.POST.get('new_start_date')
         new_end_date = request.POST.get('new_end_date')
         modification_note = request.POST.get('modification_note')
-        print(f"New Start Date: {new_start_date}, New End Date: {new_end_date}")
 
         if new_start_date and new_end_date:
             leave.modified_start_date = new_start_date
@@ -1151,6 +1197,202 @@ def reconsider_leave(request, user_id):
 
 
 @login_required
+def view_team(request, team_id, deletion):
+    login_user = request.session.get("username")
+    company_id = request.session.get("company_id")
+    
+    employee = TeamLead.objects.filter(username=login_user, created_companies=company_id).first()
+
+    team = get_object_or_404(Team, id=team_id)
+    employees = team.members.all()
+
+    # Set the default back URL
+    referer = request.META.get('HTTP_REFERER')
+
+    context = {
+        'employee_dets': employee,
+        'count': team.total_members(),
+        'unit': 'Employees',
+        'page_title': 'Team Members',
+        'subtitle': team.name,
+        'team': team,
+        'employees': employees,
+        'back_url': referer,
+        'searchFilterBar': True,
+        'search_id': 'employeeSearch',
+        'search_placeholder': 'Search Employee by name, contact, department or position...',
+        'profile':employee,
+        'deletion':deletion
+    }
+
+    return render(request, 'Hr_App/view_team.html', context)
+
+
+@login_required
+def all_users(request):
+    login_user = request.session.get("username")
+    company_id = request.session.get("company_id")
+    
+    # Get the company and all its members
+    profile = TeamLead.objects.filter(username=login_user, created_companies=company_id).first()
+    company = Company.objects.filter(created_by=profile).first()
+
+    user_count =  company.total_members()
+    
+    # Get all users in the company except the current user
+    all_employees = Employee.objects.filter(company=company).exclude(username=login_user)
+    all_hr = HR.objects.filter(company=company).exclude(username=login_user)
+    all_team_leads = TeamLead.objects.filter(company=company).exclude(username=login_user)
+    
+
+    # Counts for each category
+    hr_count = all_hr.count()
+    team_leads_count = all_team_leads.count()
+    employees_count = all_employees.count()
+    
+    # Set the default back URL
+    back_url = '/TeamLead/Dashbord/' if '/TeamLead/profile_details/' in request.META.get('HTTP_REFERER', '') else request.META.get('HTTP_REFERER', '')
+
+
+    meta = request.META
+
+    context = {
+        'company': company,
+        'hr_users': all_hr,
+        'team_leads': all_team_leads,
+        'employees': all_employees,
+        'hr_count': hr_count,
+        'team_leads_count': team_leads_count,
+        'employees_count': employees_count,
+        'page_title': 'Company Directory',
+        'subtitle': f'View your all colleagues in {company.name}',
+        'profile': profile,
+        'back_url': back_url,
+        'count': user_count,
+        'unit': 'User',
+        'meta':meta
+    }
+    return render(request, 'Hr_App/all_users.html', context)
+
+
+@login_required
+def feth_users_dets(request, userId):
+    login_user = request.session.get("username")
+    company_id = request.session.get("company_id")
+    
+    # Get the company and all its members
+    profile = TeamLead.objects.filter(username=login_user, created_companies=company_id).first()
+    company = Company.objects.filter(created_by=profile).first()
+    user = None
+
+    try:
+        user = HR.objects.get(id=userId)
+    except HR.DoesNotExist:
+        try:
+            user = TeamLead.objects.get(id=userId)
+        except TeamLead.DoesNotExist:
+            try:
+                user = Employee.objects.get(id=userId)
+            except Exception as e:
+                messages.error(request, f'Error to find user:- {e}')
+                return redirect('HrApp:all_users')
+            
+        # Set the default back URL
+    back_url = request.META.get('HTTP_REFERER')
+    meta = request.META
+
+
+    context = {
+
+        'user': user,
+        'profile':profile,
+        'back_url':back_url,
+        'page_title': f"Profile of {user.username}",
+        'subtitle': f'Employee of company {company.name}',
+        'count':company.total_members(),
+        'unit':'Member',
+        'meta':meta
+    }
+    return render(request, 'user_profile_modal_content.html', context)
+
+
+@login_required
+def user_settings(request):
+    return render(request, 'Hr_App/Settings/user_settings.html')
+
+
+@login_required
+def personal_details(request):
+    login_user = request.session.get("username")
+    company_id = request.session.get("company_id")
+    
+    # Get the company and all its members
+    profile = TeamLead.objects.filter(username=login_user, created_companies=company_id).first()
+    company = Company.objects.filter(created_by=profile).first()
+    return render(request, 'Hr_App/Settings/personal_details.html')
+
+
+# @login_required
+# def skill_preferences(request):
+#     login_user = request.session.get("username")
+#     company_id = request.session.get("company_id")
+    
+#     # Get the company and all its members
+#     profile = TeamLead.objects.filter(username=login_user, created_companies=company_id).first()
+#     company = Company.objects.filter(created_by=profile).first()
+
+#     context = {
+#         'user':profile,
+#     }
+#     return render(request, 'Hr_App/Settings/skill_preferences.html', context)
+
+@login_required
+def skill_preferences(request):
+    login_user = request.session.get("username")
+    company_id = request.session.get("company_id")
+
+    profile = TeamLead.objects.filter(username=login_user, created_companies=company_id).first()
+    company = Company.objects.filter(created_by=profile).first()
+
+    if request.method == 'POST':
+        try:
+            # Check if this is the final form submission (not the AJAX one)
+            if 'skills_data' in request.POST:
+                skills_data = json.loads(request.POST.get('skills_data', '[]'))
+                
+                # Add new skills
+                for skill in skills_data:
+                    name = skill.get('name')
+                    proficiency = int(skill.get('proficiency', 1))
+                    
+                    if name and 1 <= proficiency <= 5:
+                        Co_Curricular.objects.create(
+                            name=name,
+                            proficiency=proficiency,
+                            Hr=profile
+                        )
+                
+                messages.success(request, 'Skills saved successfully!')
+                return redirect('HrApp:skill_preferences')
+                
+        except json.JSONDecodeError:
+            messages.error(request, 'Invalid skills data format')
+        except Exception as e:
+            messages.error(request, f'Error saving skills: {str(e)}')
+            return redirect('HrApp:skill_preferences')
+
+    # Get existing skills for display
+    existing_skills = Co_Curricular.objects.filter(Hr=profile).order_by('name')
+    
+    context = {
+        'user': profile,
+        'existing_skills': existing_skills,
+    }
+    return render(request, 'Hr_App/Settings/skill_preferences.html', context)
+
+
+
+@login_required
 def logout_view(request):
     """ Hr Logout & Deactivation """
 
@@ -1170,4 +1412,6 @@ def logout_view(request):
         logout(request)
 
     return redirect("Myapp:login")
+
+
 

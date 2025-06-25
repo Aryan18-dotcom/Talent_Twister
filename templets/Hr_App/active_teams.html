@@ -1,0 +1,86 @@
+{% extends 'Hr_App/base.html' %}
+{% load static %}
+
+{% block title %}
+Active Members
+{% endblock %}
+
+{% block content %}
+{% include 'Hr_App/Components.html' %}
+
+<!-- Teams Panel -->
+<div class="min-h-96">
+    <div class="bg-gray-800 rounded-xl overflow-hidden border border-gray-700">
+
+        <!-- Teams Table -->
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead class="bg-gray-700 text-gray-300">
+                    <tr>
+                        <th class="px-6 py-3 text-left">Team Name</th>
+                        <th class="px-6 py-3 text-left">Team Lead</th>
+                        <th class="px-6 py-3 text-left">Members</th>
+                        <th class="px-6 py-3 text-left">Creation Date</th>
+                        <th class="px-6 py-3 text-left">Status</th>
+                        <th class="px-6 py-3 text-left">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="employeeTableBody" class="divide-y divide-gray-700">
+                    <!-- Teams -->
+                     {% for team in Teams %}
+
+                        <tr class="hover:bg-gray-700/30 transition-all duration-300" 
+                        data-search="{{ team.name }} {{ team.total_members }} member{{ team.total_members|pluralize }} {{ team.created_by }} {{ team.created_at|date:'Y-m-d' }}">
+                            <td class="px-6 py-4 whitespace-nowrap text-white">{{ team.name }}</td>
+                            <td class="px-6 py-4 text-gray-300">{{ team.created_by }}</td>
+                            <td class="px-6 py-4 text-gray-300">
+                                <div class="flex items-center gap-1">
+                                    <span class="text-base font-medium">{{ team.total_members }}</span>
+                                    <span class="text-xs text-gray-400">member{{ team.total_members|pluralize }}</span>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 text-gray-300">
+                                <div class="flex items-center gap-2">
+                                    <i class="ri-calendar-line text-gray-500"></i>
+                                    <span class="text-sm text-gray-200">{{ team.created_at|date:'M d, Y' }}</span>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <span class="px-2 py-1 text-xs rounded-full {% if team.is_active %}bg-green-800 text-green-300{% else %}bg-gray-700 text-gray-300{% endif %}">{% if team.is_active %}Active{% else %}Inactive{% endif %}</span>
+                            </td>
+                            <td class="px-6 py-4">
+                                <a href="{% url 'HrApp:view_team' team.id False %}" class="text-primary hover:text-gray-200/90 mr-2">View</a>
+                            </td>
+                        </tr>
+
+                    {% empty %}
+
+                        <tr>
+                            <td colspan="6" class="noData py-8 text-center text-gray-400">
+                                <img src="{% static 'Employee_App/Static_Imgs/outline.svg' %}" alt="No tasks"
+                                    class="w-32 mx-auto mb-4">
+                                <p>No Teams found..!</p>
+                                <p class="mt-4 text-sm text-gray-500">Want to Create Your Team ?</p>
+                                <a href="{% url 'HrApp:all_tasks' %}"
+                                    class="text-purple-500 hover:text-purple-700 font-semibold transition duration-300 ease-in-out">Create new Team</a>
+                            </td>
+                        </tr>
+
+                    {% endfor %}
+                </tbody>
+            </table>
+            <div id="noResults" class="hidden py-8 text-center text-gray-400">
+                <img src="{% static 'Employee_App/Static_Imgs/outline.svg' %}" alt="No Results"
+                    class="w-32 mx-auto mb-4">
+                <h2>No result Found</h2>
+                <p class="mt-4 text-sm text-gray-500">Try adjusting your search or filter options.</p>
+                <button
+                    class="text-purple-500 hover:text-purple-700 font-semibold transition duration-300 ease-in-out resetFilter">Reset
+                    Filters</button>
+            </div>
+        </div>
+        
+    </div>
+</div>
+
+{% endblock %}

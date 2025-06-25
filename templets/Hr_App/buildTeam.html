@@ -1,114 +1,133 @@
 {% extends 'Hr_App/base.html' %}
 {% load static %}
-{% url 'HrApp:pending_task' as pending_task_url %}
-{% url 'HrApp:all_tasks' as all_tasks_url %}
-
-
 
 {% block title %}
-Completed Tasks
+Build Team
 {% endblock %}
 
 {% block content %}
 {% include 'Hr_App/Components.html' %}
 
-<!-- Main Content Container -->
-<div class="container mx-auto px-4 py-8 w-[90%] max-w-6xl">
-    <!-- Form Container with Glass Morphism Effect -->
-    <div class="bg-gray-800/80 backdrop-blur-lg rounded-xl shadow-2xl overflow-hidden border border-gray-700/50">
-        <form method="POST" class="p-8">
+<div class="container mx-auto px-4 py-10 w-[92%] max-w-5xl">
+    <div class="bg-gray-900/80 backdrop-blur-md border border-gray-700 rounded-2xl shadow-2xl overflow-hidden">
+        <form method="POST" action="{% url 'HrApp:Build_Team' %}" class="p-8 space-y-10">
             {% csrf_token %}
 
-            <!-- Title with Gradient Text -->
-            <div class="text-center mb-8">
-                <h3
-                    class="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-blue-500">
-                    Register Employees
-                </h3>
-                <div class="w-20 h-1 bg-gradient-to-r from-purple-500 to-blue-600 mx-auto mt-3 rounded-full">
-                </div>
-            </div>
+            <!-- Team Creation Section -->
+            <section>
+                <h2 class="text-2xl font-semibold text-white flex items-center gap-2">
+                    <i class="ri-team-line text-purple-400 text-2xl"></i> Create New Team
+                </h2>
 
-            <!-- Company Info Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                <div
-                    class="bg-gray-700/50 p-5 rounded-lg border border-gray-600/30 hover:border-purple-500/30 transition-all duration-300">
-                    <label class="block text-sm font-medium text-gray-300 mb-2">Company Name</label>
-                    <input type="text" value="{{ company }}" disabled
-                        class="w-full px-4 py-3 bg-gray-800/50 text-gray-300 border border-gray-600/30 rounded-lg cursor-not-allowed focus:ring-2 focus:ring-purple-500/50" />
-                </div>
-                <div
-                    class="bg-gray-700/50 p-5 rounded-lg border border-gray-600/30 hover:border-blue-500/30 transition-all duration-300">
-                    <label class="block text-sm font-medium text-gray-300 mb-2">Company Domain</label>
-                    <input type="text" value="{{ company.domain }}" disabled
-                        class="w-full px-4 py-3 bg-gray-800/50 text-gray-300 border border-gray-600/30 rounded-lg cursor-not-allowed focus:ring-2 focus:ring-blue-500/50" />
-                </div>
-            </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-6">
+                    <!-- Team Name -->
+                    <div class="col-span-full">
+                        <label class="text-sm font-medium text-gray-300 mb-1 block">Team Name <span class="text-red-500">*</span></label>
+                        <input type="text" name="team_name" required
+                            class="w-full px-4 py-2 bg-gray-800 text-white border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 transition">
+                    </div>
 
-            <!-- Employee Section -->
-            <div class="mb-8">
-                <h5 class="text-xl font-semibold text-center text-gray-200 mb-6">
-                    <span class="relative px-4">
-                        Employee Details
-                        <span
-                            class="absolute inset-x-0 -bottom-1 h-0.5 bg-gradient-to-r from-transparent via-purple-500 to-transparent"></span>
-                    </span>
-                </h5>
+                    <!-- Team Description -->
+                    <div class="sm:col-span-full">
+                        <label class="text-sm font-medium text-gray-300 mb-1 block">Description</label>
+                        <textarea name="team_description" rows="3"
+                            class="w-full px-4 py-2 bg-gray-800 text-white border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"></textarea>
+                    </div>
 
-                <!-- Employee Input Fields Container -->
-                <div id="employee-container" class="space-y-4 max-h-[400px] overflow-y-auto pr-3 custom-scrollbar">
-                    <!-- Initial Employee Row -->
-                    <div
-                        class="grid grid-cols-1 md:grid-cols-12 gap-4 bg-gray-700/40 p-5 rounded-xl border border-gray-600/30 hover:border-purple-500/30 transition-all duration-300 employee-row">
-                        <div class="md:col-span-3">
-                            <label class="block text-sm font-medium text-gray-300 mb-2">Username</label>
-                            <input type="text" name="username[]"
-                                class="w-full px-4 py-2.5 bg-gray-800/70 border border-gray-600/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/50 text-white placeholder-gray-500 transition-all duration-300"
-                                placeholder="employee123" required />
-                        </div>
-                        <div class="md:col-span-5">
-                            <label class="block text-sm font-medium text-gray-300 mb-2">Full Name</label>
-                            <input type="text" name="full_name[]"
-                                class="w-full px-4 py-2.5 bg-gray-800/70 border border-gray-600/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-white placeholder-gray-500 transition-all duration-300"
-                                placeholder="John Doe" required />
-                        </div>
-                        <div class="md:col-span-3">
-                            <label class="block text-sm font-medium text-gray-300 mb-2">Password</label>
-                            <div class="relative">
-                                <input type="password" name="password[]"
-                                    class="w-full px-4 py-2.5 bg-gray-800/70 border border-gray-600/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-white placeholder-gray-500 transition-all duration-300 pr-10"
-                                    placeholder="••••••••" required />
-                                <button type="button"
-                                    class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-blue-400 transition">
-                                    <i class="ri-eye-line"></i>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="md:col-span-1 flex items-end justify-center">
-                            <button type="button"
-                                class="remove-employee w-full py-2.5 bg-gradient-to-br from-red-600 to-red-700 text-white rounded-lg hover:from-red-700 hover:to-red-800 transition-all duration-300 flex items-center justify-center shadow-md hover:shadow-lg">
-                                <i class="ri-delete-bin-line mr-1"></i>
-                            </button>
-                        </div>
+                    <!-- Team Slogan -->
+                    <div class="col-span-full">
+                        <label class="text-sm font-medium text-gray-300 mb-1 block">Slogan <span class="text-red-500">*</span></label>
+                        <input type="text" name="team_slogan" required
+                            class="w-full px-4 py-2 bg-gray-800 text-white border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition">
                     </div>
                 </div>
-            </div>
+            </section>
 
-            <!-- Action Buttons -->
-            <div class="space-y-4">
-                <button type="button" id="add-employee"
-                    class="w-full py-3 bg-gradient-to-br from-green-600 to-green-700 text-white rounded-lg hover:from-green-700 hover:to-green-800 transition-all duration-300 font-medium flex items-center justify-center shadow-lg hover:shadow-xl">
-                    <i class="ri-user-add-line mr-2"></i> Add More Employees
-                </button>
+            <!-- Employee Add Section -->
+            <section>
+                <h2 class="text-2xl font-semibold text-white flex items-center gap-2">
+                    <i class="ri-user-add-line text-blue-400 text-2xl"></i> Add Team Members
+                </h2>
 
+                <!-- Search Bar -->
+                <div class="mt-6">
+                    <label class="text-sm font-medium text-gray-300 mb-2 block">Search Unassigned Employees</label>
+                    <div class="relative">
+                        <input type="text" id="employee-search" placeholder="Search by name, email or department"
+                            class="w-full px-4 py-2 bg-gray-700 text-white border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500">
+                        <i class="ri-search-line absolute right-3 top-3 text-gray-400 text-lg"></i>
+                    </div>
+                </div>
+
+                <!-- Employee Table -->
+                <div class="mt-6 overflow-x-auto border border-gray-700 rounded-xl">
+                    <table class="min-w-full text-left text-sm text-gray-300">
+                        <thead class="bg-gray-800">
+                            <tr>
+                                <th class="px-6 py-3">
+                                    <input type="checkbox" id="select-all" class="rounded border-gray-500 text-green-600">
+                                </th>
+                                <th class="px-6 py-3">Employee</th>
+                                <th class="px-6 py-3">Department</th>
+                                <th class="px-6 py-3">Position / Role</th>
+                                <th class="px-6 py-3">Current Team</th>
+                            </tr>
+                        </thead>
+                        <tbody id="employee-table-body" class="divide-y divide-gray-700 bg-gray-900">
+                            {% for employee in unassigned_employees %}
+                            <tr class="hover:bg-gray-800 transition employee-row">
+                                <td class="px-6 py-4">
+                                    <input type="checkbox" name="team_members" value="{{ employee.id }}" class="employee-checkbox rounded border-gray-500 text-blue-500">
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="h-10 w-10 rounded-full overflow-hidden bg-gray-700 flex items-center justify-center text-white">
+                                            {% if employee.image %}
+                                                <img src="{{ employee.image.url }}" alt="Employee Image" class="object-cover w-full h-full">
+                                            {% else %}
+                                                {{ employee.full_name|first }}{{ employee.full_name|last }}
+                                            {% endif %}
+                                        </div>
+                                        <div>
+                                            <div class="font-medium text-white">{{ employee.full_name }}</div>
+                                            <div class="text-gray-400 text-sm">{{ employee.email }}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">{{ employee.department|default:"-" }}</td>
+                                <td class="px-6 py-4">
+                                    <div>{{ employee.position|default:"not assigned" }}</div>
+                                    <div class="text-gray-400 text-xs">{{ employee.role }}</div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    {% for team in employee.teams.all %}
+                                        {{ team.name }}{% if not forloop.last %}, {% endif %}
+                                    {% empty %}
+                                        No teams assigned
+                                    {% endfor %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    <!-- No Results -->
+                    <div id="no-results-message" class="hidden p-6 text-center text-gray-400 bg-gray-900">
+                        <i class="ri-search-eye-line text-4xl mb-2"></i>
+                        <h4 class="text-lg font-semibold">No employees found</h4>
+                        <p class="text-sm">Try refining your search.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Buttons -->
+            <div class="flex flex-col sm:flex-row gap-4 pt-6 border-t border-gray-700 mt-6">
                 <button type="submit"
-                    class="w-full py-3 bg-gradient-to-br from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-300 font-medium flex items-center justify-center shadow-lg hover:shadow-xl">
-                    <i class="ri-team-line mr-2"></i> Register Employees
+                    class="flex-1 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition flex items-center justify-center shadow-lg">
+                    <i class="ri-team-fill mr-2"></i> Create Team
                 </button>
-
                 <a href="{% url 'HrApp:Manage_Team' %}"
-                    class="block w-full py-3 bg-gradient-to-br from-gray-700 to-gray-800 text-white rounded-lg hover:from-gray-800 hover:to-gray-900 transition-all duration-300 font-medium text-center shadow-md hover:shadow-lg">
-                    <i class="ri-group-line mr-2"></i> View All Employees
+                    class="flex-1 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-semibold transition flex items-center justify-center shadow-lg">
+                    <i class="ri-arrow-go-back-line mr-2"></i> Back to Teams
                 </a>
             </div>
         </form>
@@ -116,61 +135,32 @@ Completed Tasks
 </div>
 
 <script>
-    document.getElementById("add-employee").addEventListener("click", function () {
-        const container = document.getElementById("employee-container");
-
-        const newRow = document.createElement("div");
-        newRow.className = "grid grid-cols-1 md:grid-cols-12 gap-4 bg-gray-700/40 p-5 rounded-xl border border-gray-600/30 hover:border-purple-500/30 transition-all duration-300 employee-row";
-        newRow.innerHTML = `
-                <div class="md:col-span-3">
-                    <label class="block text-sm font-medium text-gray-300 mb-2">Username</label>
-                    <input type="text" name="username[]" 
-                        class="w-full px-4 py-2.5 bg-gray-800/70 border border-gray-600/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/50 text-white placeholder-gray-500 transition-all duration-300" 
-                        placeholder="employee123" required />
-                </div>
-                <div class="md:col-span-5">
-                    <label class="block text-sm font-medium text-gray-300 mb-2">Full Name</label>
-                    <input type="text" name="full_name[]" 
-                        class="w-full px-4 py-2.5 bg-gray-800/70 border border-gray-600/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-white placeholder-gray-500 transition-all duration-300" 
-                        placeholder="John Doe" required />
-                </div>
-                <div class="md:col-span-3">
-                    <label class="block text-sm font-medium text-gray-300 mb-2">Password</label>
-                    <div class="relative">
-                        <input type="password" name="password[]" 
-                            class="w-full px-4 py-2.5 bg-gray-800/70 border border-gray-600/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-white placeholder-gray-500 transition-all duration-300 pr-10" 
-                            placeholder="••••••••" required />
-                        <button type="button" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-blue-400 transition">
-                            <i class="ri-eye-line"></i>
-                        </button>
-                    </div>
-                </div>
-                <div class="md:col-span-1 flex items-end justify-center">
-                    <button type="button" 
-                        class="remove-employee w-full py-2.5 bg-gradient-to-br from-red-600 to-red-700 text-white rounded-lg hover:from-red-700 hover:to-red-800 transition-all duration-300 flex items-center justify-center shadow-md hover:shadow-lg">
-                        <i class="ri-delete-bin-line mr-1"></i>
-                    </button>
-                </div>
-            `;
-        container.appendChild(newRow);
-
-        // Scroll to the newly added row
-        newRow.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-
-        // Add password toggle functionality
-        const eyeBtn = newRow.querySelector('.relative button');
-        const passwordInput = newRow.querySelector('input[type="password"]');
-        eyeBtn.addEventListener('click', () => {
-            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-            passwordInput.setAttribute('type', type);
-            eyeBtn.innerHTML = type === 'password' ? '<i class="ri-eye-line"></i>' : '<i class="ri-eye-off-line"></i>';
-        });
+    // Select/Deselect all checkboxes
+    document.getElementById('select-all').addEventListener('change', function () {
+        document.querySelectorAll('.employee-checkbox').forEach(cb => cb.checked = this.checked);
     });
 
-    document.addEventListener("click", function (e) {
-        if (e.target && (e.target.classList.contains("remove-employee") || e.target.closest(".remove-employee"))) {
-            e.target.closest(".employee-row").remove();
-        }
+    // Search logic
+    const searchInput = document.getElementById('employee-search');
+    const rows = document.querySelectorAll('.employee-row');
+    const noResults = document.getElementById('no-results-message');
+
+    searchInput.addEventListener('input', function () {
+        const value = this.value.toLowerCase();
+        let visible = 0;
+
+        rows.forEach(row => {
+            const text = row.textContent.toLowerCase();
+            if (text.includes(value)) {
+                row.style.display = '';
+                visible++;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+
+        noResults.classList.toggle('hidden', visible !== 0);
     });
 </script>
+
 {% endblock %}

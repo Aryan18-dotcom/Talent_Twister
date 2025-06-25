@@ -1,0 +1,115 @@
+{% extends 'Hr_App/base.html' %}
+{% load static %}
+
+{% block title %}
+View Teams
+{% endblock %}
+
+{% block content %}
+{% include 'Hr_App/Components.html' %}
+
+<div class="min-h-96 pb-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+        <!-- Main Table Card -->
+        <div class="bg-gray-800/40 rounded-xl shadow-lg border border-gray-700 overflow-hidden">
+            <!-- Table Content -->
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gray-800/60 text-gray-300 text-sm">
+                        <tr>
+                            <th class="px-6 py-3 font-medium text-left">Employee</th>
+                            <th class="px-6 py-3 font-medium text-left">Contact</th>
+                            <th class="px-6 py-3 font-medium text-left">Department</th>
+                            <th class="px-6 py-3 font-medium text-left">Position</th>
+                            <th class="px-6 py-3 font-medium text-right pr-6">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-white divide-y divide-gray-700/50" id="employeeTableBody">
+                        {% for employee in employees %}
+                        <tr class="task-row hover:bg-gray-800/30 transition"
+                            data-search="{{ employee.full_name }} {{ employee.username }} {{ employee.email }} {{ employee.department }} {{ employee.position }}">
+                            <td class="px-6 py-4">
+                                <div class="flex items-center gap-3">
+                                    {% if employee.image %}
+                                    <img src="{{ employee.image.url }}" class="w-10 h-10 rounded-full object-cover">
+                                    {% else %}
+                                    <div class="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center">
+                                        <i class="ri-user-line text-gray-400"></i>
+                                    </div>
+                                    {% endif %}
+                                    <div>
+                                        <p class="font-medium">{{ employee.full_name }}</p>
+                                        <p class="text-gray-400 text-sm">{{ employee.username }}</p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <p>{{ employee.email }}</p>
+                                <p class="text-gray-400 text-sm">{{ employee.phone_number|default:"No phone" }}</p>
+                            </td>
+                            <td class="px-6 py-4">
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium 
+                                        {% if employee.role == 'Admin' %}bg-purple-900/30 text-purple-300 border border-purple-800/50
+                                        {% elif employee.role == 'Manager' %}bg-green-900/30 text-green-300 border border-green-800/50
+                                        {% else %}bg-gray-700/50 text-gray-300 border border-gray-600/50{% endif %}">
+                                    {{ employee.department }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4">
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium 
+                                        {% if employee.role == 'Admin' %}bg-purple-900/30 text-purple-300 border border-purple-800/50
+                                        {% elif employee.role == 'Manager' %}bg-green-900/30 text-green-300 border border-green-800/50
+                                        {% else %}bg-gray-700/50 text-gray-300 border border-gray-600/50{% endif %}">
+                                    {{ employee.position }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 pr-4 text-right">
+                                <div class="flex justify-end">
+                                    <a href="{% url 'HrApp:view_employee' employee.id %}"
+                                        class="p-2 rounded-lg hover:bg-gray-700/50 text-blue-400 hover:text-blue-300 transition"
+                                        title="View Profile">
+                                        <i class="ri-eye-line"></i>
+                                    </a>
+                                    {% if deletion == 'True' %}
+                                        <form method="post" action="{% url 'HrApp:delete_employee' employee.id %}"
+                                        class="delete-employee-form">
+                                        {% csrf_token %}
+                                        <button type="button" data-message='<p>Are you sure you want to remove </br>
+                                            <strong>{{ employee.full_name }}</strong> from the team?</p>'
+                                            class="delete-btn p-2 rounded-lg hover:bg-gray-700/50 text-red-400 hover:text-red-300 transition"
+                                            title="Delete Employee">
+                                            <i class="ri-delete-bin-line"></i>
+                                        </button>
+                                    </form>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="py-12 text-center text-gray-400">
+                                <div class="flex flex-col items-center justify-center">
+                                    <img src="{% static 'Employee_App/Static_Imgs/outline.svg' %}" alt="No Employees"
+                                        class="w-32 mb-4 opacity-70">
+                                    <h2 class="text-lg font-semibold">No Employees Found</h2>
+                                    <p class="mt-2 text-sm text-gray-500 max-w-md mx-auto">Your company doesn't have any
+                                        employees yet. Click "Add Employees" to start building your team.</p>
+                                    <a href="{% url 'HrApp:Build_Team' %}"
+                                        class="mt-4 inline-flex items-center gap-2 bg-primary/90 hover:bg-primary text-white px-4 py-2 rounded-lg font-medium transition">
+                                        <i class="ri-user-add-line"></i>
+                                        Add Employees
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}

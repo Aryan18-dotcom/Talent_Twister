@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.utils.html import format_html
-from .models import Company, Employee, TeamLead, JobSeeker, Task, TaskProgress, WorkLeave, Skill, Education, Experience
-
+from .models import Company, Employee, TeamLead, JobSeeker, Task, TaskProgress, WorkLeave, Skill, Education, Experience, Team, HR, Co_Curricular
+from django import forms
 
 
 # admin.site.register([Chat, Message])
@@ -18,6 +18,10 @@ class EducationInline(admin.TabularInline):
 
 class ExperienceInline(admin.TabularInline):
     model = Experience
+    extra = 1
+
+class Co_Curricularline(admin.TabularInline):
+    model = Co_Curricular
     extra = 1
 
 
@@ -37,14 +41,37 @@ class ImageDisplayMixin:
     image_thumbnail.short_description = 'Profile'
     image_thumbnail.allow_tags = True
 
-@admin.register(TeamLead)
+
+@admin.register(HR)
 class HRAdmin(admin.ModelAdmin, ImageDisplayMixin):
+    list_display = ('id', 'image_thumbnail', 'username', 'full_name', 'company', 'is_active', 'status', 'edit_link')
+    list_filter = ('gender', 'status', 'is_active')
+    search_fields = ('username', 'full_name', 'email', 'hr_id')
+    list_editable = ('is_active', 'status')
+    list_display_links = ('username',)
+    list_per_page = 25
+    # inlines = [Co_Curricular]
+
+    def edit_link(self, obj):
+        return format_html(
+            '<a class="button" href="{}">Edit</a>',
+            f'{obj.id}/change/'
+        )
+    edit_link.short_description = 'Edit'
+
+
+
+
+@admin.register(TeamLead)
+class TeamLeadAdmin(admin.ModelAdmin, ImageDisplayMixin):
     list_display = ('id', 'image_thumbnail', 'username', 'company_name', 'full_name', 'email', 'is_active', 'role', 'edit_link')
     list_filter = ('is_active', 'role', 'created_companies')
     search_fields = ('username', 'full_name', 'email', 'created_companies__name')
     list_editable = ('is_active', 'role')
     list_display_links = None
     list_per_page = 20
+    inlines = [Co_Curricularline,]
+
 
     def company_name(self, obj):
         # Get the first company created by this HR
@@ -58,6 +85,40 @@ class HRAdmin(admin.ModelAdmin, ImageDisplayMixin):
             f'{obj.id}/change/'
         )
     edit_link.short_description = ''
+
+
+
+class TeamForm(forms.ModelForm):
+    class Meta:
+        model = Team
+        fields = '__all__'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        # If the instance exists (i.e. editing a team)
+        if self.instance and self.instance.pk:
+            self.fields['members'].queryset = Employee.objects.filter(company=self.instance.company)
+        else:
+            self.fields['members'].queryset = Employee.objects.none()
+
+@admin.register(Team)
+class TeamsAdmin(admin.ModelAdmin):
+    form = TeamForm
+    list_display = ('id', 'name', 'created_by', 'created_at', 'total_members', 'is_active', 'edit_link')
+    list_filter = ('name', 'is_active', 'created_by')
+    search_fields = ('name', 'created_by__username')  # or 'created_by__full_name' if it exists
+    list_editable = ('is_active',)
+    list_display_links = None
+    list_per_page = 20
+
+    def edit_link(self, obj):
+        return format_html(
+            '<a class="button" href="{}">Edit</a>',
+            f'{obj.id}/change/'
+        )
+    edit_link.short_description = 'Edit'
+
 
 
 @admin.register(Employee)
@@ -163,6 +224,12 @@ class SkillAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'employee')
     search_fields = ('name', 'employee__username')
     list_filter = ('employee',)
+
+@admin.register(Co_Curricular)
+class CoCurricularAdmin(admin.ModelAdmin):
+    list_display = ('name', 'Hr', 'proficiency')
+    search_fields = ('name', 'Hr__username')
+    list_filter = ('proficiency',)
 
 
 @admin.register(Education)

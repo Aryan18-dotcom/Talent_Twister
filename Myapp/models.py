@@ -2,7 +2,8 @@ from django.db import models
 from django.utils import timezone
 import uuid
 from django.contrib.auth.models import User
-
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
 # Example department choices — you can modify as needed
 DEPARTMENT_CHOICES = [
     ('General', 'General'),
@@ -32,19 +33,17 @@ GENDER_CHOICES = [
     ('Male', 'Male'),
     ('Female', 'Female'),
     ('Other', 'Other'),
+    ('Undisclosed', 'Undisclosed'),
 ]
 
 USER_STATUS_CHOICES = [
-    ('active', 'Active'),
-    ('onleave', 'On Leave'),
-    ('inactive', 'Inactive'),
-    ('terminated', 'Terminated'),
+    ('Active', 'Active'),
+    ('On Leave', 'On Leave'),
+    ('Inactive', 'Inactive'),
+    ('Terminated', 'Terminated'),
 ]
 
 #Helping models to avoid circular imports
-from django.db import models
-from django.utils import timezone
-import uuid
 
 class Skill(models.Model):
     name = models.CharField(max_length=50)
@@ -52,10 +51,25 @@ class Skill(models.Model):
 
     def __str__(self):
         return self.name
+    
+# class Co_Curricular(models.Model):
+#     name = models.CharField(max_length=50)
+#     Hr = models.ForeignKey('TeamLead', on_delete=models.CASCADE, related_name='skills')
 
+#     def __str__(self):
+#         return self.name
+
+class Co_Curricular(models.Model):
+    name = models.CharField(max_length=50)
+    Hr = models.ForeignKey('TeamLead', on_delete=models.CASCADE, related_name='skills')
+    proficiency = models.IntegerField()
+
+    def __str__(self):
+        return self.name
 
 class Education(models.Model):
     employee = models.ForeignKey('Employee', on_delete=models.CASCADE, related_name='education')
+
     degree = models.CharField(max_length=100)
     institution = models.CharField(max_length=150)
     start_year = models.PositiveIntegerField()
@@ -75,18 +89,60 @@ class Experience(models.Model):
 
     def __str__(self):
         return f"{self.job_title} at {self.company_name}"
+    
 
-
-# ✅ TeamLead Model
-class TeamLead(models.Model):
+#✅ Hr's Model
+class HR(models.Model):
     username = models.CharField(max_length=150, unique=True)
     full_name = models.CharField(max_length=255)
     email = models.EmailField(unique=True)
+    password = models.CharField(max_length=255)  # Store hashed password
+    image = models.ImageField(upload_to="hr_profiles/", null=True, blank=True)
+
+    hr_id = models.CharField(max_length=12, unique=True, blank=True, null=True)
+    company = models.ForeignKey("Company", on_delete=models.CASCADE, related_name="hr_users")
+    company_email = models.EmailField(unique=True, blank=True)
+
+    phone_number = models.CharField(max_length=15, null=True, blank=True)
+    emergency_contact = models.CharField(max_length=15, blank=True, null=True)
+    address = models.TextField(null=True, blank=True)
+    gender = models.CharField(max_length=20, choices=GENDER_CHOICES, default="Undisclosed", null=True, blank=True)
+    joining_date = models.DateField(default=timezone.now)
+    last_login = models.DateTimeField(null=True, blank=True)
+    status = models.CharField(max_length=20, choices=USER_STATUS_CHOICES, default='Inactive')
+    
+    about = models.TextField(max_length=200, null=True, blank=True)
+    is_active = models.BooleanField(default=True)
+
+    days_worked = models.IntegerField(default=0)
+    leave = models.IntegerField(default=0)
+
+
+    def save(self, *args, **kwargs):
+        if not self.hr_id:
+            self.hr_id = f"HR{uuid.uuid4().hex[:6].upper()}"
+
+        if not self.company_email and self.company:
+            self.company_email = f"{self.username}@{self.company.domain}"
+
+
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.full_name} ({self.company.name})"
+    
+
+# ✅ TeamLead Model
+class TeamLead(models.Model):
+    company = models.ForeignKey("Company", on_delete=models.CASCADE, related_name="team_lead_users", null=True, blank=True)
+    username = models.CharField(max_length=150, unique=True)
+    full_name = models.CharField(max_length=255)
+    email = models.EmailField(unique=True, null=True, blank=True)
     password = models.CharField(max_length=255)  # Hashed password
     image = models.ImageField(upload_to="hr_pics/", null=True, blank=True)
     date_of_birth = models.DateField(null=True, blank=True)
-    gender = models.CharField(max_length=10, choices=GENDER_CHOICES, default="Undisclosed", null=True, blank=True)
-    teamLead_id = models.CharField(max_length=10, unique=True, null=True, blank=True)
+    gender = models.CharField(max_length=20, choices=GENDER_CHOICES, default="Undisclosed", null=True, blank=True)
+    teamLead_id = models.CharField(max_length=12, unique=True, null=True, blank=True)
     address = models.TextField(null=True, blank=True)
     emergency_contact = models.CharField(max_length=15, blank=True, null=True)
     is_active = models.BooleanField(default=False)
@@ -112,10 +168,49 @@ class TeamLead(models.Model):
 
 
         super().save(*args, **kwargs)
+    
+    # def get_skills_list(self):
+    #     return [skill.name for skill in self.skills.all()]
+    def get_skills_list(self):
+        return self.skills.all()
 
     def __str__(self):
         return f"{self.username}"
-    
+
+
+# ✅ Team Model for the TeamLead
+class Team(models.Model):
+    name = models.CharField(max_length=100)
+    description = models.TextField(max_length=300, blank=True, null=True)
+    slogan = models.TextField(max_length=20, blank=True, null=True)
+
+    created_by = models.ForeignKey(
+        'TeamLead',
+        on_delete=models.CASCADE,
+        related_name='teams'
+    )
+
+    company = models.ForeignKey(
+        'Company',
+        on_delete=models.CASCADE,
+        related_name='teams'
+    )
+
+    members = models.ManyToManyField(
+        'Employee',
+        related_name='teams',
+        blank=True
+    )
+
+    created_at = models.DateTimeField(default=timezone.now)
+    is_active = models.BooleanField(default=True)
+
+    def total_members(self):
+        return self.members.count()
+
+    def __str__(self):
+        return f"{self.name} ({self.company.name})"
+
 
 # ✅ Company Model
 class Company(models.Model):
@@ -190,7 +285,13 @@ class Company(models.Model):
 
     def __str__(self):
         return self.name
-
+    
+    def total_members(self):
+        return (
+                self.employees.count() +
+                self.hr_users.count() +
+                self.team_lead_users.count()
+            )
 
 
 # ✅ Employee Model
@@ -210,15 +311,15 @@ class Employee(models.Model):
     leave = models.IntegerField(default=0)
     about = models.TextField(null=True, blank=True, max_length=175)
     date_of_birth = models.DateField(null=True, blank=True)
-    gender = models.CharField(max_length=10, choices=GENDER_CHOICES, default="Undisclosed", null=True, blank=True)
+    gender = models.CharField(max_length=20, choices=GENDER_CHOICES, default="Undisclosed", null=True, blank=True)
     employee_id = models.CharField(max_length=10, unique=True, null=True, blank=True)
     address = models.TextField(null=True, blank=True)
     emergency_contact = models.CharField(max_length=15, blank=True, null=True)
     status = models.CharField(max_length=20, choices=USER_STATUS_CHOICES, default='Inactive')
     days_worked = models.IntegerField(default=0)
 
-    def get_skills_list(self):
-        return [skill.name for skill in self.skills.all()]
+    # def get_skills_list(self):
+    #     return [skill.name for skill in self.skills.all()]
 
     def save(self, *args, **kwargs):
         if not self.email and self.company:

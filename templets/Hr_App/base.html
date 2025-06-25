@@ -187,7 +187,7 @@
 {% url 'HrApp:Accepted_Task' as accepted_task_url %}
 {% url 'HrApp:profile_settings' as profile_settings_url %}
 {% url 'HrApp:settings' as settings_url %}
-{% url 'HrApp:team_members' as team_members_url %}
+{% url 'HrApp:all_users' as team_members_url %}
 {% url 'HrApp:pending_task' as pending_task_url %}
 {% url 'HrApp:completed_task' as completed_task_url %}
 {% url 'HrApp:all_tasks' as all_tasks_url %}
@@ -247,7 +247,11 @@
         {% endblock %}
 
     </div>
-
+    <!-- {% if profile %}
+    <script>
+        alert('Profile is getting.!')
+    </script>
+    {% endif %} -->
 
     <nav class="fixed bottom-0 left-0 right-0 bg-gray-800 border-t border-gray-700">
         <div class="max-w-7xl mx-auto px-4">
@@ -495,8 +499,8 @@
                 button.addEventListener("click", function () {
                     const name = this.getAttribute("data-confirm-name") || this.getAttribute("data-employee-name") || "this item";
                     const message = this.getAttribute("data-message") || `Are you sure you want to delete "${name}"?`;
-                    confirmMessage.textContent = message;
-                    confirmModal.classList.remove("hidden");
+                    confirmMessage.innerHTML = message;
+                    confirmModal.classList.remove("hidden");    
                     formToSubmit = this.closest("form");
                 });
             });
