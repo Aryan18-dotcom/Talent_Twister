@@ -47,54 +47,96 @@ USER_STATUS_CHOICES = [
 
 class Skill(models.Model):
     name = models.CharField(max_length=50)
-    employee = models.ForeignKey('Employee', on_delete=models.CASCADE, related_name='skills')
+    proficiency = models.FloatField(default=2.5)
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, null=True, blank=True)
+    object_id = models.PositiveIntegerField(null=True, blank=True)
+    content_object = GenericForeignKey('content_type', 'object_id')
 
-    def __str__(self):
-        return self.name
+    def __str__(self):  
+        return f'Sikll({self.name}) - Proficiency({self.proficiency})'
     
-# class Co_Curricular(models.Model):
-#     name = models.CharField(max_length=50)
-#     Hr = models.ForeignKey('TeamLead', on_delete=models.CASCADE, related_name='skills')
-
-#     def __str__(self):
-#         return self.name
-
 class Co_Curricular(models.Model):
     name = models.CharField(max_length=50)
-    Hr = models.ForeignKey('TeamLead', on_delete=models.CASCADE, related_name='skills')
-    proficiency = models.IntegerField()
+    discription = models.TextField(null=True, blank=True)
+    proficiency = models.FloatField(default=5)
+    
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, null=True, blank=True)
+    object_id = models.PositiveIntegerField(null=True, blank=True)
+    content_object = GenericForeignKey('content_type', 'object_id')
 
     def __str__(self):
         return self.name
 
 class Education(models.Model):
-    employee = models.ForeignKey('Employee', on_delete=models.CASCADE, related_name='education')
+    # 10th
+    school_10 = models.CharField(max_length=255, null=True, blank=True)
+    school_10_year_start = models.DateField(max_length=10, null=True, blank=True)
+    school_10_year_end = models.DateField(max_length=10, null=True, blank=True)
 
-    degree = models.CharField(max_length=100)
-    institution = models.CharField(max_length=150)
-    start_year = models.PositiveIntegerField()
-    end_year = models.PositiveIntegerField(null=True, blank=True)
+    # 12th (optional)
+    school_12 = models.CharField(max_length=255, null=True, blank=True)
+    school_12_year_start = models.DateField(max_length=10, null=True, blank=True)
+    school_12_year_end = models.DateField(max_length=10, null=True, blank=True)
+
+    # College
+    college = models.CharField(max_length=255, null=True, blank=True)
+    degree = models.CharField(max_length=150, null=True, blank=True)
+    field_of_study = models.CharField(max_length=150, null=True, blank=True)
+    graduation_date = models.DateField(null=True, blank=True)
+
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, null=True, blank=True)
+    object_id = models.PositiveIntegerField(null=True, blank=True)
+    content_object = GenericForeignKey('content_type', 'object_id')
 
     def __str__(self):
-        return f"{self.degree} at {self.institution}"
-
+        return f"{self.degree} at {self.college}"
 
 class Experience(models.Model):
-    employee = models.ForeignKey('Employee', on_delete=models.CASCADE, related_name='experience')
     job_title = models.CharField(max_length=100)
     company_name = models.CharField(max_length=100)
     start_date = models.DateField()
     end_date = models.DateField(null=True, blank=True)
     description = models.TextField(blank=True, null=True)
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, null=True, blank=True)
+    object_id = models.PositiveIntegerField(null=True, blank=True)
+    content_object = GenericForeignKey('content_type', 'object_id')
 
     def __str__(self):
         return f"{self.job_title} at {self.company_name}"
+
+class Certficate(models.Model):
+    title = models.CharField(max_length=150)
+    organization = models.CharField(max_length=200)
+    issue_date = models.DateField()
+    file = models.FileField(upload_to="certificates/")
+    description = models.TextField(null=True, blank=True)
+
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, null=True, blank=True)
+    object_id = models.PositiveIntegerField(null=True, blank=True)
+    content_object = GenericForeignKey('content_type', 'object_id')
+
+    def __str__(self):
+        return f"{self.title} at {self.organization}"
+
+class SocialLinks(models.Model):
+    github_link = models.CharField(null=True, blank=True)
+    linkdin_link = models.CharField(null=True, blank=True)
+    portfolio_link = models.CharField(null=True, blank=True)
+
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, null=True, blank=True)
+    object_id = models.PositiveIntegerField(null=True, blank=True)
+    content_object = GenericForeignKey('content_type', 'object_id')
+
+    def __str__(self):
+        return self.github_link 
+    
     
 
 #✅ Hr's Model
 class HR(models.Model):
     username = models.CharField(max_length=150, unique=True)
     full_name = models.CharField(max_length=255)
+    personal_email = models.EmailField(unique=True, blank=True)
     email = models.EmailField(unique=True)
     password = models.CharField(max_length=255)  # Store hashed password
     image = models.ImageField(upload_to="hr_profiles/", null=True, blank=True)
@@ -137,12 +179,18 @@ class TeamLead(models.Model):
     company = models.ForeignKey("Company", on_delete=models.CASCADE, related_name="team_lead_users", null=True, blank=True)
     username = models.CharField(max_length=150, unique=True)
     full_name = models.CharField(max_length=255)
+    persional_email = models.EmailField(unique=True, null=True, blank=True)  # Personal email
     email = models.EmailField(unique=True, null=True, blank=True)
     password = models.CharField(max_length=255)  # Hashed password
     image = models.ImageField(upload_to="hr_pics/", null=True, blank=True)
     date_of_birth = models.DateField(null=True, blank=True)
     gender = models.CharField(max_length=20, choices=GENDER_CHOICES, default="Undisclosed", null=True, blank=True)
     teamLead_id = models.CharField(max_length=12, unique=True, null=True, blank=True)
+    street_address = models.CharField(max_length=255, null=True, blank=True)
+    city = models.CharField(max_length=100, null=True, blank=True)
+    state = models.CharField(max_length=100, null=True, blank=True)
+    postal_code = models.CharField(max_length=20, null=True, blank=True)
+    country = models.CharField(max_length=100, null=True, blank=True)
     address = models.TextField(null=True, blank=True)
     emergency_contact = models.CharField(max_length=15, blank=True, null=True)
     is_active = models.BooleanField(default=False)
@@ -152,10 +200,24 @@ class TeamLead(models.Model):
     phone_number = models.CharField(max_length=15, blank=True, null=True)
     last_login = models.DateTimeField(null=True, blank=True)
     leave = models.IntegerField(default=0)  # Corrected spelling
-    about = models.TextField(null=True, blank=True, max_length=175)
+    about = models.TextField(null=True, blank=True)
     status = models.CharField(max_length=20, choices=USER_STATUS_CHOICES, default='Inactive')
     days_worked = models.IntegerField(default=0)  # Days worked in the current month
-
+    enable_two_factor = models.BooleanField(default=False, null=True, blank=True)
+    authentication_method = models.CharField(
+        max_length=20,
+        choices=[
+            ('Email', 'Email'),
+            ('SMS', 'SMS'),
+            ('Authenticator App', 'Authenticator App')
+        ],
+        default='Email',
+        null=True,
+        blank=True
+    )
+    is_account_verified = models.BooleanField(default=False)  # Indicates if the account is verified
+    is_basic_settings_set = models.BooleanField(default=False)  # Indicates if basic settings are set
+    level_of_basic_setting_set = models.IntegerField(default=0)
 
     def save(self, *args, **kwargs):
         # Auto-generate email if not provided
@@ -166,13 +228,15 @@ class TeamLead(models.Model):
         if not self.teamLead_id:
             self.teamLead_id = f"TMLED{uuid.uuid4().hex[:6].upper()}"
 
+        if self.address:
+            self.address = f"{self.street_address}, {self.city}, {self.state}, {self.postal_code}, {self.country}"
 
         super().save(*args, **kwargs)
     
     # def get_skills_list(self):
     #     return [skill.name for skill in self.skills.all()]
     def get_skills_list(self):
-        return self.skills.all()
+        return self.co_.all()
 
     def __str__(self):
         return f"{self.username}"
@@ -299,6 +363,7 @@ class Employee(models.Model):
     company = models.ForeignKey('Company', on_delete=models.CASCADE, related_name="employees")
     username = models.CharField(max_length=150)
     full_name = models.CharField(max_length=255)
+    persional_email = models.EmailField(unique=True, null=True, blank=True)  # Personal email
     email = models.EmailField(unique=True, blank=True)
     password = models.CharField(max_length=255)
     image = models.ImageField(upload_to="employee_pics/", null=True, blank=True)
@@ -336,9 +401,13 @@ class Employee(models.Model):
 class JobSeeker(models.Model):
     username = models.CharField(max_length=150, unique=True)
     full_name = models.CharField(max_length=255)
+
     email = models.EmailField(unique=True)
     password = models.CharField(max_length=255)  # Hashed password
     image = models.ImageField(upload_to="jobseeker_pics/", null=True, blank=True)
+
+    is_account_verified = models.BooleanField(default=False)  # Indicates if the account is verified
+
 
     def __str__(self):
         return f"{self.username} (Job Seeker)"

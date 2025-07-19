@@ -1,29 +1,60 @@
 from django.contrib import admin
+from django.contrib.contenttypes.admin import GenericTabularInline
 from django.utils.html import format_html
-from .models import Company, Employee, TeamLead, JobSeeker, Task, TaskProgress, WorkLeave, Skill, Education, Experience, Team, HR, Co_Curricular
+from .models import Company, Employee, TeamLead, JobSeeker, Task, TaskProgress, WorkLeave, Skill, Education, Experience, Team, HR, Co_Curricular, Certficate, SocialLinks
 from django import forms
 
-
-# admin.site.register([Chat, Message])
-
-class SkillInline(admin.TabularInline):
+# Update your inline classes to use GenericTabularInline
+class SkillInline(GenericTabularInline):
     model = Skill
     extra = 1
+    ct_field = 'content_type'  # Name of the content type field
+    ct_fk_field = 'object_id'  # Name of the object ID field
 
-
-class EducationInline(admin.TabularInline):
+class EducationInline(GenericTabularInline):
     model = Education
     extra = 1
+    ct_field = 'content_type'
+    ct_fk_field = 'object_id'
+    fields = (
+        'school_10',
+        'school_10_year_start',
+        'school_10_year_end',
+        'school_12',
+        'school_12_year_start',
+        'school_12_year_end',
+        'college',
+        'degree',
+        'field_of_study',
+        'graduation_date',)
 
-
-class ExperienceInline(admin.TabularInline):
+class ExperienceInline(GenericTabularInline):
     model = Experience
     extra = 1
+    ct_field = 'content_type'
+    ct_fk_field = 'object_id'
+    fields = ('job_title', 'company_name', 'start_date', 'end_date', 'description')
 
-class Co_Curricularline(admin.TabularInline):
+class Co_CurricularInline(GenericTabularInline):
     model = Co_Curricular
     extra = 1
+    ct_field = 'content_type'
+    ct_fk_field = 'object_id'
+    fields = ('name', 'proficiency', 'discription')
 
+class CertficateInline(GenericTabularInline):
+    model = Certficate
+    extra = 1
+    ct_field = 'content_type'
+    ct_fk_field = 'object_id'
+    fields = ('title', 'organization', 'issue_date', 'file', 'description',)
+
+class SocialLinksInline(GenericTabularInline):
+    model = SocialLinks
+    extra = 1
+    ct_field = 'content_type'
+    ct_fk_field = 'object_id'
+    fields = ('github_link', 'linkdin_link', 'portfolio_link')
 
 # Common mixin for image display
 class ImageDisplayMixin:
@@ -39,12 +70,12 @@ class ImageDisplayMixin:
             '</div>'
         )
     image_thumbnail.short_description = 'Profile'
-    image_thumbnail.allow_tags = True
 
-
+# Update your admin classes to use the new inlines
 @admin.register(HR)
 class HRAdmin(admin.ModelAdmin, ImageDisplayMixin):
     list_display = ('id', 'image_thumbnail', 'username', 'full_name', 'company', 'is_active', 'status', 'edit_link')
+    inlines = [Co_CurricularInline]
     list_filter = ('gender', 'status', 'is_active')
     search_fields = ('username', 'full_name', 'email', 'hr_id')
     list_editable = ('is_active', 'status')
@@ -65,12 +96,13 @@ class HRAdmin(admin.ModelAdmin, ImageDisplayMixin):
 @admin.register(TeamLead)
 class TeamLeadAdmin(admin.ModelAdmin, ImageDisplayMixin):
     list_display = ('id', 'image_thumbnail', 'username', 'company_name', 'full_name', 'email', 'is_active', 'role', 'edit_link')
+    inlines = [SkillInline, Co_CurricularInline, EducationInline, ExperienceInline, CertficateInline,
+                SocialLinksInline]
     list_filter = ('is_active', 'role', 'created_companies')
     search_fields = ('username', 'full_name', 'email', 'created_companies__name')
     list_editable = ('is_active', 'role')
     list_display_links = None
     list_per_page = 20
-    inlines = [Co_Curricularline,]
 
 
     def company_name(self, obj):
@@ -120,15 +152,14 @@ class TeamsAdmin(admin.ModelAdmin):
     edit_link.short_description = 'Edit'
 
 
-
 @admin.register(Employee)
 class EmployeeAdmin(admin.ModelAdmin, ImageDisplayMixin):
     list_display = ('id', 'image_thumbnail', 'username', 'full_name', 'company', 'is_active', 'role', 'edit_link')
+    inlines = [SkillInline, EducationInline, ExperienceInline]
     search_fields = ('username', 'full_name', 'email', 'company__name')
     list_filter = ('company', 'is_active', 'role')
     list_editable = ('is_active', 'role')
     list_per_page = 20
-    inlines = [SkillInline, EducationInline, ExperienceInline]
 
     def edit_link(self, obj):
         return format_html(
@@ -221,27 +252,75 @@ class WorkLeaveAdmin(admin.ModelAdmin):
 
 @admin.register(Skill)
 class SkillAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'employee')
-    search_fields = ('name', 'employee__username')
-    list_filter = ('employee',)
+    list_display = ('id', 'name', 'content_object', 'content_type', 'object_id', 'proficiency')
+    search_fields = ('name',)
+    list_filter = ('content_type',)
+    readonly_fields = ('content_type', 'object_id')
+
+    def content_object(self, obj):
+        return str(obj.content_object)
+    content_object.short_description = 'Attached To'
 
 @admin.register(Co_Curricular)
 class CoCurricularAdmin(admin.ModelAdmin):
-    list_display = ('name', 'Hr', 'proficiency')
-    search_fields = ('name', 'Hr__username')
-    list_filter = ('proficiency',)
+    list_display = ('name', 'content_object', 'proficiency', 'content_type', 'object_id', 'discription')
+    search_fields = ('name',)
+    list_filter = ('proficiency', 'content_type')
+    readonly_fields = ('content_type', 'object_id')
 
+    def content_object(self, obj):
+        return str(obj.content_object)
+    content_object.short_description = 'Attached To'
+
+@admin.register(Certficate)
+class CertficateAdmin(admin.ModelAdmin):
+    list_display = ('title', 'organization', 'issue_date', 'content_type', 'object_id', 'file', 'description')
+    search_fields = ('title',)
+    list_filter = ('title', 'content_type')
+    readonly_fields = ('content_type', 'object_id')
+
+    def content_object(self, obj):
+        return str(obj.content_object)
+    content_object.short_description = 'Attached To'
+
+@admin.register(SocialLinks)
+class SocialLinksAdmin(admin.ModelAdmin):
+    list_display = ('github_link', 'linkdin_link', 'portfolio_link', 'content_type', 'object_id',)
+    search_fields = ('github_link','linkdin_link','portfolio_link')
+    list_filter = ('github_link', 'linkdin_link', 'portfolio_link', 'content_type')
+    readonly_fields = ('content_type', 'object_id')
+
+    def content_object(self, obj):
+        return str(obj.content_object)
+    content_object.short_description = 'Attached To'
 
 @admin.register(Education)
 class EducationAdmin(admin.ModelAdmin):
-    list_display = ('id', 'degree', 'institution', 'employee', 'start_year', 'end_year')
-    search_fields = ('degree', 'institution', 'employee__username')
-    list_filter = ('employee',)
+    list_display = ('id', 'school_10',
+        'school_10_year_start',
+        'school_10_year_end',
+        'school_12',
+        'school_12_year_start',
+        'school_12_year_end',
+        'college',
+        'degree',
+        'field_of_study',
+        'graduation_date', 'content_type', 'object_id')
+    search_fields = ('degree', 'institution')
+    list_filter = ('content_type',)
+    readonly_fields = ('content_type', 'object_id')
 
+    def content_object(self, obj):
+        return str(obj.content_object)
+    content_object.short_description = 'Attached To'
 
 @admin.register(Experience)
 class ExperienceAdmin(admin.ModelAdmin):
-    list_display = ('id', 'job_title', 'company_name', 'employee', 'start_date', 'end_date')
-    search_fields = ('job_title', 'company_name', 'employee__username')
-    list_filter = ('employee',)
+    list_display = ('id', 'job_title', 'company_name', 'content_object', 'start_date', 'end_date', 'content_type', 'object_id')
+    search_fields = ('job_title', 'company_name')
+    list_filter = ('content_type',)
+    readonly_fields = ('content_type', 'object_id')
 
+    def content_object(self, obj):
+        return str(obj.content_object)
+    content_object.short_description = 'Attached To'

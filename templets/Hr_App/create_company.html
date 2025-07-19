@@ -1,0 +1,317 @@
+{% extends 'Hr_App/base.html' %}
+
+{% block title %}Create/Update Company Profile{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-900 text-gray-100 p-6">
+    <div class="max-w-4xl mx-auto bg-gray-800 p-8 rounded-lg shadow-xl">
+        <h2 class="text-3xl font-bold text-center mb-8 text-blue-400">
+            {% if company %}Update Your Company Profile{% else %}Create Your Company Profile{% endif %}
+        </h2>
+
+        {% if messages %}
+            <div class="mb-6">
+                {% for message in messages %}
+                    <div class="p-3 rounded-md {% if message.tags == 'error' %}bg-red-600{% elif message.tags == 'success' %}bg-green-600{% else %}bg-blue-600{% endif %} text-white mb-2">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <div class="mb-8">
+            <div class="flex justify-between items-center mb-4">
+                <div class="w-1/4 text-center">
+                    <div class="p-3 rounded-full border-2 {% if current_step == '1' %}border-blue-500 bg-blue-700{% else %}border-gray-600 bg-gray-700{% endif %} text-white font-bold inline-flex items-center justify-center h-10 w-10">1</div>
+                    <p class="mt-2 text-sm {% if current_step == '1' %}text-blue-400{% else %}text-gray-400{% endif %}">Basic Info</p>
+                </div>
+                <div class="flex-grow border-t-2 {% if current_step == '2' or current_step == '3' or current_step == '4' %}border-blue-500{% else %}border-gray-600{% endif %}"></div>
+                <div class="w-1/4 text-center">
+                    <div class="p-3 rounded-full border-2 {% if current_step == '2' %}border-blue-500 bg-blue-700{% else %}border-gray-600 bg-gray-700{% endif %} text-white font-bold inline-flex items-center justify-center h-10 w-10">2</div>
+                    <p class="mt-2 text-sm {% if current_step == '2' %}text-blue-400{% else %}text-gray-400{% endif %}">Work Settings</p>
+                </div>
+                <div class="flex-grow border-t-2 {% if current_step == '3' or current_step == '4' %}border-blue-500{% else %}border-gray-600{% endif %}"></div>
+                <div class="w-1/4 text-center">
+                    <div class="p-3 rounded-full border-2 {% if current_step == '3' %}border-blue-500 bg-blue-700{% else %}border-gray-600 bg-gray-700{% endif %} text-white font-bold inline-flex items-center justify-center h-10 w-10">3</div>
+                    <p class="mt-2 text-sm {% if current_step == '3' %}text-blue-400{% else %}text-gray-400{% endif %}">Preferences</p>
+                </div>
+                <div class="flex-grow border-t-2 {% if current_step == '4' %}border-blue-500{% else %}border-gray-600{% endif %}"></div>
+                <div class="w-1/4 text-center">
+                    <div class="p-3 rounded-full border-2 {% if current_step == '4' %}border-blue-500 bg-blue-700{% else %}border-gray-600 bg-gray-700{% endif %} text-white font-bold inline-flex items-center justify-center h-10 w-10">4</div>
+                    <p class="mt-2 text-sm {% if current_step == '4' %}text-blue-400{% else %}text-gray-400{% endif %}">Files & Desc.</p>
+                </div>
+            </div>
+        </div>
+
+        <form method="post" enctype="multipart/form-data" action="{% url 'HrApp:CreateCompany' %}" class="space-y-6">
+            {% csrf_token %}
+            <input type="hidden" name="current_step" value="{{ current_step }}">
+
+            <div id="step-1" class="step-content {% if current_step == '1' %}block{% else %}hidden{% endif %}">
+                <h3 class="text-2xl font-semibold mb-6 text-blue-300">1. Basic Company Information</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="company_name" class="block text-sm font-medium text-gray-300 mb-1">Company Name</label>
+                        <input type="text" id="company_name" name="company_name"
+                               class="w-full p-3 rounded-md bg-gray-700 border border-gray-600 text-white focus:outline-none focus:border-blue-500"
+                               value="{{ company.name|default:'' }}" {% if company %}readonly{% endif %}>
+                        {% if company %}<p class="text-xs text-gray-400 mt-1">Company name cannot be changed after creation.</p>{% endif %}
+                    </div>
+                    <div>
+                        <label for="domain" class="block text-sm font-medium text-gray-300 mb-1">Company Domain (e.g., example.com)</label>
+                        <input type="text" id="domain" name="domain"
+                               class="w-full p-3 rounded-md bg-gray-700 border border-gray-600 text-white focus:outline-none focus:border-blue-500"
+                               value="{{ company.domain|default:'' }}" {% if company %}readonly{% endif %}>
+                        {% if company %}<p class="text-xs text-gray-400 mt-1">Company domain cannot be changed after creation.</p>{% endif %}
+                    </div>
+                    <div>
+                        <label for="industry" class="block text-sm font-medium text-gray-300 mb-1">Industry</label>
+                        <select id="industry" name="industry"
+                                class="w-full p-3 rounded-md bg-gray-700 border border-gray-600 text-white focus:outline-none focus:border-blue-500">
+                            <option value="">Select Industry</option>
+                            {% for key, value in industry_choices %}
+                                <option value="{{ key }}" {% if company and company.industry == key %}selected{% endif %}>{{ value }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label for="company_size" class="block text-sm font-medium text-gray-300 mb-1">Company Size</label>
+                        <select id="company_size" name="company_size"
+                                class="w-full p-3 rounded-md bg-gray-700 border border-gray-600 text-white focus:outline-none focus:border-blue-500">
+                            <option value="">Select Size</option>
+                            {% for key, value in company_size_choices %}
+                                <option value="{{ key }}" {% if company and company.company_size == key %}selected{% endif %}>{{ value }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="md:col-span-2">
+                        <label for="address" class="block text-sm font-medium text-gray-300 mb-1">Address</label>
+                        <textarea id="address" name="address" rows="3"
+                                  class="w-full p-3 rounded-md bg-gray-700 border border-gray-600 text-white focus:outline-none focus:border-blue-500">{{ company.address|default:'' }}</textarea>
+                    </div>
+                    <div>
+                        <label for="website" class="block text-sm font-medium text-gray-300 mb-1">Website URL</label>
+                        <input type="url" id="website" name="website"
+                               class="w-full p-3 rounded-md bg-gray-700 border border-gray-600 text-white focus:outline-none focus:border-blue-500"
+                               value="{{ company.website|default:'' }}">
+                    </div>
+                    <div>
+                        <label for="contact_number" class="block text-sm font-medium text-gray-300 mb-1">Contact Number</label>
+                        <input type="text" id="contact_number" name="contact_number"
+                               class="w-full p-3 rounded-md bg-gray-700 border border-gray-600 text-white focus:outline-none focus:border-blue-500"
+                               value="{{ company.contact_number|default:'' }}">
+                    </div>
+                    <div>
+                        <label for="founding_date" class="block text-sm font-medium text-gray-300 mb-1">Founding Date</label>
+                        <input type="date" id="founding_date" name="founding_date"
+                               class="w-full p-3 rounded-md bg-gray-700 border border-gray-600 text-white focus:outline-none focus:border-blue-500"
+                               value="{{ company.founding_date|date:'Y-m-d'|default:'' }}">
+                    </div>
+                </div>
+                <div class="flex justify-end mt-8">
+                    <button type="submit"
+                            class="px-6 py-3 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-800">
+                        Next Step
+                    </button>
+                </div>
+            </div>
+
+            <div id="step-2" class="step-content {% if current_step == '2' %}block{% else %}hidden{% endif %}">
+                <h3 class="text-2xl font-semibold mb-6 text-blue-300">2. Work Settings</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-300 mb-2">Working Days</label>
+                        <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-7 gap-3">
+                            {% for day in days_of_week %}
+                                <div class="flex items-center">
+                                    <input type="checkbox" id="work_day_{{ day }}" name="work_days" value="{{ day }}"
+                                           class="h-5 w-5 text-blue-600 rounded border-gray-600 focus:ring-blue-500 bg-gray-700"
+                                           {% if company and day in company.working_days %}checked{% endif %}>
+                                    <label for="work_day_{{ day }}" class="ml-2 text-gray-300">{{ day }}</label>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div>
+                        <label for="work_hours_start" class="block text-sm font-medium text-gray-300 mb-1">Working Hours (Start)</label>
+                        <input type="time" id="work_hours_start" name="work_hours_start"
+                               class="w-full p-3 rounded-md bg-gray-700 border border-gray-600 text-white focus:outline-none focus:border-blue-500"
+                               value="{{ initial_work_hours_start }}">
+                    </div>
+                    <div>
+                        <label for="work_hours_end" class="block text-sm font-medium text-gray-300 mb-1">Working Hours (End)</label>
+                        <input type="time" id="work_hours_end" name="work_hours_end"
+                               class="w-full p-3 rounded-md bg-gray-700 border border-gray-600 text-white focus:outline-none focus:border-blue-500"
+                               value="{{ initial_work_hours_end }}">
+                    </div>
+                    <div>
+                        <label for="timezone" class="block text-sm font-medium text-gray-300 mb-1">Timezone</label>
+                        <select id="timezone" name="timezone"
+                                class="w-full p-3 rounded-md bg-gray-700 border border-gray-600 text-white focus:outline-none focus:border-blue-500">
+                            <option value="">Select Timezone</option>
+                            {% for tz_value, tz_display in timezone_choices %}
+                                <option value="{{ tz_value }}" {% if company and company.timezone == tz_value %}selected{% endif %}>{{ tz_display }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label for="total_days_to_work" class="block text-sm font-medium text-gray-300 mb-1">Total Annual Working Days</label>
+                        <input type="number" id="total_days_to_work" name="total_days_to_work"
+                               class="w-full p-3 rounded-md bg-gray-700 border border-gray-600 text-white focus:outline-none focus:border-blue-500"
+                               value="{{ company.total_days_to_work|default:260 }}">
+                    </div>
+                    <div>
+                        <label for="task_limit_per_day" class="block text-sm font-medium text-gray-300 mb-1">Task Limit Per Day</label>
+                        <input type="number" id="task_limit_per_day" name="task_limit_per_day"
+                               class="w-full p-3 rounded-md bg-gray-700 border border-gray-600 text-white focus:outline-none focus:border-blue-500"
+                               value="{{ company.task_limit_per_day|default:10 }}">
+                    </div>
+                    <div>
+                        <label for="employee_limit" class="block text-sm font-medium text-gray-300 mb-1">Employee Limit</label>
+                        <input type="number" id="employee_limit" name="employee_limit"
+                               class="w-full p-3 rounded-md bg-gray-700 border border-gray-600 text-white focus:outline-none focus:border-blue-500"
+                               value="{{ company.employee_limit|default:100 }}">
+                    </div>
+                    <div class="md:col-span-2">
+                        <label for="data_retention_period" class="block text-sm font-medium text-gray-300 mb-1">Data Retention Period (Days)</label>
+                        <input type="number" id="data_retention_period" name="data_retention_period"
+                               class="w-full p-3 rounded-md bg-gray-700 border border-gray-600 text-white focus:outline-none focus:border-blue-500"
+                               value="{{ company.data_retention_period|default:365 }}">
+                    </div>
+                </div>
+                <div class="flex justify-between mt-8">
+                    <a href="?step=1"
+                       class="px-6 py-3 bg-gray-600 text-white font-semibold rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 focus:ring-offset-gray-800">
+                        Previous
+                    </a>
+                    <button type="submit"
+                            class="px-6 py-3 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-800">
+                        Next Step
+                    </button>
+                </div>
+            </div>
+
+            <div id="step-3" class="step-content {% if current_step == '3' %}block{% else %}hidden{% endif %}">
+                <h3 class="text-2xl font-semibold mb-6 text-blue-300">3. Recruitment & Privacy Preferences</h3>
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between bg-gray-700 p-4 rounded-md border border-gray-600">
+                        <label for="auto_resume_review" class="text-sm font-medium text-gray-300">Enable Auto Resume Review</label>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="auto_resume_review" name="auto_resume_review" class="sr-only peer" {% if company.auto_resume_review %}checked{% endif %}>
+                            <div class="w-11 h-6 bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                        </label>
+                    </div>
+
+                    <div>
+                        <label for="test_difficulty_level" class="block text-sm font-medium text-gray-300 mb-1">Default Test Difficulty Level</label>
+                        <select id="test_difficulty_level" name="test_difficulty_level"
+                                class="w-full p-3 rounded-md bg-gray-700 border border-gray-600 text-white focus:outline-none focus:border-blue-500">
+                            <option value="">Select Difficulty</option>
+                            {% for key, value in test_difficulty_choices %}
+                                <option value="{{ key }}" {% if company and company.test_difficulty_level == key %}selected{% endif %}>{{ value }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label for="interview_mode" class="block text-sm font-medium text-gray-300 mb-1">Preferred Interview Mode</label>
+                        <select id="interview_mode" name="interview_mode"
+                                class="w-full p-3 rounded-md bg-gray-700 border border-gray-600 text-white focus:outline-none focus:border-blue-500">
+                            <option value="">Select Mode</option>
+                            {% for key, value in interview_mode_choices %}
+                                <option value="{{ key }}" {% if company and company.interview_mode == key %}selected{% endif %}>{{ value }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label for="privacy_policy_url" class="block text-sm font-medium text-gray-300 mb-1">Privacy Policy URL</label>
+                        <input type="url" id="privacy_policy_url" name="privacy_policy_url"
+                               class="w-full p-3 rounded-md bg-gray-700 border border-gray-600 text-white focus:outline-none focus:border-blue-500"
+                               value="{{ company.privacy_policy_url|default:'' }}">
+                    </div>
+                    <div>
+                        <label for="terms_of_service_url" class="block text-sm font-medium text-gray-300 mb-1">Terms of Service URL</label>
+                        <input type="url" id="terms_of_service_url" name="terms_of_service_url"
+                               class="w-full p-3 rounded-md bg-gray-700 border border-gray-600 text-white focus:outline-none focus:border-blue-500"
+                               value="{{ company.terms_of_service_url|default:'' }}">
+                    </div>
+                    <div class="flex items-center justify-between bg-gray-700 p-4 rounded-md border border-gray-600">
+                        <label for="allow_custom_themes" class="text-sm font-medium text-gray-300">Allow Custom Themes</label>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="allow_custom_themes" name="allow_custom_themes" class="sr-only peer" {% if company.allow_custom_themes %}checked{% endif %}>
+                            <div class="w-11 h-6 bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                        </label>
+                    </div>
+                </div>
+                <div class="flex justify-between mt-8">
+                    <a href="?step=2"
+                       class="px-6 py-3 bg-gray-600 text-white font-semibold rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 focus:ring-offset-gray-800">
+                        Previous
+                    </a>
+                    <button type="submit"
+                            class="px-6 py-3 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-800">
+                        Next Step
+                    </button>
+                </div>
+            </div>
+
+            <div id="step-4" class="step-content {% if current_step == '4' %}block{% else %}hidden{% endif %}">
+                <h3 class="text-2xl font-semibold mb-6 text-blue-300">4. Company Logo, Brochure & Description</h3>
+                <div class="space-y-6">
+                    <div>
+                        <label for="logo" class="block text-sm font-medium text-gray-300 mb-1">Company Logo (Max 2MB)</label>
+                        <input type="file" id="logo" name="logo" accept="image/*"
+                               class="block w-full text-sm text-gray-300
+                                      file:mr-4 file:py-2 file:px-4
+                                      file:rounded-md file:border-0
+                                      file:text-sm file:font-semibold
+                                      file:bg-blue-500 file:text-white
+                                      hover:file:bg-blue-600">
+                        {% if company.logo %}
+                            <div class="mt-2 flex items-center space-x-2">
+                                <span class="text-gray-400">Current Logo:</span>
+                                <a href="{{ company.logo.url }}" target="_blank" class="text-blue-400 hover:underline">View Logo</a>
+                                <input type="checkbox" id="remove_logo" name="remove_logo" value="true" class="ml-4 h-4 w-4 text-red-600 rounded border-gray-600 focus:ring-red-500 bg-gray-700">
+                                <label for="remove_logo" class="text-sm text-red-400">Remove Logo</label>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label for="brochure" class="block text-sm font-medium text-gray-300 mb-1">Company Brochure (Max 5MB, PDF/DOCX)</label>
+                        <input type="file" id="brochure" name="brochure" accept=".pdf,.doc,.docx"
+                               class="block w-full text-sm text-gray-300
+                                      file:mr-4 file:py-2 file:px-4
+                                      file:rounded-md file:border-0
+                                      file:text-sm file:font-semibold
+                                      file:bg-blue-500 file:text-white
+                                      hover:file:bg-blue-600">
+                        {% if company.brochure %}
+                            <div class="mt-2 flex items-center space-x-2">
+                                <span class="text-gray-400">Current Brochure:</span>
+                                <a href="{{ company.brochure.url }}" target="_blank" class="text-blue-400 hover:underline">View Brochure</a>
+                                <input type="checkbox" id="remove_brochure" name="remove_brochure" value="true" class="ml-4 h-4 w-4 text-red-600 rounded border-gray-600 focus:ring-red-500 bg-gray-700">
+                                <label for="remove_brochure" class="text-sm text-red-400">Remove Brochure</label>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label for="description" class="block text-sm font-medium text-gray-300 mb-1">Company Description</label>
+                        <textarea id="description" name="description" rows="6"
+                                  class="w-full p-3 rounded-md bg-gray-700 border border-gray-600 text-white focus:outline-none focus:border-blue-500"
+                                  placeholder="Provide a brief description of your company...">{{ company.description|default:'' }}</textarea>
+                    </div>
+                </div>
+                <div class="flex justify-between mt-8">
+                    <a href="?step=3"
+                       class="px-6 py-3 bg-gray-600 text-white font-semibold rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 focus:ring-offset-gray-800">
+                        Previous
+                    </a>
+                    <button type="submit" name="action" value="final_submit"
+                            class="px-6 py-3 bg-green-600 text-white font-semibold rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:ring-offset-gray-800">
+                        Complete Setup
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,5 +1,7 @@
-{% extends 'Employee_App/Settings/base.html' %}
-
+{% extends 'Hr_App/Settings/base.html' %}
+{% block title %}
+Settings
+{% endblock %}
 {% block content %}
     <div id="SettingsContainer"
         class="fixed top-0 left-full w-full h-screen bg-gray-900 text-white shadow-lg transform transition-transform duration-500 ease-in-out">
@@ -16,7 +18,7 @@
 
             <!-- Profile Section -->
             <div class="mb-6">
-                <a href="{% url 'HrApp:profile_settings' %}"
+                <a href="{% url 'HrApp:personal_details' %}"
                     class="flex items-center gap-4 p-4 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors cursor-pointer group">
                     <div class="w-16 h-16 rounded-full bg-gray-700 flex items-center justify-center overflow-hidden border-2 border-primary/50 group-hover:border-primary transition-colors"
                         id="avatarContainer">
@@ -28,8 +30,8 @@
                         {% endif %}
                     </div>
                     <div class="flex-1">
-                        <p class="text-lg font-medium" id="profileName">{{ employee_dets.username }}</p>
-                        <p class="text-sm text-gray-400" id="Username">{{ employee_dets.email }}</p>
+                        <p class="text-lg font-medium" id="profileName">{{ employee_dets.full_name }}</p>
+                        <p class="text-sm text-gray-400" id="Username">{{ employee_dets.email|default:'Not Linked With Any Company! Creat one to get linked.' }}</p>
                     </div>
                     <i class="ri-arrow-right-s-line text-xl text-gray-400 group-hover:text-primary transition-colors"></i>
                 </a>
@@ -41,7 +43,7 @@
                 
                 <div class="space-y-2">
                     <!-- Talent Profile Visibility -->
-                    <a href="{ url 'HrApp:profile_visibility' }"
+                    <a href="{% url 'HrApp:profile_visibility' %}"
                         class="flex items-center justify-between p-3 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors cursor-pointer group">
                         <div class="flex items-center gap-3">
                             <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
@@ -56,7 +58,7 @@
                     </a>
                     
                     <!-- Password and Security -->
-                    <a href="{ url 'HrApp:security_settings' }"
+                    <a href="{% url 'HrApp:security_settings' %}"
                         class="flex items-center justify-between p-3 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors cursor-pointer group">
                         <div class="flex items-center gap-3">
                             <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
@@ -93,7 +95,7 @@
                 
                 <div class="space-y-2">
                     <!-- Skill Preferences -->
-                    <a href="{ url 'HrApp:skill_preferences' }"
+                    <a href="{% url 'HrApp:skill_preferences' %}"
                         class="flex items-center justify-between p-3 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors cursor-pointer group">
                         <div class="flex items-center gap-3">
                             <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
@@ -108,7 +110,7 @@
                     </a>
                     
                     <!-- Job Alerts -->
-                    <a href="{ url 'HrApp:job_alerts' }"
+                    <!-- <a href="{ url 'HrApp:job_alerts' }"
                         class="flex items-center justify-between p-3 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors cursor-pointer group">
                         <div class="flex items-center gap-3">
                             <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
@@ -120,7 +122,7 @@
                             </div>
                         </div>
                         <i class="ri-arrow-right-s-line text-gray-400 group-hover:text-primary transition-colors"></i>
-                    </a>
+                    </a> -->
                 </div>
             </div>
 
@@ -130,7 +132,7 @@
                 
                 <div class="space-y-2">
                     <!-- Information & Permissions -->
-                    <a href="{ url 'HrApp:info_permissions' }"
+                    <a href="{% url 'HrApp:info_permissions' %}"
                         class="flex items-center justify-between p-3 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors cursor-pointer group">
                         <div class="flex items-center gap-3">
                             <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
@@ -145,7 +147,7 @@
                     </a>
                     
                     <!-- Connected Accounts -->
-                    <a href="{ url 'HrApp:connected_accounts' }"
+                    <a href="{% url 'HrApp:connected_accounts' %}"
                         class="flex items-center justify-between p-3 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors cursor-pointer group">
                         <div class="flex items-center gap-3">
                             <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
@@ -167,7 +169,7 @@
                 
                 <div class="space-y-2">
                     <!-- Notifications -->
-                    <a href="{ url 'HrApp:notification_settings' }"
+                    <a href="{% url 'HrApp:notification_settings' %}"
                         class="flex items-center justify-between p-3 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors cursor-pointer group">
                         <div class="flex items-center gap-3">
                             <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
@@ -182,7 +184,7 @@
                     </a>
                     
                     <!-- Display & Language -->
-                    <a href="{ url 'HrApp:display_settings' }"
+                    <a href="{% url 'HrApp:display_settings' %}"
                         class="flex items-center justify-between p-3 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors cursor-pointer group">
                         <div class="flex items-center gap-3">
                             <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
@@ -204,7 +206,7 @@
                 
                 <div class="space-y-2">
                     <!-- Help Center -->
-                    <a href="{ url 'HrApp:help_center' }"
+                    <a href="{% url 'HrApp:help_support' %}"
                         class="flex items-center justify-between p-3 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors cursor-pointer group">
                         <div class="flex items-center gap-3">
                             <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
@@ -219,7 +221,7 @@
                     </a>
                     
                     <!-- Contact Support -->
-                    <a href="{ url 'HrApp:contact_support' }"
+                    <a href="{% url 'HrApp:customer_support' %}"
                         class="flex items-center justify-between p-3 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors cursor-pointer group">
                         <div class="flex items-center gap-3">
                             <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">

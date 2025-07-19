@@ -1,0 +1,677 @@
+{% extends "Hr_App/Settings/base.html" %}
+{% load static %}
+{% block title %}
+Profile Dashboard
+{% endblock %}
+
+{% block content %}
+<style>
+  .glass-card {
+    background: rgba(15, 23, 42, 0.7);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+  }
+  .glass-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px -5px rgba(79, 70, 229, 0.2);
+  }
+  .section-empty {
+    background: rgba(30, 41, 59, 0.3);
+    border: 1px dashed rgba(255, 255, 255, 0.1);
+  }
+  .progress-ring {
+    transition: stroke-dashoffset 0.8s ease-out;
+  }
+  .skill-chip {
+    transition: all 0.2s ease;
+  }
+  .skill-chip:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2);
+  }
+  .timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -1.5px;
+    top: 0;
+    height: 140%;
+    width: 3px;
+    background: linear-gradient(to bottom, #6366f1, #8b5cf6);
+  }
+  .animate-delay-100 {
+    animation-delay: 0.1s;
+  }
+  .animate-delay-200 {
+    animation-delay: 0.2s;
+  }
+  .ball{
+    top: 0;
+    left: -6px;
+  }
+</style>
+<div class="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 p-12 md:p-10 text-gray-100">
+  <!-- Header with back button and title -->
+  <div class="flex items-center mb-8 pb-4 border-b border-gray-700">
+    <a href="{{ back_url }}" class="mr-4 text-gray-400 hover:text-white transition-colors">
+      <i class="ri-arrow-left-line text-2xl"></i>
+    </a>
+    <div>
+      <h2 class="text-2xl font-bold text-white">Profile Visibility</h2>
+      <p class="text-sm text-gray-400">Manage your profile that other user can see.</p>
+    </div>
+  </div>
+  <!-- Profile Header -->
+  <div class="max-w-7xl mx-auto mb-12">
+    <div class="glass-card rounded-2xl p-6 md:p-8 overflow-hidden relative">
+      <div class="absolute inset-0 bg-gradient-to-r from-indigo-900/20 to-purple-900/20 z-0"></div>
+      <div class="relative z-10 flex flex-col md:flex-row items-center gap-8">
+        <div class="relative group">
+          <div class="w-32 h-32 rounded-full border-4 border-indigo-500/80 overflow-hidden shadow-xl">
+            <img src="{{ employee_dets.image.url }}" alt="Profile" class="w-full h-full object-cover">
+          </div>
+          <a href="{% url 'HrApp:personal_details' %}" class="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-full">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+            </svg>
+          </a>
+        </div>
+        
+        <div class="text-center md:text-left flex-1">
+          <h1 class="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 to-purple-200 mb-2">
+            {{ employee_dets.full_name }}
+          </h1>
+          <p class="text-indigo-300 text-lg mb-4">{{ employee_dets.role }} @ {{ employee_dets.company }}</p>
+          
+          <div class="flex flex-wrap justify-center md:justify-start gap-4">
+            <div class="flex items-center gap-2 bg-slate-800/50 px-3 py-1 rounded-full">
+              <div class="w-3 h-3 rounded-full {% if employee_dets.is_active %}bg-green-400{% else %}bg-gray-400{% endif %} animate-pulse"></div>
+              <span class="text-sm">Active</span>
+            </div>
+            <div class="flex items-center gap-2 bg-slate-800/50 px-3 py-1 rounded-full">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-yellow-400 animate-pulse" fill="yellow" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+              </svg>
+              <span class="text-sm">Premium Member</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="relative">
+          <div class="w-24 h-24">
+            <svg viewBox="0 0 36 36" class="w-full h-full">
+              <!-- Background Circle -->
+              <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" 
+                fill="none" stroke="#1E293B" stroke-width="4"/>
+
+              <!-- Progress Circle -->
+              <path class="progress-ring" 
+                stroke="{% if employee_dets.is_basic_settings_set %}#22c55e{% else %}url(#profileGradient){% endif %}" 
+                stroke-width="4" 
+                stroke-dasharray="100" 
+                stroke-dashoffset="{% if employee_dets.is_basic_settings_set %}0{% else %}15{% endif %}"
+                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+
+              <!-- Gradient definition for non-100% -->
+              <defs>
+                <linearGradient id="profileGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="#6366f1" />
+                  <stop offset="100%" stop-color="#8b5cf6" />
+                </linearGradient>
+              </defs>
+
+              <!-- Text showing percentage -->
+              <text x="18" y="19" class="text-[10px] fill-white font-bold" text-anchor="middle" dy=".3em">
+                {{ employee_dets.level_of_basic_setting_set }}%
+              </text>
+            </svg>
+          </div>
+          <p class="text-center text-xs mt-1">Profile Complete</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dashboard Grid -->
+  <div class="max-w-7xl mx-auto grid grid-cols-1 gap-6">
+    <!-- Combined Personal & Contact Information Card -->
+    <div class="glass-card rounded-2xl p-6 animate__animated animate__fadeInUp col-span-full">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-xl font-semibold flex items-center gap-3">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+          </svg>
+          Personal Details
+        </h2>
+        <a href="{% url 'HrApp:use_external_details' %}?step=1" class="text-indigo-400 hover:text-indigo-300 transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+          </svg>
+        </a>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Personal Information Column -->
+        <div class="md:pr-6 md:border-r md:border-slate-700">
+          {% if employee_dets.full_name %}
+            <div class="space-y-4">
+              <div class="flex justify-between py-3 border-b border-slate-700">
+                <span class="text-slate-400">Full Name</span>
+                <span class="font-medium">{{ employee_dets.full_name }}</span>
+              </div>
+              <div class="flex justify-between py-3 border-b border-slate-700">
+                <span class="text-slate-400">Date of Birth</span>
+                <span class="font-medium">{{ employee_dets.date_of_birth|date:"M d, Y" }}</span>
+              </div>
+              <div class="flex justify-between py-3">
+                <span class="text-slate-400">Gender</span>
+                <span class="font-medium">{{ employee_dets.gender }}</span>
+              </div>
+            </div>
+          {% else %}
+            <div class="section-empty rounded-lg p-4 text-center h-full flex flex-col justify-center">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mx-auto text-slate-500 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+              <h3 class="text-md font-medium text-slate-300 mb-1">No Personal Info</h3>
+              <a href="{% url 'HrApp:use_external_details' %}?step=1" class="text-indigo-400 hover:text-indigo-300 text-sm">
+                Add personal details
+              </a>
+            </div>
+          {% endif %}
+        </div>
+
+        <!-- Contact Information Column -->
+        <div class="md:pl-6">
+          {% if employee_dets.email %}
+            <div class="space-y-4">
+              <div class="flex justify-between py-3 border-b border-slate-700">
+                <span class="text-slate-400">Email</span>
+                <span class="font-medium">{{ employee_dets.persional_email }}</span>
+              </div>
+              <div class="flex justify-between py-3 border-b border-slate-700">
+                <span class="text-slate-400">Phone</span>
+                <span class="font-medium">{{ employee_dets.phone_number|default:"Not provided" }}</span>
+              </div>
+              <div class="flex justify-between py-3">
+                <span class="text-slate-400">Address</span>
+                <span class="font-medium text-right max-w-xs">{{ employee_dets.address|default:"Not provided" }}</span>
+              </div>
+            </div>
+          {% else %}
+            <div class="section-empty rounded-lg p-4 text-center h-full flex flex-col justify-center">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mx-auto text-slate-500 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+              <h3 class="text-md font-medium text-slate-300 mb-1">No Contact Info</h3>
+              <a href="{% url 'HrApp:use_external_details' %}?step=2" class="text-indigo-400 hover:text-indigo-300 text-sm">
+                Add contact details
+              </a>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    <!-- xl-1279 -->
+    <!-- lg-1024 -->
+    <!-- md-767 -->
+    <div class="w-full mx-auto grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <!-- Education -->
+      <div class="glass-card rounded-2xl p-6 animate__animated animate__fadeInUp animate-delay-200">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-xl font-semibold flex items-center gap-3">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path d="M12 14l9-5-9-5-9 5 9 5z" />
+              <path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222" />
+            </svg>
+            Education
+          </h2>
+          <a href="{% url 'HrApp:use_external_details' %}?step=2" class="text-indigo-400 hover:text-indigo-300 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+          </a>
+        </div>
+        
+        {% if educations %}
+          <div class="space-y-6">
+            {% for edu in educations %}
+            <div class="relative pl-6 timeline-item">
+              <div class="absolute w-3 h-3 rounded-full bg-indigo-500 ball"></div>
+              <div class="ml-4">
+                <div class="flex justify-between items-start mb-1">
+                  <h3 class="font-semibold text-lg">{{ edu.degree }}</h3>
+                  <span class="text-sm bg-indigo-900/50 px-2 py-1 rounded">
+                    {{ edu.graduation_date|date:"M Y" }}
+                  </span>
+                </div>
+                <p class="text-indigo-300 mb-2">{{ edu.college }}</p>
+                {% if edu.description %}
+                <p class="text-slate-400 text-sm">{{ edu.description }}</p>
+                {% endif %}
+              </div>
+            </div>
+            {% if edu.school_12 %}
+            <div class="relative pl-6 timeline-item">
+              <div class="absolute w-3 h-3 rounded-full bg-indigo-500 ball"></div>
+              <div class="ml-4">
+                <div class="flex justify-between items-start mb-1">
+                  <h3 class="font-semibold text-lg">12th School</h3>
+                  <span class="text-sm bg-indigo-900/50 px-2 py-1 rounded">
+                    {{ edu.school_12_year_start|date:"M Y" }} - {{ edu.school_12_year_end|date:"M Y" }}
+                  </span>
+                </div>
+                <p class="text-indigo-300 mb-2">{{ edu.school_12 }}</p>
+                {% if edu.description %}
+                <p class="text-slate-400 text-sm">{{ edu.description }}</p>
+                {% endif %}
+              </div>
+            </div>
+            {% endif %}
+            <div class="relative pl-6 timeline-item">
+              <div class="absolute w-3 h-3 rounded-full bg-indigo-500 ball"></div>
+              <div class="ml-4">
+                <div class="flex justify-between items-start mb-1">
+                  <h3 class="font-semibold text-lg">10th School</h3>
+                  <span class="text-sm bg-indigo-900/50 px-2 py-1 rounded">
+                    {{ edu.school_10_year_start|date:"M Y" }} - {{ edu.school_10_year_end|date:"M Y" }}
+                  </span>
+                </div>
+                <p class="text-indigo-300 mb-2">{{ edu.school_10 }}</p>
+                {% if edu.school_10_description %}
+                <p class="text-slate-400 text-sm">{{ edu.school_10_description }}</p>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        {% else %}
+        <div class="section-empty rounded-lg p-6 text-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 mx-auto text-slate-500 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path d="M12 14l9-5-9-5-9 5 9 5z" />
+            <path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222" />
+          </svg>
+          <h3 class="text-lg font-medium text-slate-300 mb-1">No Education Added</h3>
+          <p class="text-slate-500 mb-4">Add your education history to showcase your qualifications</p>
+          <a href="{% url 'HrApp:use_external_details' %}?step=3" class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-500 rounded-md text-sm font-medium transition-colors">
+            Add Education
+          </a>
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- Work Experience -->
+      <div class="glass-card rounded-2xl p-6 animate__animated animate__fadeInUp animate-delay-300">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-xl font-semibold flex items-center gap-3">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            </svg>
+            Work Experience
+          </h2>
+          <a href="{% url 'HrApp:use_external_details' %}?step=3" class="text-indigo-400 hover:text-indigo-300 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+          </a>
+        </div>
+        
+        {% if experiences %}
+        <div class="space-y-6">
+          {% for exp in experiences %}
+          <div class="relative pl-6 timeline-item">
+            <div class="absolute left-0 w-3 h-3 rounded-full bg-indigo-500 ball"></div>
+            <div class="ml-4">
+              <div class="flex justify-between items-start mb-1">
+                <h3 class="font-semibold text-lg">{{ exp.job_title }}</h3>
+                <span class="text-sm bg-indigo-900/50 px-2 py-1 rounded">
+                  {{ exp.start_date|date:"M Y" }} - 
+                  {% if exp.end_date %}
+                    {{ exp.end_date|date:"M Y" }}
+                  {% else %}
+                    Present
+                  {% endif %}
+                </span>
+              </div>
+              <p class="text-indigo-300 mb-2">{{ exp.company_name }}</p>
+              {% if exp.description %}
+              <p class="text-slate-400 text-sm">{{ exp.description }}</p>
+              {% endif %}
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="section-empty rounded-lg p-6 text-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 mx-auto text-slate-500 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+          </svg>
+          <h3 class="text-lg font-medium text-slate-300 mb-1">No Work Experience</h3>
+          <p class="text-slate-500 mb-4">Add your professional experience to strengthen your profile</p>
+          <a href="{% url 'HrApp:use_external_details' %}?step=4" class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-500 rounded-md text-sm font-medium transition-colors">
+            Add Experience
+          </a>
+        </div>
+        {% endif %}
+      </div>
+
+    </div>
+
+    <!-- Co-Curricular Activities Section -->
+    <div class="glass-card w-full rounded-2xl p-6 animate__animated animate__fadeInUp">
+      <!-- Header -->
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-xl md:text-2xl font-semibold flex items-center gap-3 text-white">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
+          </svg>
+          Co-Curricular Activities
+        </h2>
+        <a href="{% url 'HrApp:use_external_details' %}?step=5" class="text-indigo-400 hover:text-indigo-300 transition-transform transform hover:scale-110">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+          </svg>
+        </a>
+      </div>
+
+      {% if co_curriculars %}
+      <!-- Activities List -->
+      <div class="flex flex-col gap-5 w-full">
+        {% for activity in co_curriculars %}
+        <div class="bg-slate-800/30 border border-indigo-600/20 hover:border-indigo-400 transition-colors rounded-xl p-5 shadow-lg group">
+          <div class="flex flex-col">
+            <!-- Activity Name & Description -->
+            <h3 class="text-lg font-semibold text-white group-hover:text-indigo-300 transition-colors">{{ activity.name }}</h3>
+            {% if activity.discription %}
+            <p class="text-slate-300 text-sm mt-1">{{ activity.discription }}</p>
+            {% endif %}
+
+            <!-- Proficiency Bar -->
+            <div class="mt-4">
+              <div class="flex justify-between text-xs text-slate-400 mb-1">
+                <span>Proficiency</span>
+                <span>{{ activity.proficiency }}/10</span>
+              </div>
+              <div class="w-full h-2 bg-slate-700 rounded-full overflow-hidden">
+                <div 
+                  class="h-full bg-gradient-to-r from-indigo-500 via-indigo-400 to-indigo-300 rounded-full transition-all duration-700 ease-in-out" 
+                  style="width: {{  activity.proficiency_percent }}%">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+
+      {% else %}
+      <!-- Empty State -->
+      <div class="section-empty rounded-lg p-6 text-center bg-slate-800/20 border border-dashed border-slate-700/50 hover:border-indigo-400/30 transition-colors">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 mx-auto text-slate-500 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
+          <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
+        </svg>
+        <h3 class="text-lg font-medium text-slate-200 mb-1">No Co-Curricular Activities</h3>
+        <p class="text-slate-400 mb-4">Add your achievements and extra involvements here.</p>
+        <a href="{% url 'HrApp:use_external_details' %}?step=5" class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-md text-sm font-medium transition-all shadow-lg">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+          </svg>
+          Add Activity
+        </a>
+      </div>
+      {% endif %}
+    </div>
+
+
+    <!-- Profile Visibility Page - Co-Curricular & Links Sections -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+      
+      <!-- Skills -->
+      <div class="glass-card rounded-2xl p-6 animate__animated animate__fadeInUp backdrop-blur-lg border border-slate-700/50">
+          <div class="flex items-center justify-between mb-6">
+            <h2 class="text-xl font-semibold flex items-center gap-3 text-white">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+              </svg>
+              Skills & Expertise
+            </h2>
+            <a href="{% url 'HrApp:use_external_details' %}?step=4" class="text-indigo-400 hover:text-indigo-300 transition-colors group">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
+            </a>
+          </div>
+          
+        {% if skills %}
+        <div class="flex flex-wrap gap-3 relative z-0">
+          {% for skill in skills %}
+          <div class="relative group z-10">
+            <!-- Skill Chip -->
+            <div class="px-4 py-2 bg-gradient-to-r from-slate-800/70 to-slate-800/40 rounded-full text-sm font-semibold text-white flex items-center gap-3 border border-slate-700/50 hover:border-indigo-400/30 transition-all hover:scale-[1.03]">
+              {{ skill.name }}
+              <div class="flex items-center">
+                {% with ''|center:5 as range %}
+                {% for _ in range %}
+                <div class="w-2 h-2 mx-[1px] rounded-full 
+                  {% if forloop.counter <= skill.proficiency %} 
+                    bg-indigo-400 
+                  {% else %} 
+                    bg-slate-600/50 
+                  {% endif %}">
+                </div>
+                {% endfor %}
+                {% endwith %}
+              </div>
+            </div>
+
+            <!-- Tooltip (Improved) -->
+            <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 scale-90 group-hover:scale-100 opacity-0 group-hover:opacity-100 transition-all duration-200 ease-in-out bg-black/80 text-white text-xs px-2 py-1 rounded shadow-md pointer-events-none whitespace-nowrap z-50">
+              {% if skill.proficiency == 1 %}Novice{% endif %}
+              {% if skill.proficiency == 2 %}Beginner{% endif %}
+              {% if skill.proficiency == 3 %}Competent{% endif %}
+              {% if skill.proficiency == 4 %}Proficient{% endif %}
+              {% if skill.proficiency == 5 %}Expert{% endif %}
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+
+          {% else %}
+          <div class="section-empty rounded-lg p-6 text-center bg-slate-800/20 border border-dashed border-slate-700/50 hover:border-indigo-400/30 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 mx-auto text-slate-500 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+            </svg>
+            <h3 class="text-lg font-medium text-slate-200 mb-1">Your Skills Showcase</h3>
+            <p class="text-slate-400/80 mb-4">Highlight your expertise to stand out</p>
+            <a href="{% url 'HrApp:use_external_details' %}?step=5" class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 rounded-md text-sm font-medium transition-all transform hover:scale-[1.02] shadow-lg shadow-indigo-500/10">
+              + Add Skills
+            </a>
+          </div>
+          {% endif %}
+      </div>
+      
+      <!-- Links Section -->
+      <div class="glass-card rounded-2xl p-6 animate__animated animate__fadeInUp">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-xl font-semibold flex items-center gap-3 text-white">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" />
+            </svg>
+            Important Links
+          </h2>
+          <a href="{% url 'HrApp:use_external_details' %}?step=6" class="text-indigo-400 hover:text-indigo-300 transition-colors group">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+          </a>
+        </div>
+        
+        {% if links %}
+        <div class="space-y-3">
+          {% for link in links %}
+          <a href="{{ link.github_link }}" target="_blank" class="block group">
+            <div class="bg-slate-800/30 rounded-lg p-4 border-l-4 border-indigo-500/50 hover:border-indigo-400 transition-colors">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-md bg-indigo-900/30 flex items-center justify-center text-indigo-400 group-hover:text-indigo-300 transition-colors">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                  </svg>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <h3 class="font-medium text-white truncate">GitHub</h3>
+                  <p class="text-indigo-300 text-sm truncate">{{ link.github_link }}</p>
+                </div>
+              </div>
+            </div>
+          </a>
+          <a href="{{ link.linkdin_link }}" target="_blank" class="block group">
+            <div class="bg-slate-800/30 rounded-lg p-4 border-l-4 border-indigo-500/50 hover:border-indigo-400 transition-colors">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-md bg-indigo-900/30 flex items-center justify-center text-indigo-400 group-hover:text-indigo-300 transition-colors">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                  </svg>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <h3 class="font-medium text-white truncate">LinkedIn</h3>
+                  <p class="text-indigo-300 text-sm truncate">{{ link.linkdin_link }}</p>
+                </div>
+              </div>
+            </div>
+          </a>
+          <a href="{{ link.portfolio_link }}" target="_blank" class="block group">
+            <div class="bg-slate-800/30 rounded-lg p-4 border-l-4 border-indigo-500/50 hover:border-indigo-400 transition-colors">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-md bg-indigo-900/30 flex items-center justify-center text-indigo-400 group-hover:text-indigo-300 transition-colors">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                  </svg>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <h3 class="font-medium text-white truncate">Portfolio</h3>
+                  <p class="text-indigo-300 text-sm truncate">{{ link.portfolio_link }}</p>
+                </div>
+              </div>
+            </div>
+          </a>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="section-empty rounded-lg p-6 text-center bg-slate-800/20 border border-dashed border-slate-700/50 hover:border-indigo-400/30 transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 mx-auto text-slate-500 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" />
+          </svg>
+          <h3 class="text-lg font-medium text-slate-200 mb-1">No Links Added</h3>
+          <p class="text-slate-400/80 mb-4">Add your portfolio, social profiles, etc.</p>
+          <a href="{% url 'HrApp:use_external_details' %}?step=6" class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 rounded-md text-sm font-medium transition-all transform hover:scale-[1.02] shadow-lg shadow-indigo-500/10">
+            + Add Links
+          </a>
+        </div>
+        {% endif %}
+      </div>
+      
+    </div>
+
+    <!-- Certifications -->
+    <div class="glass-card rounded-2xl p-6 animate__animated animate__fadeInUp animate-delay-100">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-xl font-semibold flex items-center gap-3">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          Certifications
+        </h2>
+        <a href="{% url 'HrApp:use_external_details' %}?step=6" class="text-indigo-400 hover:text-indigo-300 transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+          </svg>
+        </a>
+      </div>
+      
+      {% if certifications %}
+      <div class="space-y-4">
+        {% for cert in certifications %}
+        <div class="bg-slate-800/50 rounded-lg p-4 border-l-4 border-indigo-500">
+          <div class="flex justify-between items-start">
+            <div>
+              <h3 class="font-medium">{{ cert.title }}</h3>
+              <p class="text-indigo-300 text-sm">{{ cert.organization }}</p>
+            </div>
+            <span class="text-xs bg-indigo-900/50 px-2 py-1 rounded">
+              {{ cert.issue_date|date:"M Y" }}
+            </span>
+          </div>
+          
+          {% if cert.description %}
+          <div class="mt-3 text-sm text-slate-300">
+            {{ cert.description }}
+          </div>
+          {% endif %}
+          
+          {% if cert.file %}
+          <div class="mt-3 flex items-center">
+            <a href="{{ cert.file.url }}" target="_blank" class="text-sm text-indigo-400 hover:text-indigo-300 flex items-center gap-1">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+              </svg>
+              View Certificate
+            </a>
+          </div>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="section-empty rounded-lg p-6 text-center">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 mx-auto text-slate-500 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <h3 class="text-lg font-medium text-slate-300 mb-1">No Certifications</h3>
+        <p class="text-slate-500 mb-4">Add certifications to validate your skills</p>
+        <a href="{% url 'HrApp:use_external_details' %}?step=6" class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-500 rounded-md text-sm font-medium transition-colors">
+          Add Certification
+        </a>
+      </div>
+      {% endif %}
+    </div>
+
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const progressRing = document.querySelector('.progress-ring');
+
+  if (progressRing) {
+    // Read the current offset (set by Django)
+    const finalOffset = parseFloat(progressRing.getAttribute('stroke-dashoffset'));
+
+    // Set initial offset to 100 (invisible)
+    progressRing.style.transition = 'stroke-dashoffset 1s ease';
+    progressRing.style.strokeDashoffset = 100;
+
+    // Animate to target offset
+    setTimeout(() => {
+      progressRing.style.strokeDashoffset = finalOffset;
+    }, 200);
+  }
+
+  // Optional: Card hover effect
+  const cards = document.querySelectorAll('.glass-card');
+  cards.forEach(card => {
+    card.addEventListener('mouseenter', () => {
+      card.style.boxShadow = '0 10px 25px -5px rgba(79, 70, 229, 0.3)';
+    });
+    card.addEventListener('mouseleave', () => {
+      card.style.boxShadow = '';
+    });
+  });
+});
+</script>
+
+{% endblock %}

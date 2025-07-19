@@ -1,0 +1,236 @@
+{% extends 'Hr_App/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-900 p-4 md:p-8">  <!-- Changed to dark bg by default -->
+    <div class="max-w-6xl mx-auto">
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-8">
+            <h1 class="text-3xl font-bold text-white">Display & Language Settings</h1>  <!-- Changed to white text -->
+            <a href="{% url 'HrApp:Dashboard' %}" class="flex items-center text-blue-400 hover:underline">  <!-- Changed to light blue -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
+                </svg>
+                Back to Dashboard
+            </a>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Display Settings Card -->
+            <div class="bg-gray-800 rounded-xl shadow-md overflow-hidden border border-gray-700">  <!-- Changed to dark bg and border -->
+                <div class="p-6">
+                    <h2 class="text-xl font-semibold text-white mb-6 flex items-center">  <!-- Changed to white text -->
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">  <!-- Changed to light blue icon -->
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3V5M12 3V5M15 3V5M9 12V14M12 12V14M15 12V14M9 21V19M12 21V19M15 21V19M5 9H3M5 12H3M5 15H3M19 9H21M19 12H21M19 15H21M7 8h10a2 2 0 012 2v8a2 2 0 01-2 2H7a2 2 0 01-2-2v-8a2 2 0 012-2z" />
+                        </svg>
+                        Display Preferences
+                    </h2>
+
+                    <div class="space-y-6">
+                        <!-- Theme Selection -->
+                        <div>
+                            <h3 class="text-lg font-medium text-gray-300 mb-3">Color Theme</h3>  <!-- Changed to light gray text -->
+                            <div class="grid grid-cols-3 gap-4">
+                                <button id="lightTheme" class="theme-option p-3 rounded-lg border border-gray-600 flex flex-col items-center hover:bg-gray-700 transition">  <!-- Changed to dark border and hover -->
+                                    <div class="w-full h-20 rounded bg-white border border-gray-300 mb-2"></div>
+                                    <span class="text-sm font-medium text-gray-300">Light</span>  <!-- Changed to light gray text -->
+                                </button>
+                                <button id="darkTheme" class="theme-option p-3 rounded-lg border border-gray-600 flex flex-col items-center hover:bg-gray-700 transition ring-2 ring-blue-500">  <!-- Added ring by default for dark theme -->
+                                    <div class="w-full h-20 rounded bg-gray-800 border border-gray-600 mb-2"></div>
+                                    <span class="text-sm font-medium text-gray-300">Dark</span>  <!-- Changed to light gray text -->
+                                </button>
+                                <button id="systemTheme" class="theme-option p-3 rounded-lg border border-gray-600 flex flex-col items-center hover:bg-gray-700 transition">  <!-- Changed to dark border and hover -->
+                                    <div class="w-full h-20 rounded bg-gradient-to-r from-white to-gray-800 border border-gray-600 mb-2"></div>
+                                    <span class="text-sm font-medium text-gray-300">System</span>  <!-- Changed to light gray text -->
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Density Settings -->
+                        <div>
+                            <h3 class="text-lg font-medium text-gray-300 mb-3">Display Density</h3>  <!-- Changed to light gray text -->
+                            <div class="flex items-center space-x-4">
+                                <label class="inline-flex items-center">
+                                    <input type="radio" name="density" class="h-4 w-4 text-blue-400" checked>  <!-- Changed to light blue -->
+                                    <span class="ml-2 text-gray-300">Comfortable</span>  <!-- Changed to light gray text -->
+                                </label>
+                                <label class="inline-flex items-center">
+                                    <input type="radio" name="density" class="h-4 w-4 text-blue-400">  <!-- Changed to light blue -->
+                                    <span class="ml-2 text-gray-300">Compact</span>  <!-- Changed to light gray text -->
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Font Size -->
+                        <div>
+                            <h3 class="text-lg font-medium text-gray-300 mb-3">Font Size</h3>  <!-- Changed to light gray text -->
+                            <div class="flex items-center space-x-4">
+                                <button class="font-size-btn px-3 py-1 rounded-md border border-gray-600 hover:bg-gray-700 text-gray-300" data-size="small">A</button>  <!-- Changed to dark border and hover -->
+                                <button class="font-size-btn px-3 py-1 rounded-md border border-gray-600 bg-blue-900 text-blue-300" data-size="medium">A</button>  <!-- Changed to dark blue bg -->
+                                <button class="font-size-btn px-3 py-1 rounded-md border border-gray-600 hover:bg-gray-700 text-gray-300" data-size="large">A</button>  <!-- Changed to dark border and hover -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Language Settings Card -->
+            <div class="bg-gray-800 rounded-xl shadow-md overflow-hidden border border-gray-700">  <!-- Changed to dark bg and border -->
+                <div class="p-6">
+                    <h2 class="text-xl font-semibold text-white mb-6 flex items-center">  <!-- Changed to white text -->
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">  <!-- Changed to light green icon -->
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
+                        </svg>
+                        Language & Region
+                    </h2>
+
+                    <div class="space-y-6">
+                        <!-- Language Selection -->
+                        <div>
+                            <h3 class="text-lg font-medium text-gray-300 mb-3">Application Language</h3>  <!-- Changed to light gray text -->
+                            <select class="w-full p-3 rounded-lg border border-gray-600 bg-gray-700 text-gray-300 focus:ring-blue-500 focus:border-blue-500">  <!-- Changed to dark bg and border -->
+                                <option value="en">English</option>
+                                <option value="es">Español</option>
+                                <option value="fr">Français</option>
+                                <option value="de">Deutsch</option>
+                                <option value="zh">中文</option>
+                                <option value="ja">日本語</option>
+                            </select>
+                        </div>
+
+                        <!-- Date Format -->
+                        <div>
+                            <h3 class="text-lg font-medium text-gray-300 mb-3">Date Format</h3>  <!-- Changed to light gray text -->
+                            <div class="grid grid-cols-2 gap-4">
+                                <label class="inline-flex items-center p-3 rounded-lg border border-gray-600 hover:bg-gray-700">  <!-- Changed to dark border and hover -->
+                                    <input type="radio" name="dateFormat" class="h-4 w-4 text-blue-400" checked>  <!-- Changed to light blue -->
+                                    <span class="ml-2 text-gray-300">MM/DD/YYYY</span>  <!-- Changed to light gray text -->
+                                </label>
+                                <label class="inline-flex items-center p-3 rounded-lg border border-gray-600 hover:bg-gray-700">  <!-- Changed to dark border and hover -->
+                                    <input type="radio" name="dateFormat" class="h-4 w-4 text-blue-400">  <!-- Changed to light blue -->
+                                    <span class="ml-2 text-gray-300">DD/MM/YYYY</span>  <!-- Changed to light gray text -->
+                                </label>
+                                <label class="inline-flex items-center p-3 rounded-lg border border-gray-600 hover:bg-gray-700">  <!-- Changed to dark border and hover -->
+                                    <input type="radio" name="dateFormat" class="h-4 w-4 text-blue-400">  <!-- Changed to light blue -->
+                                    <span class="ml-2 text-gray-300">YYYY-MM-DD</span>  <!-- Changed to light gray text -->
+                                </label>
+                                <label class="inline-flex items-center p-3 rounded-lg border border-gray-600 hover:bg-gray-700">  <!-- Changed to dark border and hover -->
+                                    <input type="radio" name="dateFormat" class="h-4 w-4 text-blue-400">  <!-- Changed to light blue -->
+                                    <span class="ml-2 text-gray-300">Month Day, Year</span>  <!-- Changed to light gray text -->
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Time Format -->
+                        <div>
+                            <h3 class="text-lg font-medium text-gray-300 mb-3">Time Format</h3>  <!-- Changed to light gray text -->
+                            <div class="flex items-center space-x-4">
+                                <label class="inline-flex items-center">
+                                    <input type="radio" name="timeFormat" class="h-4 w-4 text-blue-400" checked>  <!-- Changed to light blue -->
+                                    <span class="ml-2 text-gray-300">12-hour (3:45 PM)</span>  <!-- Changed to light gray text -->
+                                </label>
+                                <label class="inline-flex items-center">
+                                    <input type="radio" name="timeFormat" class="h-4 w-4 text-blue-400">  <!-- Changed to light blue -->
+                                    <span class="ml-2 text-gray-300">24-hour (15:45)</span>  <!-- Changed to light gray text -->
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Timezone -->
+                        <div>
+                            <h3 class="text-lg font-medium text-gray-300 mb-3">Timezone</h3>  <!-- Changed to light gray text -->
+                            <select class="w-full p-3 rounded-lg border border-gray-600 bg-gray-700 text-gray-300 focus:ring-blue-500 focus:border-blue-500">  <!-- Changed to dark bg and border -->
+                                <option value="auto">Auto-detect (UTC-05:00) Eastern Time</option>
+                                <option value="utc">UTC</option>
+                                <option value="pst">(UTC-08:00) Pacific Time</option>
+                                <option value="cst">(UTC-06:00) Central Time</option>
+                                <option value="est">(UTC-05:00) Eastern Time</option>
+                                <option value="gmt">(UTC+00:00) London</option>
+                                <option value="cet">(UTC+01:00) Central European Time</option>
+                                <option value="ist">(UTC+05:30) India Standard Time</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Save Button -->
+        <div class="mt-8 flex justify-end">
+            <button id="saveSettings" class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-md transition duration-300 flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                </svg>
+                Save Settings
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Set dark theme by default
+    document.documentElement.classList.add('dark');
+    localStorage.setItem('theme', 'dark');
+
+    // Theme selection
+    const themeOptions = document.querySelectorAll('.theme-option');
+    themeOptions.forEach(option => {
+        option.addEventListener('click', function() {
+            themeOptions.forEach(opt => opt.classList.remove('ring-2', 'ring-blue-500'));
+            this.classList.add('ring-2', 'ring-blue-500');
+            
+            const theme = this.id.replace('Theme', '');
+            if (theme === 'system') {
+                // Implement system theme detection
+                console.log('System theme selected');
+                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                document.documentElement.classList.toggle('dark', prefersDark);
+            } else {
+                document.documentElement.classList.remove('dark');
+                if (theme === 'dark') {
+                    document.documentElement.classList.add('dark');
+                }
+            }
+            localStorage.setItem('theme', theme);
+        });
+    });
+
+    // Font size selection
+    const fontSizeButtons = document.querySelectorAll('.font-size-btn');
+    fontSizeButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            fontSizeButtons.forEach(btn => {
+                btn.classList.remove('bg-blue-900', 'text-blue-300');
+                btn.classList.add('hover:bg-gray-700');
+            });
+            this.classList.add('bg-blue-900', 'text-blue-300');
+            this.classList.remove('hover:bg-gray-700');
+            
+            const size = this.dataset.size;
+            document.documentElement.style.fontSize = 
+                size === 'small' ? '14px' : size === 'large' ? '18px' : '16px';
+            localStorage.setItem('fontSize', size);
+        });
+    });
+
+    // Save settings
+    document.getElementById('saveSettings').addEventListener('click', function() {
+        // Here you would typically send the settings to your backend
+        alert('Settings saved successfully!');
+        // You can add AJAX call here to save to Django backend
+    });
+
+    // Initialize current settings (default to dark)
+    document.getElementById('darkTheme').classList.add('ring-2', 'ring-blue-500');
+    
+    const currentFontSize = localStorage.getItem('fontSize') || 'medium';
+    document.querySelector(`.font-size-btn[data-size="${currentFontSize}"]`)?.classList.add(
+        'bg-blue-900', 'text-blue-300'
+    );
+    document.querySelector(`.font-size-btn[data-size="${currentFontSize}"]`)?.classList.remove(
+        'hover:bg-gray-700'
+    );
+});
+</script>
+{% endblock %}

@@ -4,41 +4,44 @@
 {% block content %}
 {% include 'Hr_App/Components.html' %}
 
-<div class="container mx-auto px-4 py-8 md:px-6 lg:px-8 bg-gray-900 min-h-screen text-gray-100">
+<div class="container mx-auto px-4 py-8 md:px-6 lg:px-8 bg-gray-900 text-gray-100">
 
-    <div class="bg-gray-800 shadow-xl rounded-xl mb-10 overflow-hidden border border-gray-700">
-        <div class="bg-gradient-to-r from-blue-700 to-blue-500 text-white p-5 rounded-t-xl">
-            <h2 class="text-2xl font-bold flex items-center">
-                <i class="fas fa-user-shield mr-3"></i> Human Resources Team
-            </h2>
-        </div>
-        <div class="p-6">
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {% for user in hr_users %}
-                {% if user != request.user %}
-                <div class="bg-gray-900 border border-gray-700 rounded-lg shadow-md hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 ease-in-out group">
-                    <div class="flex flex-col items-center p-5 text-center">
-                        <img src="{% if user.image %}{{ user.image.url }}{% else %}{% static 'images/default_profile.jpg' %}{% endif %}"
-                             class="w-24 h-24 rounded-full object-cover mb-4 border-4 border-blue-600 group-hover:border-blue-400 transition-colors duration-300" alt="Profile">
-                        <h3 class="text-xl font-semibold text-blue-300 mb-1">{{ user.get_full_name }}</h3>
-                        <p class="text-sm text-gray-400 mb-3">{{ user.position }}</p>
-                        <div class="border-t border-gray-700 w-full pt-4 mt-auto text-left text-sm text-gray-300">
-                            <p class="mb-2 truncate"><i class="fas fa-envelope mr-2 text-gray-500"></i> {{ user.email }}</p>
-                            <p class="mb-2 truncate"><i class="fas fa-phone mr-2 text-gray-500"></i> {{ user.phone_number|default:"Not provided" }}</p>
-                            <p class="mb-0 truncate"><i class="fas fa-building mr-2 text-gray-500"></i>HR</p>
+    {% if hr_users %}
+        <div class="bg-gray-800 shadow-xl rounded-xl mb-10 overflow-hidden border border-gray-700">
+            <div class="bg-gradient-to-r from-blue-700 to-blue-500 text-white p-5 rounded-t-xl">
+                <h2 class="text-2xl font-bold flex items-center">
+                    <i class="fas fa-user-shield mr-3"></i> Human Resources Team
+                </h2>
+            </div>
+            <div class="p-6">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    {% for user in hr_users %}
+                    {% if user != request.user %}
+                    <div class="bg-gray-900 border border-gray-700 rounded-lg shadow-md hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 ease-in-out group">
+                        <div class="flex flex-col items-center p-5 text-center">
+                            <img src="{% if user.image %}{{ user.image.url }}{% else %}{% static 'images/default_profile.jpg' %}{% endif %}"
+                                class="w-24 h-24 rounded-full object-cover mb-4 border-4 border-blue-600 group-hover:border-blue-400 transition-colors duration-300" alt="Profile">
+                            <h3 class="text-xl font-semibold text-blue-300 mb-1">{{ user.get_full_name }}</h3>
+                            <p class="text-sm text-gray-400 mb-3">{{ user.position }}</p>
+                            <div class="border-t border-gray-700 w-full pt-4 mt-auto text-left text-sm text-gray-300">
+                                <p class="mb-2 truncate"><i class="fas fa-envelope mr-2 text-gray-500"></i> {{ user.email }}</p>
+                                <p class="mb-2 truncate"><i class="fas fa-phone mr-2 text-gray-500"></i> {{ user.phone_number|default:"Not provided" }}</p>
+                                <p class="mb-0 truncate"><i class="fas fa-building mr-2 text-gray-500"></i>HR</p>
+                            </div>
+                            <a href="{% url 'HrApp:feth_users_dets' user.id %}" class="mt-5 px-5 py-2 border border-blue-500 text-blue-400 rounded-lg hover:bg-blue-900 hover:text-blue-300 focus :outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900 transition-all duration-200 text-sm font-medium view-more" data-userid="{{user.id}}">
+                                View Profile
+                            </a>
                         </div>
-                        <a href="{% url 'HrApp:feth_users_dets' user.id %}" class="mt-5 px-5 py-2 border border-blue-500 text-blue-400 rounded-lg hover:bg-blue-900 hover:text-blue-300 focus :outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900 transition-all duration-200 text-sm font-medium view-more" data-userid="{{user.id}}">
-                            View Profile
-                        </a>
                     </div>
+                    {% endif %}
+                    {% endfor %}
                 </div>
-                {% endif %}
-                {% endfor %}
             </div>
         </div>
-    </div>
+    {% endif %}
 
-    <div class="bg-gray-800 shadow-xl rounded-xl mb-10 overflow-hidden border border-gray-700">
+    {% if team_leads %}
+        <div class="bg-gray-800 shadow-xl rounded-xl mb-10 overflow-hidden border border-gray-700">
         <div class="bg-gradient-to-r from-green-700 to-green-500 text-white p-5 rounded-t-xl">
             <h2 class="text-2xl font-bold flex items-center">
                 <i class="fas fa-user-tie mr-3"></i> Team Leaders
@@ -76,9 +79,11 @@
                 {% endfor %}
             </div>
         </div>
-    </div>
+        </div>
+    {% endif %}
 
-    <div class="bg-gray-800 shadow-xl rounded-xl mb-10 overflow-hidden border border-gray-700">
+    {% if employees %}
+        <div class="bg-gray-800 shadow-xl rounded-xl mb-10 overflow-hidden border border-gray-700">
         <div class="bg-gradient-to-r from-teal-700 to-teal-500 text-white p-5 rounded-t-xl">
             <h2 class="text-2xl font-bold flex items-center">
                 <i class="fas fa-users mr-3"></i> Employees
@@ -124,7 +129,30 @@
                 {% endfor %}
             </div>
         </div>
-    </div>
+        </div>
+    {% endif %}
+
+    {% if not hr_users and not team_leads and not employees %}
+        <div class="flex items-center justify-center">
+        <div class="bg-gray-800 rounded-2xl shadow-xl p-8 max-w-md w-full text-center">
+            <div class="flex justify-center mb-4">
+            <!-- Optional: Icon or image -->
+            <svg class="w-12 h-12 text-gray-200" fill="none" stroke="currentColor" stroke-width="1.5"
+                viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.5 20.25v-1.5A4.5 4.5 0 019 14.25h6a4.5 4.5 0 014.5 4.5v1.5" />
+            </svg>
+            </div>
+            <h2 class="text-xl font-semibold text-gray-200">You're All Alone Here!</h2>
+            <p class="text-gray-500 mt-2">There are no other team members yet. Start building your dream team.</p>
+            <a href="{% url 'HrApp:invite_member' %}" class="inline-block mt-5 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition">
+            + Invite Members
+            </a>
+        </div>
+        </div>
+    {% endif %}
+
+
 </div>
 {{ meta|json_script:"meta-data" }}
 

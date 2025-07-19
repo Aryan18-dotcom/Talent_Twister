@@ -1,0 +1,152 @@
+{% extends 'Hr_App/Settings/base.html' %}
+{% load static %}
+{% block title %}
+Customer Support
+{% endblock %}
+{% block content %}
+<div class="min-h-screen bg-gray-900 p-4 md:p-8">  <!-- Removed light theme class -->
+    <div class="max-w-6xl mx-auto">
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-8">
+            <h1 class="text-3xl font-bold text-white">Customer Support</h1>  <!-- Removed light theme class -->
+            <a href="{{ back_url }}" class="flex items-center text-blue-400 hover:underline">  <!-- Changed to dark theme blue -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
+                </svg>
+                Back to Dashboard
+            </a>
+        </div>
+
+        <div class="bg-gray-800 rounded-xl shadow-md overflow-hidden border border-gray-700">  <!-- Removed light theme classes -->
+            <div class="p-6">
+                <!-- Contact Methods -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                    <!-- Email Support -->
+                    <div class="p-6 bg-gray-700 rounded-lg border border-gray-600 hover:border-blue-400 transition">
+                        <div class="flex items-center mb-4">
+                            <div class="p-3 bg-blue-900 rounded-lg mr-4">
+                                <i class="ri-mail-line text-blue-400 ri-xl"></i>
+                            </div>
+                            <h3 class="text-lg font-medium text-white">Email Support</h3>  <!-- Removed light theme class -->
+                        </div>
+                        <p class="text-gray-400 mb-4">Send us an email and we'll get back to you within 24 hours.</p>  <!-- Removed light theme class -->
+                        <a href="mailto:support@talenttwister.com" class="text-blue-400 hover:underline flex items-center">
+                            support@talenttwister.com <i class="ri-external-link-line ml-1"></i>
+                        </a>
+                    </div>
+
+                    <!-- Live Chat -->
+                    <div class="p-6 bg-gray-700 rounded-lg border border-gray-600 hover:border-green-400 transition">
+                        <div class="flex items-center mb-4">
+                            <div class="p-3 bg-green-900 rounded-lg mr-4">
+                                <i class="ri-chat-3-line text-green-400 ri-xl"></i>
+                            </div>
+                            <h3 class="text-lg font-medium text-white">Live Chat</h3>  <!-- Removed light theme class -->
+                        </div>
+                        <p class="text-gray-400 mb-4">Chat with our support team in real-time during business hours.</p>  <!-- Removed light theme class -->
+                        <button id="startChatBtn" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg flex items-center transition">
+                            <i class="ri-chat-3-line mr-2"></i> Start Chat
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Contact Form -->
+                <div class="mb-8">
+                    <h2 class="text-xl font-semibold text-white mb-6">Send us a message</h2>  
+                    <form class="space-y-4" method="post" action="{% url 'HrApp:customer_support' %}">
+                        {% csrf_token %}
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label for="name" class="block text-sm font-medium text-gray-300 mb-1">Your Name</label>  <!-- Changed to dark gray -->
+                                <input type="text" id="name" class="w-full p-3 rounded-lg border border-gray-600 bg-gray-700 text-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" name="name" required>
+                            </div>
+                            <div>
+                                <label for="email" class="block text-sm font-medium text-gray-300 mb-1">Email Address</label>  <!-- Changed to dark gray -->
+                                <input type="email" id="email" class="w-full p-3 rounded-lg border border-gray-600 bg-gray-700 text-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" name="email" required>
+                            </div>
+                        </div>
+                        <div>
+                            <label for="subject" class="block text-sm font-medium text-gray-300 mb-1">Subject</label>  <!-- Changed to dark gray -->
+                            <input type="text" id="subject" class="w-full p-3 rounded-lg border border-gray-600 bg-gray-700 text-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" name="subject" required>
+                        </div>
+                        <div>
+                            <label for="message" class="block text-sm font-medium text-gray-300 mb-1">Message</label>  <!-- Changed to dark gray -->
+                            <textarea id="message" rows="5" class="w-full p-3 rounded-lg border border-gray-600 bg-gray-700 text-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" name="message" required></textarea>
+                        </div>
+                        <div class="flex items-center">
+                            <input type="checkbox" id="urgent" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-600 rounded bg-gray-700" name="urgent">
+                            <label for="urgent" class="ml-2 block text-sm text-gray-300">This is urgent (24/7 support)</label>  <!-- Changed to dark gray -->
+                        </div>
+                        <button type="submit" class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-md transition duration-300 flex items-center">
+                            <i class="ri-send-plane-line mr-2"></i>
+                            Send Message
+                        </button>
+                    </form>
+                </div>
+
+                <!-- FAQ Section -->
+                <div>
+                    <h2 class="text-xl font-semibold text-white mb-6">Frequently Asked Questions</h2>  <!-- Removed light theme class -->
+                    <div class="space-y-4">
+                        <!-- FAQ Item 1 -->
+                        <div class="border-b border-gray-700 pb-4">  <!-- Removed light theme class -->
+                            <button class="faq-question flex justify-between items-center w-full text-left font-medium text-white hover:text-blue-400 transition">  <!-- Removed light theme class -->
+                                <span>How long does it take to get a response from support?</span>
+                                <i class="ri-arrow-down-s-line transition-transform duration-200"></i>
+                            </button>
+                            <div class="faq-answer mt-2 text-gray-400 hidden">  <!-- Removed light theme class -->
+                                <p>Our standard response time is within 24 hours for email inquiries. For urgent matters marked as such, we aim to respond within 4 hours. Live chat support is available during business hours (9am-5pm EST) with immediate responses.</p>
+                            </div>
+                        </div>
+
+                        <!-- FAQ Item 2 -->
+                        <div class="border-b border-gray-700 pb-4">  <!-- Removed light theme class -->
+                            <button class="faq-question flex justify-between items-center w-full text-left font-medium text-white hover:text-blue-400 transition">  <!-- Removed light theme class -->
+                                <span>What information should I include in my support request?</span>
+                                <i class="ri-arrow-down-s-line transition-transform duration-200"></i>
+                            </button>
+                            <div class="faq-answer mt-2 text-gray-400 hidden">  <!-- Removed light theme class -->
+                                <p>Please include: your account email, a detailed description of the issue, any error messages you're seeing, steps to reproduce the issue, and screenshots if applicable. The more information you provide, the faster we can help resolve your issue.</p>
+                            </div>
+                        </div>
+
+                        <!-- FAQ Item 3 -->
+                        <div class="border-b border-gray-700 pb-4">  <!-- Removed light theme class -->
+                            <button class="faq-question flex justify-between items-center w-full text-left font-medium text-white hover:text-blue-400 transition">  <!-- Removed light theme class -->
+                                <span>Do you offer phone support?</span>
+                                <i class="ri-arrow-down-s-line transition-transform duration-200"></i>
+                            </button>
+                            <div class="faq-answer mt-2 text-gray-400 hidden">  <!-- Removed light theme class -->
+                                <p>Currently, we offer email and live chat support. For enterprise customers with premium support plans, phone support is available. Please contact your account manager for more information about premium support options.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // FAQ toggle functionality
+    const faqQuestions = document.querySelectorAll('.faq-question');
+    faqQuestions.forEach(question => {
+        question.addEventListener('click', () => {
+            const answer = question.nextElementSibling;
+            const icon = question.querySelector('i');
+            
+            answer.classList.toggle('hidden');
+            icon.classList.toggle('rotate-180');
+        });
+    });
+
+    // Live chat button
+    const startChatBtn = document.getElementById('startChatBtn');
+    startChatBtn.addEventListener('click', () => {
+        alert('Live chat will open in a new window. Our support hours are 9am-5pm EST, Monday-Friday.');
+        // In a real implementation, this would open a chat widget
+    });
+});
+</script>
+{% endblock %}

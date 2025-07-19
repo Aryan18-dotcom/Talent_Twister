@@ -6,6 +6,16 @@ from .models import Company, TeamLead, Employee, JobSeeker
 from django.contrib import messages
 import logging
 from datetime import datetime
+from django.core.mail import EmailMessage
+from django.template.loader import render_to_string
+from django.utils.http import urlsafe_base64_decode
+from django.shortcuts import get_object_or_404
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes
+from django.contrib.sites.shortcuts import get_current_site
+from django.utils.encoding import force_str
+from types import SimpleNamespace
+
 
 current_time = datetime.now()
 
@@ -13,6 +23,27 @@ current_time = datetime.now()
 # User Login and Signup Functions To create(SignUP_User) and Login If User_Signuped(Checks and Login to respective Dashboard)
 
 # SingUp "Create New User In DB Through Models"
+
+# Custom Token Generator
+
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
+from six import text_type
+
+class CustomTokenGenerator(PasswordResetTokenGenerator):
+    def _make_hash_value(self, user, timestamp):
+        return (
+            text_type(user.pk) + text_type(timestamp) + text_type(user.is_active)
+        )
+
+account_activation_token = CustomTokenGenerator()
+
+def generate_activation_token(user):
+    return account_activation_token.make_token(user)
+
+def verify_activation_token(user, token):
+    return account_activation_token.check_token(user, token)
+
+
 def signup(request):
     if request.method == "POST":
         email = request.POST.get("email").strip()
@@ -21,46 +52,131 @@ def signup(request):
         password = request.POST.get("password").strip()
         role = request.POST.get("role")
 
-        # ✅ Validate input fields
         if not (email and username and full_name and password and role):
-            return HttpResponse("<script>alert('All fields are required!'); window.location.href='/signup';</script>")
+            messages.error(request, "All fields are required!")
+            return redirect("Myapp:signup")
 
-        password_hashed =password  # Hash the password
+        password_hashed = password  # NOTE: Replace with secure hash later
 
         if role == "Admin":
             if TeamLead.objects.filter(username=username).exists() or TeamLead.objects.filter(email=email).exists():
-                return HttpResponse(
-                    "<script>"
-                    "if (confirm('HR account already exists! Do you want to continue to login?')) {"
-                    "   window.location.href='/';"
-                    "} else {"
-                    "   window.location.href='/signup';"
-                    "} </script>"
-                )
+                return HttpResponse("<script>if (confirm('HR account already exists! Do you want to login?')){window.location.href='/';}else{window.location.href='/signup';}</script>")
+            
+            user = TeamLead.objects.create(
+                username=username,
+                full_name=full_name,
+                persional_email=email,
+                password=password_hashed,
+                is_active=False,
+            )
 
-            TeamLead.objects.create(username=username, full_name=full_name, email=email, password=password_hashed)
-            return HttpResponse("<script>alert('Admin account created successfully! Please login.'); window.location.href='/';</script>")
+            send_activation_email(request, user, role)
+            messages.success(request, "Admin account created! An activation link has been sent to your Personal email.")
+            return redirect("Myapp:login")
 
         elif role == "JobSeeker":
             if JobSeeker.objects.filter(username=username).exists() or JobSeeker.objects.filter(email=email).exists():
-                return HttpResponse(
-                    "<script>"
-                    "if (confirm('JobSeeker account already exists! Do you want to continue to login?')) {"
-                    "   window.location.href='/';"
-                    "} else {"
-                    "   window.location.href='/signup';"
-                    "} </script>"
-                )
+                return HttpResponse("<script>if (confirm('JobSeeker account already exists! Do you want to login?')){window.location.href='/';}else{window.location.href='/signup';}</script>")
+            
+            user = JobSeeker.objects.create(
+                username=username,
+                full_name=full_name,
+                email=email,
+                password=password_hashed,
+                is_active=False,
+            )
+            print(f"User created: {user.username}, Email: {user.email}, Role: {role}")  # Debugging line
+            send_activation_email(request, user, role)
+            messages.success(request, "JobSeeker account created! An activation link has been sent to your email.")
+            return redirect("Myapp:login")
 
-            JobSeeker.objects.create(username=username, full_name=full_name, email=email, password=password_hashed)
-            return HttpResponse("<script>alert('JobSeeker account created successfully! Please login.'); window.location.href='/';</script>")
-
-        return HttpResponse("<script>alert('Invalid role selected!'); window.location.href='/signup';</script>")
+        messages.error(request, "Invalid role selected!")
+        return redirect("Myapp:signup")
 
     return render(request, "signup.html")
 
-# LogIn User "Checks if User Exists in DB, if then 'REDIRECT' to respective Dashboard, and keeps the 'SESSION' maintained
 
+def send_activation_email(request, user, role):
+    uid = urlsafe_base64_encode(force_bytes(user.pk))
+    token = generate_activation_token(user)
+    domain = get_current_site(request).domain
+    activation_link = f"http://{domain}/activate/{role}/{uid}/{token}/"
+
+    try:
+        email_subject = "Activate Your Talent Twister Account"
+        email_body = render_to_string('emails/account_activation.html', {
+            'name': user.full_name,
+            'activation_link': activation_link,
+            'role': role,
+        })
+
+        email = EmailMessage(
+            email_subject,
+            email_body,
+            to=[user.persional_email],
+        )
+        email.content_subtype = 'html'
+        email.send(fail_silently=False)
+
+    except Exception as e:
+        print("Email send error:", e)
+
+
+def activate_account(request, role, uidb64, token):
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        if role == "Admin":
+            user = get_object_or_404(TeamLead, pk=uid)
+        elif role == "JobSeeker":
+            user = get_object_or_404(JobSeeker, pk=uid)
+        else:
+            messages.error(request, "Invalid role specified!")
+            return redirect("Myapp:login")
+        
+        if user.is_active:
+            messages.info(request, "Account already activated!")
+            return redirect("Myapp:login")
+
+        if account_activation_token.check_token(user, token):
+            # Activate the account
+            user.is_active = True
+            user.save()
+            
+            # Create Django auth user and log them in
+            auth_user, _ = User.objects.get_or_create(
+                username=user.username,
+                defaults={'email': user.persional_email}
+            )
+            login(request, auth_user)
+            
+            # Set up session variables based on role
+            if role == "Admin":
+                request.session["employee_id"] = user.id
+                request.session["username"] = user.username
+                request.session["role"] = "HR"
+                return redirect("HrApp:Dashboard")
+                    
+            elif role == "JobSeeker":
+                request.session["JobSeeker_id"] = user.id
+                request.session["username"] = user.username
+                request.session["role"] = "JobSeeker"
+                return redirect("JobseekerApp:dashboard")
+                
+            messages.success(request, "Your account has been activated successfully")
+            
+        else:
+            messages.error(request, "Activation link is invalid or has expired.")
+            return redirect("Myapp:login")
+
+    except Exception as e:
+        user.is_active = False
+        user.save()
+        print("Activation Error:", e)
+        messages.error(request, "An error occurred during activation. Please try again.")
+        return redirect("Myapp:login")
+
+
+# LogIn User "Checks if User Exists in DB, if then 'REDIRECT' to respective Dashboard, and keeps the 'SESSION' maintained
 logger = logging.getLogger(__name__)
 def login_view(request):
     # ✅ Redirect logged-in users to their dashboard
@@ -88,7 +204,7 @@ def login_view(request):
 
             if hr_user and password == hr_user.password:
                 # Create or get the User model instance
-                user, _ = User.objects.get_or_create(username=hr_user.username, email=hr_user.email)
+                user, _ = User.objects.get_or_create(username=hr_user.username, email=hr_user.persional_email)
                 login(request, user)
 
                 hr_user.is_active = True
@@ -120,8 +236,9 @@ def login_view(request):
                     return redirect("HrApp:Dashboard")
                 else:
                     # Redirect HR to create a company if not found
-                    messages.info(request, "Please create your company to continue.")
-                    return redirect("HrApp:create_company")  # Replace with your actual view name
+                    return redirect("HrApp:Dashboard")  # Replace with your actual view name
+                
+            
 
         except Exception as e:
             logger.error(f"Error during HR login: {e}")

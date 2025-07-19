@@ -178,6 +178,22 @@
         .light {
             background-color: #969aa2;
         }
+        /* Add these new styles for theme switching */
+        .theme-toggle {
+            transition: all 0.3s ease;
+        }
+        
+        .font-size-small {
+            font-size: 14px;
+        }
+        
+        .font-size-medium {
+            font-size: 16px;
+        }
+        
+        .font-size-large {
+            font-size: 18px;
+        }
     </style>
 </head>
 
@@ -231,9 +247,9 @@
                             {% endif %}
                         </div>
                         <div class="text-sm">
-                            <div class="font-medium transition duration-300" id="profileName">{{ request.session.username }}</div>
+                            <div class="font-medium transition duration-300" id="profileName">{{ profile.full_name }}</div>
                             <div class="text-gray-400 group-hover:text-primary/60" id="role">
-                                {{ request.session.role }}
+                                {{ profile.role }}
                             </div>
                         </div>
                     </a>
@@ -291,97 +307,18 @@
     </nav>
 
     {% if request.path == dashboard_url %}
+        {% if not company %}
 
-        <!-- if not company_link -->
-        <!-- {% if company_link %} -->
-        <!-- Company Creation Modal - Tailwind Version -->
-        <!-- <div id="PopUpCreationDiv" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-                        <div id="CreationModel" class="w-full max-w-md mx-4 opacity-0 scale-75">
-                            <div
-                                class="bg-gray-800/90 backdrop-blur-lg rounded-xl shadow-2xl overflow-hidden border border-gray-700/50">
-                                <div class="p-6 border-b border-gray-700/50">
-                                    <h3
-                                        class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-blue-500">
-                                        Create Your Company
-                                    </h3>
-                                    <div class="w-16 h-1 bg-gradient-to-r from-purple-500 to-blue-600 mt-2 rounded-full"></div>
-                                </div>
-
-                                <form method="POST" action="" class="p-6">
-                                    {% csrf_token %}
-                                    <input type="hidden" name="create_company" value="true">
-
-                                    <p class="text-gray-300 mb-6">You need to create a company before you can add employees.</p>
-
-                                    <div class="space-y-5">
-                                        <div
-                                            class="bg-gray-700/50 p-4 rounded-lg border border-gray-600/30 hover:border-purple-500/30 transition-all duration-300">
-                                            <label class="block text-sm font-medium text-gray-300 mb-2">Company Name</label>
-                                            <input type="text" id="new_company_name" name="new_company_name"
-                                                class="w-full px-4 py-2.5 bg-gray-800/70 border border-gray-600/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/50 text-white placeholder-gray-500 transition-all duration-300"
-                                                placeholder="Enter company name" required>
-                                        </div>
-
-                                        <div
-                                            class="bg-gray-700/50 p-4 rounded-lg border border-gray-600/30 hover:border-blue-500/30 transition-all duration-300">
-                                            <label class="block text-sm font-medium text-gray-300 mb-2">Company Domain</label>
-                                            <input type="text" id="new_company_domain" name="new_company_domain"
-                                                class="w-full px-4 py-2.5 bg-gray-800/70 border border-gray-600/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-white placeholder-gray-500 transition-all duration-300"
-                                                placeholder="example.com" required>
-                                            <p class="mt-1 text-xs text-gray-400">This will be used for employee emails
-                                                (username@domain)</p>
-                                        </div>
-                                    </div>
-
-                                    <div class="mt-6 pt-4 border-t border-gray-700/50 flex justify-end">
-                                        <button type="submit"
-                                            class="px-6 py-2.5 bg-gradient-to-br from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-300 font-medium flex items-center shadow-lg hover:shadow-xl">
-                                            <i class="ri-building-2-line mr-2"></i> Create Company
-                                        </button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-
-                    <script>
-                        const popupCreationDiv = document.getElementById("PopUpCreationDiv");
-                        const creationModel = document.getElementById("CreationModel");
-
-                        // Animate in
-                        gsap.to(creationModel, { scale: 1, opacity: 1, duration: 0.6, ease: "power3.out" });
-
-                        // Close modal with animation
-                        function closeCreationModal() {
-                            gsap.to(creationModel, {
-                                scale: 0,
-                                opacity: 0,
-                                duration: 0.5,
-                                ease: "power3.in",
-                                onComplete: () => {
-                                    popupCreationDiv.classList.add("hidden");
-                                }
-                            });
-                        }
-
-                    </script> -->
-        <!-- {% endif %} -->
-
-        <!-- if company.basic_settings_set -->
-        {% if not company.basic_settings_set %}
-
-            <div id="PopUpDiv" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-                <div id="Model" class="w-full max-w-lg mx-4 opacity-0 scale-75">
-                    <div
-                        class="bg-gray-800/90 backdrop-blur-lg rounded-xl shadow-2xl overflow-hidden border border-gray-700/50">
+            <div id="NoCompanyPopUpDiv" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+                <div id="NoCompanyModel" class="w-full max-w-lg mx-4 opacity-0 scale-75">
+                    <div class="bg-gray-800/90 backdrop-blur-lg rounded-xl shadow-2xl overflow-hidden border border-gray-700/50">
                         <!-- Modal Header -->
                         <div class="p-6 border-b border-gray-700/50 relative">
-                            <h3
-                                class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-blue-500">
-                                Set Up Your Basic Company Settings
+                            <h3 class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-blue-500">
+                                Create Your Company Profile
                             </h3>
                             <div class="w-40 h-1 bg-gradient-to-r from-purple-500 to-blue-600 mt-2 rounded-full"></div>
-                            <button onclick="closeModal()"
+                            <button onclick="closeNoCompanyModal()"
                                 class="absolute top-4 right-4 text-gray-400 hover:text-white text-2xl focus:outline-none">
                                 <i class="ri-close-line"></i>
                             </button>
@@ -389,29 +326,227 @@
 
                         <!-- Modal Body -->
                         <div class="p-6">
-                            <p id="infoPara" class="text-gray-300 mb-4">
-                                Before adding employees or assigning tasks, it's important to fill in your company's basic
-                                information. This helps personalize your experience, enable internal tools, and ensure smooth
-                                communication across your team.
+                            <p id="noCompanyInfoPara" class="text-gray-300 mb-4">
+                                Welcome to your HR dashboard! To get started, you need to create your company profile. 
+                                This will allow you to add employees, manage teams, and access all HR features.
                             </p>
-                            <div id="warningMessage" class="mb-4 text-red-400 text-sm hidden">
-                                ⚠️ This popup will keep appearing every time you log in until the company details are completed.
+                            <div id="noCompanyWarningMessage" class="mb-4 text-red-400 text-sm hidden">
+                                ⚠️ This popup will appear every time you log in until you create your company.
                                 <br><br>
-                                👉 Go to: <strong>Dashboard → Settings → Company Settings → Basic Company info</strong> to
-                                complete your company setup.
+                                👉 Go to: <strong>Dashboard → Settings → Company Detials →</strong> to update your personal information.
+                                👉 You won't be able to use most HR features until your company is set up.
                             </div>
                             <p class="text-gray-400 text-sm mb-6 italic">
-                                Things like working days, hours, task limits, and company branding need to be configured first.
+                                Company profile includes basic information like name, industry, location, and working policies.
                             </p>
 
                             <!-- Action Buttons -->
                             <div class="flex justify-end space-x-4">
-                                <button id="noBtn"
+                                <button id="noCompanyNoBtn"
+                                    class="px-4 py-2 text-red-400 hover:text-red-500 border border-red-500/40 rounded-lg text-sm transition-all">
+                                    Not Now
+                                </button>
+                                <a href="{ url 'HrApp:create_company' }"
+                                    class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition-all">
+                                    Create Company
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <script>
+                const todayCompany = new Date().toISOString().split("T")[0];
+                const noCompanyHideDate = localStorage.getItem("no_company_popup_hide_date");
+
+                const noCompanyPopupDiv = document.getElementById("NoCompanyPopUpDiv");
+                const noCompanyModel = document.getElementById("NoCompanyModel");
+                const noCompanyNoBtn = document.getElementById("noCompanyNoBtn");
+                const noCompanyWarningMsg = document.getElementById("noCompanyWarningMessage");
+                const noCompanyInfoPara = document.getElementById("noCompanyInfoPara");
+
+                let noCompanyClickCount = 0;
+
+                // Show popup only if not dismissed todayCompany
+                if (noCompanyHideDate !== todayCompany) {
+                    // Animate in
+                    gsap.to(noCompanyModel, { scale: 1, opacity: 1, duration: 0.6, ease: "power3.out" });
+
+                    // Close modal with animation
+                    function closeNoCompanyModal() {
+                        gsap.to(noCompanyModel, {
+                            scale: 0,
+                            opacity: 0,
+                            duration: 0.5,
+                            ease: "power3.in",
+                            onComplete: () => {
+                                noCompanyPopupDiv.classList.add("hidden");
+                                localStorage.setItem("no_company_popup_hide_date", todayCompany); // Hide for today
+                            }
+                        });
+                    }
+
+                    noCompanyNoBtn.addEventListener("click", () => {
+                        noCompanyClickCount += 1;
+                        if (noCompanyClickCount === 1) {
+                            noCompanyInfoPara.classList.add("hidden");
+                            noCompanyWarningMsg.classList.remove("hidden");
+                            noCompanyNoBtn.textContent = "I Understand, Close";
+                        } else {
+                            closeNoCompanyModal();
+                        }
+                    });
+
+                    // Make closeModal function globally available for the X button
+                    window.closeNoCompanyModal = closeNoCompanyModal;
+                } else {
+                    noCompanyPopupDiv.classList.add("hidden");
+                }
+            </script>
+        {% else %}
+
+            {% if not company.basic_settings_set %}
+
+                <div id="PopUpDiv" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+                    <div id="Model" class="w-full max-w-lg mx-4 opacity-0 scale-75">
+                        <div
+                            class="bg-gray-800/90 backdrop-blur-lg rounded-xl shadow-2xl overflow-hidden border border-gray-700/50">
+                            <!-- Modal Header -->
+                            <div class="p-6 border-b border-gray-700/50 relative">
+                                <h3
+                                    class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-blue-500">
+                                    Set Up Your Basic Company Settings
+                                </h3>
+                                <div class="w-40 h-1 bg-gradient-to-r from-purple-500 to-blue-600 mt-2 rounded-full"></div>
+                                <button onclick="closeModal()"
+                                    class="absolute top-4 right-4 text-gray-400 hover:text-white text-2xl focus:outline-none">
+                                    <i class="ri-close-line"></i>
+                                </button>
+                            </div>
+
+                            <!-- Modal Body -->
+                            <div class="p-6">
+                                <p id="infoPara" class="text-gray-300 mb-4">
+                                    Before adding employees or assigning tasks, it's important to fill in your company's basic
+                                    information. This helps personalize your experience, enable internal tools, and ensure smooth
+                                    communication across your team.
+                                </p>
+                                <div id="warningMessage" class="mb-4 text-red-400 text-sm hidden">
+                                    ⚠️ This popup will keep appearing every time you log in until the company details are completed.
+                                    <br><br>
+                                    👉 Go to: <strong>Dashboard → Settings → Company Settings → Basic Company info</strong> to
+                                    complete your company setup.
+                                </div>
+                                <p class="text-gray-400 text-sm mb-6 italic">
+                                    Things like working days, hours, task limits, and company branding need to be configured first.
+                                </p>
+
+                                <!-- Action Buttons -->
+                                <div class="flex justify-end space-x-4">
+                                    <button id="noBtn"
+                                        class="px-4 py-2 text-red-400 hover:text-red-500 border border-red-500/40 rounded-lg text-sm transition-all">
+                                        No, Maybe Later
+                                    </button>
+                                    <a href=""
+                                        class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition-all">
+                                        Yes, Let's Do It
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <script>
+                    const todayBasicSettings = new Date().toISOString().split('T')[0];
+                    const hideDate = localStorage.getItem("company_popup_hide_date");
+                    const popupDiv = document.getElementById("PopUpDiv");
+                    const model = document.getElementById("Model");
+                    const noBtn = document.getElementById("noBtn");
+                    const warningMsg = document.getElementById("warningMessage");
+                    const infoPara = document.getElementById("infoPara");
+
+                    let click_count = 0;
+
+                    // Show popup only if not dismissed today
+                    if (hideDate !== todayBasicSettings) {
+                        // Animate in
+                        gsap.to(model, { scale: 1, opacity: 1, duration: 0.6, ease: "power3.out" });
+
+                        // Close modal with animation
+                        function closeModal() {
+                            gsap.to(model, {
+                                scale: 0,
+                                opacity: 0,
+                                duration: 0.5,
+                                ease: "power3.in",
+                                onComplete: () => {
+                                    popupDiv.classList.add("hidden");
+                                    localStorage.setItem("company_popup_hide_date", todayBasicSettings); // Hide for todayBasicSettings
+                                }
+                            });
+                        }
+
+                        noBtn.addEventListener("click", () => {
+                            click_count += 1;
+                            if (click_count === 1) {
+                                infoPara.classList.add("hidden");
+                                warningMsg.classList.remove("hidden");
+                                noBtn.textContent = "Close";
+                            } else {
+                                closeModal();
+                            }
+                        });
+
+                        // Make closeModal function globally available for the X button
+                        window.closeModal = closeModal;
+                    } else {
+                        popupDiv.classList.add("hidden");
+                    }
+                </script>
+
+            {% endif %}
+        {% endif %}
+        
+        {% if not profile.is_basic_settings_set %}
+            <div id="ProfilePopUpDiv" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+                <div id="ProfileModel" class="w-full max-w-lg mx-4 opacity-0 scale-75">
+                    <div class="bg-gray-800/90 backdrop-blur-lg rounded-xl shadow-2xl overflow-hidden border border-gray-700/50">
+                        
+                        <!-- Modal Header -->
+                        <div class="p-6 border-b border-gray-700/50 relative">
+                            <h3 class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-pink-400 to-red-500">
+                                Complete Your Profile
+                            </h3>
+                            <div class="w-40 h-1 bg-gradient-to-r from-pink-500 to-red-600 mt-2 rounded-full"></div>
+                            <button onclick="closeProfileModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white text-2xl focus:outline-none">
+                                <i class="ri-close-line"></i>
+                            </button>
+                        </div>
+
+                        <!-- Modal Body -->
+                        <div class="p-6">
+                            <p id="profileInfoPara" class="text-gray-300 mb-4">
+                                Your profile is incomplete. Please add your profile picture, bio, and skills to help others know more about you and improve collaboration within the platform.
+                            </p>
+                            <div id="profileWarningMessage" class="mb-4 text-red-400 text-sm hidden">
+                                ⚠️ This reminder will keep appearing every time you log in until your profile is fully completed.
+                                <br><br>
+                                👉 Go to: <strong>Dashboard → Settings → Personal Detials →</strong> to update your personal information.
+                            </div>
+                            <p class="text-gray-400 text-sm mb-6 italic">
+                                A complete profile helps personalize your experience and unlocks certain features.
+                            </p>
+
+                            <!-- Action Buttons -->
+                            <div class="flex justify-end space-x-4">
+                                <button id="profileNoBtn"
                                     class="px-4 py-2 text-red-400 hover:text-red-500 border border-red-500/40 rounded-lg text-sm transition-all">
                                     No, Maybe Later
                                 </button>
-                                <a href=""
-                                    class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition-all">
+                                <a href="{% url 'HrApp:personal_details' %}"
+                                    class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm rounded-lg transition-all">
                                     Yes, Let's Do It
                                 </a>
                             </div>
@@ -421,55 +556,50 @@
             </div>
 
             <script>
-                const today = new Date().toISOString().split("T")[0]; // yyyy-mm-dd
-                const hideDate = localStorage.getItem("company_popup_hide_date");
+                const todayProfile = new Date().toISOString().split('T')[0];
+                const profileHideDate = localStorage.getItem("profile_popup_hide_date");
+                const profilePopupDiv = document.getElementById("ProfilePopUpDiv");
+                const profileModel = document.getElementById("ProfileModel");
+                const profileNoBtn = document.getElementById("profileNoBtn");
+                const profileWarningMsg = document.getElementById("profileWarningMessage");
+                const profileInfoPara = document.getElementById("profileInfoPara");
 
-                const popupDiv = document.getElementById("PopUpDiv");
-                const model = document.getElementById("Model");
-                const noBtn = document.getElementById("noBtn");
-                const warningMsg = document.getElementById("warningMessage");
-                const infoPara = document.getElementById("infoPara");
+                let profileClickCount = 0;
 
-                let click_count = 0;
+                if (profileHideDate !== todayProfile) {
+                    gsap.to(profileModel, { scale: 1, opacity: 1, duration: 0.6, ease: "power3.out" });
 
-                // Show popup only if not dismissed today
-                if (hideDate !== today) {
-                    // Animate in
-                    gsap.to(model, { scale: 1, opacity: 1, duration: 0.6, ease: "power3.out" });
-
-                    // Close modal with animation
-                    function closeModal() {
-                        gsap.to(model, {
+                    function closeProfileModal() {
+                        gsap.to(profileModel, {
                             scale: 0,
                             opacity: 0,
                             duration: 0.5,
                             ease: "power3.in",
                             onComplete: () => {
-                                popupDiv.classList.add("hidden");
-                                localStorage.setItem("company_popup_hide_date", today); // Hide for today
+                                profilePopupDiv.classList.add("hidden");
+                                localStorage.setItem("profile_popup_hide_date", todayProfile);
                             }
                         });
                     }
 
-                    noBtn.addEventListener("click", () => {
-                        click_count += 1;
-                        if (click_count === 1) {
-                            infoPara.classList.add("hidden");
-                            warningMsg.classList.remove("hidden");
-                            noBtn.textContent = "Close";
+                    profileNoBtn.addEventListener("click", () => {
+                        profileClickCount += 1;
+                        if (profileClickCount === 1) {
+                            profileInfoPara.classList.add("hidden");
+                            profileWarningMsg.classList.remove("hidden");
+                            profileNoBtn.textContent = "Close";
                         } else {
-                            closeModal();
+                            closeProfileModal();
                         }
                     });
 
-                    // Make closeModal function globally available for the X button
-                    window.closeModal = closeModal;
+                    window.closeProfileModal = closeProfileModal;
                 } else {
-                    popupDiv.classList.add("hidden");
+                    profilePopupDiv.classList.add("hidden");
                 }
             </script>
-
         {% endif %}
+
 
     {% endif %}
 
@@ -648,6 +778,129 @@
 
         {% endif %}
     {% endif %}
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Theme Management
+            function applyTheme(theme) {
+                if (theme === 'dark') {
+                    document.documentElement.classList.add('dark');
+                    localStorage.setItem('theme', 'dark');
+                } else if (theme === 'light') {
+                    document.documentElement.classList.remove('dark');
+                    localStorage.setItem('theme', 'light');
+                } else {
+                    // System preference
+                    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                    if (prefersDark) {
+                        document.documentElement.classList.add('dark');
+                    } else {
+                        document.documentElement.classList.remove('dark');
+                    }
+                    localStorage.setItem('theme', 'system');
+                }
+            }
+
+            // Font Size Management
+            function applyFontSize(size) {
+                const sizes = {
+                    'small': 'font-size-small',
+                    'medium': 'font-size-medium',
+                    'large': 'font-size-large'
+                };
+                
+                // Remove all font size classes first
+                document.documentElement.classList.remove(
+                    'font-size-small', 
+                    'font-size-medium', 
+                    'font-size-large'
+                );
+                
+                // Apply selected size
+                if (sizes[size]) {
+                    document.documentElement.classList.add(sizes[size]);
+                    localStorage.setItem('fontSize', size);
+                }
+            }
+
+            // Initialize from localStorage
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme) {
+                applyTheme(savedTheme);
+            } else {
+                // Default to dark theme if no preference saved
+                applyTheme('dark');
+            }
+
+            const savedFontSize = localStorage.getItem('fontSize') || 'medium';
+            applyFontSize(savedFontSize);
+
+            // Theme toggle functionality (if you want to add a quick toggle button)
+            // const themeToggle = document.createElement('button');
+            // themeToggle.className = 'theme-toggle fixed bottom-20 right-4 z-50 w-12 h-12 rounded-full bg-primary flex items-center justify-center shadow-lg';
+            // themeToggle.innerHTML = '<i class="ri-contrast-2-line text-white text-xl"></i>';
+            // themeToggle.title = 'Toggle theme';
+            // themeToggle.addEventListener('click', function() {
+            //     const currentTheme = localStorage.getItem('theme');
+            //     if (currentTheme === 'light') {
+            //         applyTheme('dark');
+            //     } else {
+            //         applyTheme('light');
+            //     }
+            // });
+            // document.body.appendChild(themeToggle);
+
+            // Listen for system theme changes
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+                if (localStorage.getItem('theme') === 'system') {
+                    applyTheme('system');
+                }
+            });
+
+            // For settings page functionality
+            if (window.location.pathname === "{{ settings_url }}") {
+                // Theme selection
+                const themeOptions = document.querySelectorAll('.theme-option');
+                themeOptions.forEach(option => {
+                    option.addEventListener('click', function() {
+                        themeOptions.forEach(opt => opt.classList.remove('ring-2', 'ring-primary'));
+                        this.classList.add('ring-2', 'ring-primary');
+                        
+                        const theme = this.id.replace('Theme', '');
+                        applyTheme(theme);
+                    });
+                });
+
+                // Font size selection
+                const fontSizeButtons = document.querySelectorAll('.font-size-btn');
+                fontSizeButtons.forEach(button => {
+                    button.addEventListener('click', function() {
+                        fontSizeButtons.forEach(btn => {
+                            btn.classList.remove('bg-primary', 'text-white');
+                            btn.classList.add('bg-gray-700', 'text-gray-300');
+                        });
+                        this.classList.add('bg-primary', 'text-white');
+                        this.classList.remove('bg-gray-700', 'text-gray-300');
+                        
+                        const size = this.dataset.size;
+                        applyFontSize(size);
+                    });
+                });
+
+                // Initialize UI to match current settings
+                const currentTheme = localStorage.getItem('theme') || 'dark';
+                document.getElementById(currentTheme + 'Theme')?.classList.add('ring-2', 'ring-primary');
+                
+                const currentFontSize = localStorage.getItem('fontSize') || 'medium';
+                document.querySelector(`.font-size-btn[data-size="${currentFontSize}"]`)?.classList.add(
+                    'bg-primary', 'text-white'
+                );
+                document.querySelector(`.font-size-btn[data-size="${currentFontSize}"]`)?.classList.remove(
+                    'bg-gray-700', 'text-gray-300'
+                );
+            }
+        });
+    </script>
 </body>
 
 </html>

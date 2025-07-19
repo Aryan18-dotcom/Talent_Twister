@@ -1,13 +1,11 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from Myapp.models import Company, TeamLead, Employee, Task, TaskProgress, WorkLeave, Team, HR, Co_Curricular
+from Myapp.models import Company, TeamLead, Employee, Task, TaskProgress, WorkLeave, Team, HR, Co_Curricular, Education, Experience, Skill, Certficate, SocialLinks
 from django.utils.timezone import now
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.http import HttpResponse
 from django.contrib.auth.models import User
 from django.conf import settings
-from django.db import IntegrityError
 import os
 import re
 from django.contrib.auth import update_session_auth_hash
@@ -16,6 +14,16 @@ from datetime import timedelta
 import pytz
 from django.db.models import Q
 import json
+from django.core.mail import EmailMessage
+from django.template.loader import render_to_string
+import logging
+from django.contrib.auth.decorators import login_required
+from django.db import transaction
+from django.contrib.contenttypes.models import ContentType
+from django.urls import reverse
+from django.views.decorators.http import require_http_methods
+
+
 
 india_timezone = pytz.timezone('Asia/Kolkata')
 current_time = now().astimezone(india_timezone)
@@ -35,19 +43,82 @@ def progress_calculator(task):
         progress = 0
     return progress
 
+def get_client_device(request):
+    user_agent = request.META.get('HTTP_USER_AGENT', '')
+    device_info = {
+        'user_agent': user_agent,
+        'device_type': 'Unknown',
+        'browser': 'Unknown',
+        'os': 'Unknown'
+    }
+
+    # Parse user agent (you can use a package like user-agents for better parsing)
+    if 'Mobile' in user_agent:
+        device_info['device_type'] = 'Mobile'
+    elif 'Tablet' in user_agent:
+        device_info['device_type'] = 'Tablet'
+    else:
+        device_info['device_type'] = 'Desktop'
+
+    if 'Chrome' in user_agent:
+        device_info['browser'] = 'Chrome'
+    elif 'Firefox' in user_agent:
+        device_info['browser'] = 'Firefox'
+    elif 'Safari' in user_agent:
+        device_info['browser'] = 'Safari'
+
+    if 'Windows' in user_agent:
+        device_info['os'] = 'Windows'
+    elif 'Mac' in user_agent:
+        device_info['os'] = 'Mac'
+    elif 'Linux' in user_agent:
+        device_info['os'] = 'Linux'
+    elif 'Android' in user_agent:
+        device_info['os'] = 'Android'
+    elif 'iOS' in user_agent:
+        device_info['os'] = 'iOS'
+
+    return device_info
+
+def get_client_ip(request):
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0]
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+    return ip
 
 @login_required
 def Dashboard(request):
+    # Authentication and role check
     role = request.session.get("role")
     if role != "HR":
-        messages.warning(request,"You need to be logged in as an HR to access this page")
+        messages.warning(request, "You need to be logged in as an HR to access this page")
         return redirect('Myapp:login')
-    
-    
+
+    # Get device and IP information
+    device = get_client_device(request)
+    ip = get_client_ip(request)
+        
+    # Store device info in session
+    if device and ip:
+        request.session['login_device'] = {
+            'device_type': device.get('device_type', 'Unknown'),
+            'browser': device.get('browser', 'Unknown'),
+            'os': device.get('os', 'Unknown'),
+            'user_agent': device.get('user_agent', ''),
+            'ip_address': ip
+        }
+
+    # Get user profile and company
     login_user = request.session.get("username")
     profile = TeamLead.objects.filter(username=login_user).first()
-    company = Company.objects.get(created_by=profile)
+    if not profile:
+        messages.error(request, "User profile not found")
+        return redirect('Myapp:login')
 
+    company = Company.objects.filter(created_by=profile).first()
+    
     today = current_time.date()
     # Get all tasks
 
@@ -202,24 +273,152 @@ def Dashboard(request):
         "company":company,
     })
 
-
+logger = logging.getLogger(__name__)
 @login_required
 def create_company(request):
-    profile = TeamLead.objects.filter(username=request.user).first()
+    login_user = request.session.get("username")
+    profile = TeamLead.objects.filter(username=login_user).first()
+
+    if not profile:
+        messages.error(request, "User profile not found. Please log in again.")
+        return redirect('Myapp:login')
     
+    existing_company = Company.objects.filter(created_by=profile).first()
+
+    # Choices for dropdowns
+    days_of_week = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+    industry_choices = [
+        ("IT", "Information Technology"),
+        ("Finance", "Finance"),
+        ("Healthcare", "Healthcare"),
+        ("Education", "Education"),
+        ("Retail", "Retail"),
+        ("Manufacturing", "Manufacturing"),
+        ("Other", "Other")
+    ]
+    company_size_choices = [
+        ("1-10", "1-10 employees"),
+        ("11-50", "11-50 employees"),
+        ("51-200", "51-200 employees"),
+        ("201-500", "201-500 employees"),
+        ("500+", "500+ employees")
+    ]
+    test_difficulty_choices = [
+        ("Easy", "Easy"),
+        ("Medium", "Medium"),
+        ("Hard", "Hard")
+    ]
+    interview_mode_choices = [
+        ("Video", "Video"),
+        ("In-Person", "In-Person"),
+        ("Hybrid", "Hybrid")
+    ]
+    timezone_choices = [(tz, tz.replace('_', ' ')) for tz in pytz.common_timezones]
+    timezone_choices.sort()
+
     if request.method == "POST":
-        company_name = request.POST.get("new_company_name")
-        company_domain = request.POST.get("new_company_domain")
-        
-        if company_name and company_domain:
-            Company.objects.create(
-                name=company_name,
-                domain=company_domain,
-                created_by=profile
-            )
-            return redirect('Myapp:Hr_Pannel')
-    
-    return redirect('Myapp:Hr_Pannel')
+        step = request.POST.get("current_step", "1")
+        action = request.POST.get("action", "")
+        company = existing_company or Company(created_by=profile)
+
+        try:
+            with transaction.atomic():
+                # Handle file removals
+                if request.POST.get("remove_logo") == "true" and company.logo:
+                    company.logo.delete(save=False)
+                    company.logo = None
+                if request.POST.get("remove_brochure") == "true" and company.brochure:
+                    company.brochure.delete(save=False)
+                    company.brochure = None
+
+                # Step-specific processing
+                if step == "1":
+                    if not existing_company:  # Only set these on initial creation
+                        company.name = request.POST.get("company_name")
+                        company.domain = request.POST.get("domain")
+                    company.industry = request.POST.get("industry")
+                    company.company_size = request.POST.get("company_size")
+                    company.address = request.POST.get("address")
+                    company.website = request.POST.get("website")
+                    company.contact_number = request.POST.get("contact_number")
+                    company.founding_date = request.POST.get("founding_date") or None
+
+                elif step == "2":
+                    company.working_days = ",".join(request.POST.getlist("work_days"))
+                    work_hours = f"{request.POST.get('work_hours_start')} - {request.POST.get('work_hours_end')}"
+                    company.working_hours = work_hours
+                    company.timezone = request.POST.get("timezone")
+                    company.total_days_to_work = int(request.POST.get("total_days_to_work", 260))
+                    company.task_limit_per_day = int(request.POST.get("task_limit_per_day", 10))
+                    company.employee_limit = int(request.POST.get("employee_limit", 100))
+                    company.data_retention_period = int(request.POST.get("data_retention_period", 365))
+
+                elif step == "3":
+                    company.auto_resume_review = request.POST.get("auto_resume_review") == 'on'
+                    company.test_difficulty_level = request.POST.get("test_difficulty_level")
+                    company.interview_mode = request.POST.get("interview_mode")
+                    company.privacy_policy_url = request.POST.get("privacy_policy_url")
+                    company.terms_of_service_url = request.POST.get("terms_of_service_url")
+                    company.allow_custom_themes = request.POST.get("allow_custom_themes") == 'on'
+
+                elif step == "4":
+                    if 'logo' in request.FILES and request.FILES['logo'].size <= 2 * 1024 * 1024:
+                        company.logo = request.FILES['logo']
+                    if 'brochure' in request.FILES and request.FILES['brochure'].size <= 5 * 1024 * 1024:
+                        company.brochure = request.FILES['brochure']
+                    company.description = request.POST.get("description")
+                    company.basic_settings_set = True
+
+                company.save()
+                # Log the company creation or update
+                request.session["company_id"] = company.id
+                request.session['company_name'] = company.name
+
+                # Update the profile with company details
+                profile.company = company
+                profile.email = f'{profile.username}@{company.domain}'
+                profile.save()
+
+                if action == "final_submit":
+                    messages.success(request, "Company profile setup completed successfully!")
+                    return redirect('HrApp:Dashboard')
+                else:
+                    next_step = str(int(step) + 1)
+                    messages.info(request, f"Step {step} saved successfully. Please continue to step {next_step}.")
+                    return redirect(f"{request.path}?step={next_step}")
+
+        except Exception as e:
+            logger.error(f"Error saving company data: {str(e)}")
+            messages.error(request, f"Error saving data: {str(e)}")
+            return redirect(f"{request.path}?step={step}")
+
+    # Prepare initial values
+    initial_work_hours = {
+        'start': '09:00',
+        'end': '17:00'
+    }
+    if existing_company and existing_company.working_hours:
+        try:
+            start, end = existing_company.working_hours.split(' - ')
+            initial_work_hours = {'start': start, 'end': end}
+        except:
+            pass
+
+    context = {
+        'days_of_week': days_of_week,
+        'profile': profile,
+        'current_step': request.GET.get('step', '1'),
+        'company': existing_company,
+        'industry_choices': industry_choices,
+        'company_size_choices': company_size_choices,
+        'test_difficulty_choices': test_difficulty_choices,
+        'interview_mode_choices': interview_mode_choices,
+        'timezone_choices': timezone_choices,
+        'initial_work_hours_start': initial_work_hours['start'],
+        'initial_work_hours_end': initial_work_hours['end'],
+        'step': request.GET.get('step', '1'),
+    }
+    return render(request, 'Hr_App/create_company.html', context)
 
 
 @login_required
@@ -578,89 +777,123 @@ def profile_settings(request):
 # function to update the profile pic, full name, username(according to username email, auto changes), password if user enters the old one correct
 @login_required
 def update_profile(request):
+    back_url = request.META.get('HTTP_REFERER', '/Hr/Profile_Settings/')
     if request.method == 'POST':
+        user = request.user  
+        login_user = request.session.get("username")
+        company_name = request.session.get("company_name")
+        profile = TeamLead.objects.get(username=login_user)
+        
+        if not profile:
+            messages.error(request, "❌ Profile not found.")
+            return redirect(back_url)
+
+        # 1. Handle Profile Picture Upload
         try:
-            # ✅ Get Form Data
-            Image = request.FILES.get('avatarInput')
-            Full_Name = request.POST.get('nameInput')
-            New_UserName = request.POST.get('usernameInput')
-            old_Password = request.POST.get('oldPasswordInput')
-            new_Password = request.POST.get('passwordInput')
-
-            user = request.user  
-            login_user = request.session.get("username")
-            company_name = request.session.get("company_name")
-            # profile = get_object_or_404(Employee, username=login_user, company__name=company_name)
-            profile = TeamLead.objects.get(
-                username=login_user
-            )
-            if not profile:
-                return HttpResponse("<script>alert('❌ Profile not found.'); window.location.href='/Hr/Profile_Settings/';</script>")
-
-            # ✅ Handle Profile Picture Upload
-            if Image:
+            if 'avatarInput' in request.FILES:
+                Image = request.FILES['avatarInput']
                 if profile.image and profile.image.name and profile.image.name != Image.name:
                     old_image_path = os.path.join(settings.MEDIA_ROOT, str(profile.image))
                     if os.path.exists(old_image_path):
                         os.remove(old_image_path)
                 profile.image = Image
-
-            # ✅ Handle Username Update
-            if New_UserName and New_UserName != profile.username:
-                if not re.match(r'^[A-Za-z0-9_]+$', New_UserName):
-                    return HttpResponse("<script>alert('❌ Username can only contain letters, numbers, and underscore (_).'); window.location.href='/Hr/Profile_Settings/';</script>")
-
-                if TeamLead.objects.filter(username=New_UserName).exists() or User.objects.filter(username=New_UserName).exists():
-                    return HttpResponse(f"<script>alert('❌ Username \"{New_UserName}\" already exists. Please choose another one.'); window.location.href='/Hr/Profile_Settings/';</script>")
-
-                old_username = user.username
-
-                if profile:
-                    profile.username = New_UserName
-                    user.username = New_UserName
-
-                user.save(update_fields=["username"])  
-                profile.save(update_fields=["username", "email"])  
-
-                # ✅ Delete old username from User model (only if successfully updated)
-                User.objects.filter(username=old_username).delete()
-
-                # ✅ Keep user logged in after username change
-                update_session_auth_hash(request, user)
-                request.session["username"] = New_UserName  
-
-            # ✅ Handle Full Name and Role Update
-            if Full_Name:
-                profile.full_name = Full_Name
-
-            # ✅ Handle Password Update
-            if new_Password or old_Password:  
-                if not old_Password:
-                    return HttpResponse("<script>alert('⚠️ Please enter your old password to set a new one.'); window.location.href='/Hr/Profile_Settings/';</script>")
-
-                if not new_Password:
-                    return HttpResponse("<script>alert('⚠️ Enter the new password to be set. Please try again.'); window.location.href='/Hr/Profile_Settings/';</script>")
-
-                if old_Password != profile.password:
-                    return HttpResponse("<script>alert('❌ Incorrect old password. Please try again.'); window.location.href='/Hr/Profile_Settings/';</script>")
-
-                if old_Password == new_Password:
-                    return HttpResponse("<script>alert('⚠️ New password cannot be the same as the old password. Please choose a different one.'); window.location.href='/Hr/Profile_Settings/';</script>")
-
-                profile.password = new_Password  
-            
-            # ✅ Save All Changes at Once
-            profile.save()
-
-            return HttpResponse("<script>alert('✅ Profile updated successfully!'); window.location.href='/Hr/settings/';</script>")
-
-        except IntegrityError:
-            return HttpResponse("<script>alert('❌ Database error occurred. Please try again.'); window.location.href='/Hr/Profile_Settings/';</script>")
-
+                profile.save(update_fields=["image"])
+                messages.success(request, "✅ Profile picture updated successfully!")
         except Exception as e:
-            return HttpResponse(f"<script>alert('❌ Unexpected error: {str(e)}'); window.location.href='/Hr/Profile_Settings/';</script>")
+            messages.error(request, f"❌ Error updating profile picture: {str(e)}")
 
-    return HttpResponse("<script>window.location.href='/Hr/Profile_Settings/';</script>")
+        # 2. Handle Username Update
+        try:
+            if 'new_username' in request.POST:
+                New_UserName = request.POST['new_username']
+                current_password = request.POST.get('current_password')
+                
+                if New_UserName and New_UserName != profile.username:
+                    if not re.match(r'^[A-Za-z0-9_]+$', New_UserName):
+                        messages.error(request, "❌ Username can only contain letters, numbers, and underscore (_).")
+                    elif TeamLead.objects.filter(username=New_UserName).exists() or User.objects.filter(username=New_UserName).exists():
+                        messages.error(request, f"❌ Username \"{New_UserName}\" already exists.")
+                    elif not current_password:
+                        messages.error(request, "❌ Current password is required to change username.")
+                    elif profile.password != current_password:
+                        messages.error(request, "❌ Current password is incorrect.")
+                    else:
+                        old_username = user.username
+                        profile.username = New_UserName
+                        user.username = New_UserName
+                        user.save(update_fields=["username"])  
+                        profile.save(update_fields=["username", "email"])
+                        User.objects.filter(username=old_username).delete()
+                        update_session_auth_hash(request, user)
+                        request.session["username"] = New_UserName
+                        messages.success(request, "✅ Username updated successfully!")
+        except Exception as e:
+            messages.error(request, f"❌ Error updating username: {str(e)}")
+
+        # 3. Handle Full Name Update
+        try:
+            if 'nameInput' in request.POST:
+                Full_Name = request.POST['nameInput']
+                if Full_Name and Full_Name != profile.full_name:
+                    profile.full_name = Full_Name
+                    profile.save(update_fields=["full_name"])
+                    messages.success(request, "✅ Name updated successfully!")
+        except Exception as e:
+            messages.error(request, f"❌ Error updating name: {str(e)}")
+
+        # 4. Handle Password Update
+        try:
+            if 'new_password' in request.POST and 'current_password' in request.POST:
+                new_Password = request.POST['new_password']
+                old_Password = request.POST['current_password']
+                
+                if not old_Password:
+                    messages.error(request, "❌ Old password is required to set a new one.")
+                elif not new_Password:
+                    messages.error(request, "❌ New password is required.")
+                elif old_Password != profile.password:
+                    messages.error(request, "❌ Incorrect old password.")
+                elif old_Password == new_Password:
+                    messages.error(request, "⚠️ New password cannot be the same as old password.")
+                else:
+                    profile.password = new_Password
+                    profile.save(update_fields=["password"])
+                    messages.success(request, "✅ Password updated successfully!")
+        except Exception as e:
+            messages.error(request, f"❌ Error updating password: {str(e)}")
+
+
+        # 5. Handle two-factor authentication update
+        try:
+            enable_two_factor = request.POST.get('enable_two_factor') == 'on'
+            auth_method = request.POST.get('auth_method', 'email')
+            
+            # Only update auth method if enabling 2FA or if it's being changed
+            if enable_two_factor or (profile.enable_two_factor and auth_method != profile.authentication_method):
+                profile.authentication_method = auth_method
+            
+            if profile.enable_two_factor != enable_two_factor:
+                profile.enable_two_factor = enable_two_factor
+                update_fields = ["enable_two_factor"]
+                
+                if enable_two_factor:  # Only update auth method when enabling
+                    profile.authentication_method = auth_method
+                    update_fields.append("authentication_method")
+                
+                profile.save(update_fields=update_fields)
+                
+                if enable_two_factor:
+                    messages.success(request, f"✅ Two-factor authentication enabled via {auth_method} successfully!")
+                else:
+                    messages.success(request, "✅ Two-factor authentication disabled successfully!")
+                    
+        except Exception as e:
+            messages.error(request, f"❌ Error updating two-factor authentication: {str(e)}")
+
+        return redirect(back_url)
+
+    messages.error(request, "❌ Invalid request method.")
+    return redirect(back_url)
 
 
 @login_required
@@ -1251,7 +1484,7 @@ def all_users(request):
     employees_count = all_employees.count()
     
     # Set the default back URL
-    back_url = '/TeamLead/Dashbord/' if '/TeamLead/profile_details/' in request.META.get('HTTP_REFERER', '') else request.META.get('HTTP_REFERER', '')
+    back_url = '/TeamLead/Dashbord/' if '/TeamLead/profile_details/' or 'TeamLead/helpers/invite_member/' in request.META.get('HTTP_REFERER', '') else request.META.get('HTTP_REFERER', '')
 
 
     meta = request.META
@@ -1273,6 +1506,24 @@ def all_users(request):
         'meta':meta
     }
     return render(request, 'Hr_App/all_users.html', context)
+
+
+@login_required
+def invite_member(request):
+    login_user = request.session.get("username")
+    company_id = request.session.get("company_id")
+    
+    employee = TeamLead.objects.filter(username=login_user).first()
+    companys = Company.objects.filter(created_by=employee).first()
+
+    back_url = '/TeamLead/settings/' if '/TeamLead/helpers/invite_member/' in request.META.get('HTTP_REFERER', '') else request.META.get('HTTP_REFERER', '/TeamLead/Dashbord/')
+
+
+    context = {
+        'employee_dets': employee,
+        'back_url': back_url
+    }
+    return render(request, 'Hr_App/Settings/block_page.html', context)
 
 
 @login_required
@@ -1325,26 +1576,90 @@ def user_settings(request):
 def personal_details(request):
     login_user = request.session.get("username")
     company_id = request.session.get("company_id")
+
+    profile = TeamLead.objects.filter(username=login_user).first()
+
+    if not profile:
+        messages.error(request, "TeamLead profile not found.")
+        return redirect("Myapp:login")  # or wherever appropriate
+
+    company = Company.objects.filter(created_by=profile).first()
+
+    back_url = '/TeamLead/settings/' if '/TeamLead/settings/personal_details/' in request.META.get('HTTP_REFERER', '') else request.META.get('HTTP_REFERER', '/TeamLead/Dashbord/')
+
+    context = {
+        'employee_dets': profile,
+        'back_url': back_url,
+    }
+    return render(request, 'Hr_App/Settings/personal_details.html', context)
+
+
+@login_required
+def persional_details_updates(request, employee_id):
+    login_user = request.session.get("username")
+    company_id = request.session.get("company_id")
     
     # Get the company and all its members
-    profile = TeamLead.objects.filter(username=login_user, created_companies=company_id).first()
-    company = Company.objects.filter(created_by=profile).first()
-    return render(request, 'Hr_App/Settings/personal_details.html')
+    employee = get_object_or_404(TeamLead, id=employee_id)
+
+    try:
+        if request.method == 'POST':
+            # Basic Information
+            first_name = request.POST.get('first_name')
+            last_name = request.POST.get('last_name')
+            employee.full_name = f'{first_name} {last_name}' if first_name and last_name else employee.full_name
+            
+            # Personal Details
+            employee.date_of_birth = request.POST.get('date_of_birth', employee.date_of_birth)
+            employee.gender = request.POST.get('gender', employee.gender)
+            employee.persional_email = request.POST.get('persional_email', employee.persional_email)
+            employee.phone_number = request.POST.get('phone_number', employee.phone_number)
+            employee.emergency_contact = request.POST.get('emergency_contact', employee.emergency_contact)
+            
+            # About Section
+            about_text = request.POST.get('about', '').strip()
+            employee.about = about_text if about_text else employee.about  # Update only if new text is provided
+            
+            # Address Information
+            employee.street_address = request.POST.get('street_address', employee.street_address)
+            employee.city = request.POST.get('city', employee.city)
+            employee.state = request.POST.get('state', employee.state)
+            employee.postal_code = request.POST.get('postal_code', employee.postal_code)
+            employee.country = request.POST.get('country', employee.country)
+            
+            # Combine address fields into a single address string
+            if all([employee.street_address, employee.city, employee.state, employee.postal_code, employee.country]):
+                employee.address = f"{employee.street_address}, {employee.city}, {employee.state}, {employee.postal_code}, {employee.country}" if employee.street_address else employee.address
+
+            # Save the updated details
+            employee.save()
+            
+            messages.success(request, 'Personal details updated successfully!')
+            return redirect('HrApp:personal_details')
+            
+    except Exception as e:
+        messages.error(request, f'Error updating personal details: {str(e)}')
+        return redirect('HrApp:personal_details')
 
 
-# @login_required
-# def skill_preferences(request):
-#     login_user = request.session.get("username")
-#     company_id = request.session.get("company_id")
-    
-#     # Get the company and all its members
-#     profile = TeamLead.objects.filter(username=login_user, created_companies=company_id).first()
-#     company = Company.objects.filter(created_by=profile).first()
+@login_required
+def security_settings(request):
+    login_user = request.session.get("username")
+    company_id = request.session.get("company_id")
 
-#     context = {
-#         'user':profile,
-#     }
-#     return render(request, 'Hr_App/Settings/skill_preferences.html', context)
+    login_info = request.session['login_device']
+
+    profile = TeamLead.objects.filter(username=login_user).first()
+
+    back_url = '/TeamLead/settings/' if '/TeamLead/settings/password_&_security/' in request.META.get('HTTP_REFERER', '') else request.META.get('HTTP_REFERER', '/TeamLead/Dashbord/')
+
+    context = {
+        'employee_dets': profile,
+        'back_url': back_url,
+        'login_info': login_info,
+    }
+    return render(request, 'Hr_App/Settings/security_settings.html', context)
+
 
 @login_required
 def skill_preferences(request):
@@ -1384,13 +1699,464 @@ def skill_preferences(request):
     # Get existing skills for display
     existing_skills = Co_Curricular.objects.filter(Hr=profile).order_by('name')
     
+    back_url = '/TeamLead/Dashbord/' if '/TeamLead/profile_details/' in request.META.get('HTTP_REFERER', '') else request.META.get('HTTP_REFERER', '')
+
     context = {
         'user': profile,
         'existing_skills': existing_skills,
+        'back_url': back_url,
     }
     return render(request, 'Hr_App/Settings/skill_preferences.html', context)
 
 
+@login_required
+def profile_visibility(request):
+    login_user = request.session.get("username")
+    company_id = request.session.get("company_id")
+    
+    employee = TeamLead.objects.filter(username=login_user).first()
+    companys = Company.objects.filter(created_by=employee).first()
+
+    # Get the ContentType for the TeamLead model
+    content_type = ContentType.objects.get_for_model(employee.__class__)
+
+    # Correct queries using content_type
+    skills = Skill.objects.filter(
+        content_type=content_type,
+        object_id=employee.id
+        )
+    
+    educations = Education.objects.filter(
+        content_type=content_type,
+        object_id=employee.id
+    )
+        
+    experiences = Experience.objects.filter(
+        content_type=content_type,
+        object_id=employee.id
+    ).order_by('-start_date')
+
+    co_curricular = Co_Curricular.objects.filter(
+        content_type=content_type,
+        object_id=employee.id
+    )
+    for activity in co_curricular:
+        try:
+            proficiency = int(activity.proficiency)
+            activity.proficiency_percent = min(max(proficiency * 10, 0), 100)  # Clamp between 0 and 100
+        except:
+            activity.proficiency_percent = 0
+
+    certifications = Certficate.objects.filter(
+        content_type=content_type,
+        object_id=employee.id
+    )
+
+    links = SocialLinks.objects.filter(
+        content_type=content_type,
+        object_id=employee.id
+    )
+
+    back_url = '/TeamLead/settings/' if '/TeamLead/settings/personal_details/' or '/TeamLead/settings/user-external-details/?step=' in request.META.get('HTTP_REFERER', '') else request.META.get('HTTP_REFERER', '')
+
+    context = {
+        'employee_dets': employee,
+        'companys': companys,
+        'back_url': request.META.get('HTTP_REFERER', '/TeamLead/Dashbord/'),
+        'skills': skills,
+        'educations': educations,
+        'experiences': experiences,
+        'back_url': back_url,
+        'current_month': current_time.strftime('%b %Y'),
+        'co_curriculars':co_curricular, 
+        'certifications':certifications,
+        'links':links
+    }
+    return render(request, 'Hr_App/Settings/profile_visibility.html', context)
+
+
+@login_required
+def info_permissions(request):
+    login_user = request.session.get("username")
+    company_id = request.session.get("company_id")
+    
+    employee = TeamLead.objects.filter(username=login_user).first()
+    companys = Company.objects.filter(created_by=employee).first()
+
+    context = {
+        'employee_dets': employee,
+        'back_url': request.META.get('HTTP_REFERER', '/TeamLead/Dashbord/'),
+    }
+    return render(request, 'Hr_App/Settings/block_page.html', context)
+
+
+@login_required
+def connected_accounts(request):
+    login_user = request.session.get("username")
+    company_id = request.session.get("company_id")
+    
+    employee = TeamLead.objects.filter(username=login_user).first()
+    companys = Company.objects.filter(created_by=employee).first()
+
+    context = {
+        'employee_dets': employee,
+        'back_url': request.META.get('HTTP_REFERER', '/TeamLead/Dashbord/'),
+    }
+    return render(request, 'Hr_App/Settings/block_page.html', context)
+
+
+@login_required
+def notification_settings(request):
+    login_user = request.session.get("username")
+    company_id = request.session.get("company_id")
+    
+    employee = TeamLead.objects.filter(username=login_user).first()
+    companys = Company.objects.filter(created_by=employee).first()
+
+    context = {
+        'employee_dets': employee,
+        'back_url': request.META.get('HTTP_REFERER', '/TeamLead/Dashbord/'),
+    }
+    return render(request, 'Hr_App/Settings/block_page.html', context)
+
+
+@login_required
+def display_language(request):
+    login_user = request.session.get("username")
+    company_id = request.session.get("company_id")
+    
+    employee = TeamLead.objects.filter(username=login_user).first()
+    companys = Company.objects.filter(created_by=employee).first()
+
+    context = {
+        'employee_dets': employee,
+        'back_url': request.META.get('HTTP_REFERER', '/TeamLead/Dashbord/'),
+    }
+    return render(request, 'Hr_App/Settings/display_language.html', context)
+
+
+@login_required
+def help_support(request):
+    login_user = request.session.get("username")
+    company_id = request.session.get("company_id")
+    
+    employee = TeamLead.objects.filter(username=login_user).first()
+    companys = Company.objects.filter(created_by=employee).first()
+
+    back_url = '/TeamLead/settings/' if '/TeamLead/settings/customer-support/' in request.META.get('HTTP_REFERER', '') else request.META.get('HTTP_REFERER', '/TeamLead/Dashbord/')
+
+    context = {
+        'employee_dets': employee,
+        'back_url': back_url,
+    }
+    return render(request, 'Hr_App/Settings/help_support.html', context)
+
+
+@login_required
+def customer_support(request):
+    login_user = request.session.get("username")
+    company_id = request.session.get("company_id")
+
+    employee = TeamLead.objects.filter(username=login_user).first()
+    companys = Company.objects.filter(created_by=employee).first()
+
+    back_url = 'TeamLead:settings' if '/TeamLead/settings/customer-support/' in request.META.get('HTTP_REFERER', '') else request.META.get('HTTP_REFERER', '/TeamLead/Dashbord/')
+
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        email = request.POST.get('email')
+        subject = request.POST.get('subject')
+        message = request.POST.get('message')
+
+        if not name or not email or not subject or not message:
+            messages.error(request, 'All fields are required.')
+            return redirect('HrApp:customer_support')
+
+        if '@' not in email or '.' not in email.split('@')[-1]:
+            messages.error(request, 'Invalid email format.')
+            return redirect('HrApp:customer_support')
+
+        # Render the HTML content
+        email_body = render_to_string('emails/support_email.html', {
+            'name': name,
+            'email': email,
+            'subject': subject,
+            'message': message,
+        })
+
+        try:
+            email_message = EmailMessage(
+                subject=f"📨 Support Request - {subject} | From: {name}",
+                body=email_body,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                to=[settings.DEFAULT_FROM_EMAIL],
+                reply_to=[email],  # Allows you to reply directly to sender
+            )
+            email_message.content_subtype = 'html'
+            email_message.send()
+        except Exception as e:
+            messages.error(request, f'Error sending email: {str(e)}')
+            return redirect('HrApp:customer_support')
+
+        messages.success(request, 'Your support request has been submitted successfully!')
+        return redirect('HrApp:settings')
+
+    context = {
+        'employee_dets': employee,
+        'back_url': back_url,
+    }
+    return render(request, 'Hr_App/Settings/customer_support.html', context)
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def use_external_details(request):
+    login_user = request.session.get("username")
+    profile = TeamLead.objects.filter(username=login_user).first()
+    
+    if not profile:
+        messages.error(request, "User profile not found. Please log in again.")
+        return redirect('Myapp:login')
+
+    # Get content type for the profile
+    content_type = ContentType.objects.get_for_model(profile)
+    
+    # Get step from request
+    step = int(request.GET.get('step', 1))
+
+    if request.method == "POST":
+        # Get The Action so that differ when user whats to save and exit or save and go to next step
+        action = request.POST.get("action")
+
+        try:
+            if step == 1:  # Personal Information
+                    profile.street_address = request.POST.get("address", profile.street_address)
+                    profile.city = request.POST.get("city", profile.city)
+                    profile.state = request.POST.get("state", profile.state)
+                    profile.country = request.POST.get("country", profile.country)
+                    profile.postal_code = request.POST.get("pincode", profile.postal_code)
+                    profile.about = request.POST.get("about", profile.about)
+                    if profile.level_of_basic_setting_set == 0:
+                        profile.level_of_basic_setting_set = 25
+                        profile.save()
+                    if action == "update_only":
+                        messages.success(request, f"Great! Your profile has been updated up to Step {step}: Personal Information")
+                        return redirect('HrApp:profile_visibility')
+                    return redirect(f"{reverse('HrApp:use_external_details')}?step=2")
+
+            elif step == 2:  # Education
+                    education, created = Education.objects.update_or_create(
+                        content_type=content_type,
+                        object_id=profile.id,
+                        school_10= request.POST.get("tenth_school", ""),
+                        school_10_year_start= request.POST.get("tenth_year_start", ""),
+                        school_10_year_end= request.POST.get("tenth_year_end", ""),
+                        school_12= request.POST.get("twelfth_school", ""),
+                        school_12_year_start= request.POST.get("twelfth_year_start", ""),
+                        school_12_year_end= request.POST.get("twelfth_year_end", ""),
+                        college= request.POST.get("college", ""),
+                        degree= request.POST.get("degree", ""),
+                        field_of_study= request.POST.get("field", ""),
+                        graduation_date= request.POST.get("graduation") or None
+                    )
+                    if profile.level_of_basic_setting_set == 25:
+                        profile.level_of_basic_setting_set = 45 
+                        profile.save()
+                    if action == "update_only":
+                        messages.success(request, f"Great! Your profile has been updated up to Step {step}: Education Details")
+                        return redirect('HrApp:profile_visibility')
+                    return redirect(f"{reverse('HrApp:use_external_details')}?step=3")
+
+            elif step == 3:  # Work Experience
+                    # Delete the old Experiance Data 
+                    Experience.objects.filter(content_type=content_type, object_id=profile.id,).delete()
+                    # Process multiple experience entries
+                    companies = request.POST.getlist("company[]")
+                    positions = request.POST.getlist("position[]")
+                    start_dates = request.POST.getlist("start_date[]")
+                    end_dates = request.POST.getlist("end_date[]")
+                    descriptions = request.POST.getlist("description[]")
+                    
+                    for i in range(len(companies)):
+                        if companies[i].strip():
+                            Experience.objects.create(
+                                content_type=content_type,
+                                object_id=profile.id,
+                                job_title=positions[i],
+                                company_name=companies[i],
+                                start_date=start_dates[i],
+                                end_date=end_dates[i] if end_dates[i] else None,
+                                description=descriptions[i]
+                            )
+                    if profile.level_of_basic_setting_set == 45:
+                        profile.level_of_basic_setting_set = 60 
+                        profile.save()
+                    if action == "update_only":
+                        messages.success(request, f"Great! Your profile has been updated up to Step {step}: Work Experience")
+                        return redirect('HrApp:profile_visibility')
+                    return redirect(f"{reverse('HrApp:use_external_details')}?step=4")
+            
+            elif step == 4:  # Skills
+                # Delete the old Skills
+                Skill.objects.filter(content_type=content_type, object_id=profile.id).delete()
+                
+                # Add new skills with proficiency
+                skill_names = request.POST.get("skill_names", "").split(',')
+                skill_proficiencies = request.POST.get("skill_proficiencies", "").split(',')
+                
+                for name, proficiency in zip(skill_names, skill_proficiencies):
+                    name = name.strip()
+                    if name:
+                        try:
+                            proficiency_value = float(proficiency.strip()) if proficiency.strip() else 2.5
+                        except ValueError:
+                            proficiency_value = 2.5
+                            
+                        Skill.objects.create(
+                            content_type=content_type,
+                            object_id=profile.id,
+                            name=name,
+                            proficiency=proficiency_value
+                        )
+                if profile.level_of_basic_setting_set == 60:
+                    profile.level_of_basic_setting_set = 75 
+                    profile.save()
+
+                if action == "update_only":
+                    messages.success(request, f"Great! Your profile has been updated up to Step {step}: Skills & Expertise")
+                    return redirect('HrApp:profile_visibility')
+                return redirect(f"{reverse('HrApp:use_external_details')}?step=5")
+
+            elif step == 5:  # Co_Curricular
+                # Delete the Old Data
+                Co_Curricular.objects.filter(content_type=content_type, object_id=profile.id).delete()
+
+                names = request.POST.getlist("name[]")
+                proficiencies = request.POST.getlist("proficiency[]")
+                descriptions = request.POST.getlist("description[]")
+
+                for i in range(len(names)):
+                    name = names[i].strip()
+                    if name:
+                        Co_Curricular.objects.create(
+                            content_type=content_type,
+                            object_id=profile.id,
+                            name=name,
+                            proficiency=proficiencies[i] if i < len(proficiencies) else 0,
+                            discription=descriptions[i].strip() if i < len(descriptions) else '',
+                        )
+                if profile.level_of_basic_setting_set == 75:
+                    profile.level_of_basic_setting_set = 85 
+                    profile.save()
+
+                if action == "update_only":
+                    messages.success(request, f"Great! Your profile has been updated up to Step {step}: Co-Curricular Activities")
+                    return redirect('HrApp:profile_visibility')
+                return redirect(f"{reverse('HrApp:use_external_details')}?step=6")
+            
+
+            elif step == 6:  # Certificates and social links
+                try:
+                    # Step 1: Remove all existing social links only (not certificates anymore)
+                    SocialLinks.objects.filter(content_type=content_type, object_id=profile.id).delete()
+
+                    # Step 2: Process Certificates (update or create)
+                    cert_ids = request.POST.getlist('certificate_id[]')
+                    titles = request.POST.getlist('certificate_title[]')
+                    organizations = request.POST.getlist('certificate_org[]')
+                    issue_dates = request.POST.getlist('certificate_issue_date[]')
+                    descriptions = request.POST.getlist('certificate_description[]')
+
+                    for i in range(len(titles)):
+                        cert_id = cert_ids[i] if i < len(cert_ids) else None
+                        title = titles[i].strip()
+                        organization = organizations[i] if i < len(organizations) else ''
+                        issue_date = issue_dates[i] if i < len(issue_dates) else ''
+                        description = descriptions[i] if i < len(descriptions) else ''
+                        file_field_name = f'certificate_file_{i+1}'
+                        uploaded_file = request.FILES.get(file_field_name)
+
+                        if title:
+                            if cert_id:
+                                cert_obj = Certficate.objects.get(id=cert_id, content_type=content_type, object_id=profile.id)
+                                cert_obj.title = title
+                                cert_obj.organization = organization
+                                cert_obj.issue_date = issue_date
+                                cert_obj.description = description
+                                if uploaded_file:
+                                    cert_obj.file = uploaded_file
+                                cert_obj.save()
+                            else:
+                                # Create new certificate
+                                Certficate.objects.create(
+                                    content_type=content_type,
+                                    object_id=profile.id,
+                                    title=title,
+                                    organization=organization,
+                                    issue_date=issue_date,
+                                    file=uploaded_file,
+                                    description=description
+                                )
+
+                    # Step 3: Process Social Links
+                    github_link = request.POST.get('github_url', '').strip()
+                    linkedin_link = request.POST.get('linkedin_url', '').strip()
+                    portfolio_link = request.POST.get('portfolio_url', '').strip()
+
+                    if github_link or linkedin_link or portfolio_link:
+                        SocialLinks.objects.create(
+                            content_type=content_type,
+                            object_id=profile.id,
+                            github_link=github_link,
+                            linkdin_link=linkedin_link,
+                            portfolio_link=portfolio_link
+                        )
+
+                    # return redirect(f"{reverse('HrApp:use_external_details')}?step=6")
+                    profile.is_basic_settings_set = True
+                    profile.level_of_basic_setting_set = 100
+                    profile.save()
+                    messages.success(request, "Great! All your profile details have been successfully updated.")
+                    return redirect('HrApp:profile_visibility')
+
+                except Exception as e:
+                    print(f"Error saving data in step 6: {str(e)}")
+                    messages.error(request, f"Error saving data: {str(e)}")
+                    return redirect(f"{reverse('HrApp:use_external_details')}?step=6")
+
+
+        except Exception as e:
+            logger.error(f"Error saving profile data: {str(e)}")
+            messages.error(request, f"Error saving data in step {step}: {str(e)}")
+            # return redirect('HrApp:profile_visibility')
+            return redirect(f"{reverse('HrApp:use_external_details')}?step={step}")
+
+    # Calculate progress percentage
+    progress_percent = min(100, round((step / 6) * 100))
+    education = Education.objects.get(content_type=content_type, object_id=profile.id)
+    experiences = Experience.objects.filter(content_type=content_type, object_id=profile.id).all()
+    skill_list = Skill.objects.filter(content_type=content_type, object_id=profile.id).all()
+    co_curricular = Co_Curricular.objects.filter(content_type=content_type, object_id=profile.id).all()
+    certificates = Certficate.objects.filter(content_type=content_type, object_id=profile.id).all()
+    social_links = SocialLinks.objects.filter(content_type=content_type, object_id=profile.id).all()
+
+    back_url = '/TeamLead/settings/profile_visibility/' if '/TeamLead/settings/user-external-details/?step' in request.META.get('HTTP_REFERER', '') else request.META.get('HTTP_REFERER', '/TeamLead/Dashbord/')
+
+    # # Prepare context data
+    context = {
+        'profile': profile,
+        'current_step': step,
+        'progress_percent': progress_percent,
+        'education':education,
+        'experiences':experiences,
+        'skill_list':skill_list,
+        'co_curricular':co_curricular,
+        'social_links':social_links,
+        'certificates':certificates,
+        'back_url':back_url,
+    }
+    return render(request, 'Hr_App/Settings/user_external_details.html', context)
+    
 
 @login_required
 def logout_view(request):

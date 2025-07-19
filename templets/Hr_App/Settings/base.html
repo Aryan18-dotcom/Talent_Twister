@@ -5,7 +5,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Employee Dashboard</title>
+    <title>
+        {% block title %}
+        {% endblock %}
+        | Tallent Twister
+    </title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
@@ -102,18 +106,27 @@
             margin: 20px;
         }
 
-        button {
-            padding: 10px 15px;
-            border: none;
-            cursor: pointer;
-            background: #007BFF;
-            color: white;
-            border-radius: 5px;
-        }
-
         #Back i:hover {
             scale: 1.09;
         }
+
+        /* Add these new styles for theme switching */
+        .theme-toggle {
+            transition: all 0.3s ease;
+        }
+        
+        .font-size-small {
+            font-size: 14px;
+        }
+        
+        .font-size-medium {
+            font-size: 16px;
+        }
+        
+        .font-size-large {
+            font-size: 18px;
+        }
+        
     </style>
 </head>
 
@@ -126,7 +139,252 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.7/gsap.min.js"
         integrity="sha512-f6bQMg6nkSRw/xfHw5BCbISe/dJjXrVGfz9BSDwhZtiErHwk7ifbmBEtF9vFW8UNIQPhV2uEFVyI/UHob9r7Cw=="
         crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    
+        {% if not default_message %}
+        {% if messages %}
+        
+            <!-- Alert Container -->
+            <div id="alert-container" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                <div id="alert-box" class="p-6 rounded-lg shadow-lg text-center w-80 bg-gray-700">
+                    <p id="alert-message" class="text-lg text-white mb-4"></p>
+                    <div id="alert-buttons" class="flex justify-center gap-4">
+                        <button id="alert-ok-btn"
+                            class="px-6 py-2 rounded shadow cursor-pointer bg-gray-500 text-white">OK</button>
+                        <button id="alert-cancel-btn"
+                            class="px-6 py-2 rounded shadow cursor-pointer bg-gray-500 text-white hidden">Cancel</button>
+                    </div>
+                </div>
+            </div>
 
+            <!-- Prepare Django Messages -->
+            <script>
+                const messagesQueue = [
+                    {% for message in messages %}
+                {
+                    text: `{{ message|escapejs }}`,
+                        type: `{{ message.tags }}`
+                },
+                {% endfor %}
+            ];
+            </script>
+
+            <!-- Alert Logic -->
+            <script>
+                document.addEventListener('DOMContentLoaded', function () {
+                    const alertContainer = document.getElementById("alert-container");
+                    const alertBox = document.getElementById("alert-box");
+                    const alertMessage = document.getElementById("alert-message");
+                    const alertOkBtn = document.getElementById("alert-ok-btn");
+                    const alertCancelBtn = document.getElementById("alert-cancel-btn");
+
+                    let currentMessageIndex = 0;
+                    let isTransitioning = false;
+
+                    function applyStyle(type) {
+                        const colorMap = {
+                            success: ["bg-green-500", "text-white"],
+                            error: ["bg-red-500", "text-white"],
+                            warning: ["bg-yellow-500", "text-black"],
+                            info: ["bg-blue-500", "text-white"],
+                            default: ["bg-gray-500", "text-white"]
+                        };
+
+                        const [bgClass, textClass] = colorMap[type.split(' ')[0]] || colorMap.default;
+
+                        alertOkBtn.className = `px-6 py-2 rounded shadow cursor-pointer ${bgClass} ${textClass}`;
+                        alertCancelBtn.className = `px-6 py-2 rounded shadow cursor-pointer ${bgClass} ${textClass}`;
+                    }
+
+                    function isConfirmation(type) {
+                        return type.includes("confirm");
+                    }
+
+                    function showMessage(index) {
+                        if (index >= messagesQueue.length) {
+                            alertContainer.remove();
+                            return;
+                        }
+
+                        const message = messagesQueue[index];
+                        alertMessage.textContent = message.text;
+                        applyStyle(message.type);
+
+                        if (isConfirmation(message.type)) {
+                            alertCancelBtn.classList.remove("hidden");
+                        } else {
+                            alertCancelBtn.classList.add("hidden");
+                        }
+
+                        gsap.set(alertBox, { scale: 0.8, opacity: 0 });
+                        gsap.to(alertBox, {
+                            scale: 1,
+                            opacity: 1,
+                            duration: 0.4,
+                            ease: "back.out(1.7)",
+                            onComplete: () => {
+                                isTransitioning = false;
+                                alertOkBtn.focus();
+                            }
+                        });
+                    }
+
+                    function closeMessage(next = true) {
+                        if (isTransitioning) return;
+                        isTransitioning = true;
+
+                        gsap.to(alertBox, {
+                            scale: 0.8,
+                            opacity: 0,
+                            duration: 0.3,
+                            ease: "power2.inOut",
+                            onComplete: () => {
+                                if (next) {
+                                    currentMessageIndex++;
+                                    showMessage(currentMessageIndex);
+                                } else {
+                                    alertContainer.remove();
+                                }
+                            }
+                        });
+                    }
+
+                    alertOkBtn.addEventListener("click", () => closeMessage(true));
+                    alertCancelBtn.addEventListener("click", () => closeMessage(false));
+
+                    document.addEventListener("keydown", function (event) {
+                        if (event.key === "Enter") closeMessage(true);
+                        if (event.key === "Escape") closeMessage(false);
+                    });
+
+                    showMessage(currentMessageIndex);
+                });
+            </script>
+
+        {% endif %}
+    {% endif %}
+
+            <!-- <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Theme Management
+            // function applyTheme(theme) {
+            //     if (theme === 'dark') {
+            //         document.documentElement.classList.add('bg-gray-900 text-gray-100 h-screen');
+            //         localStorage.setItem('theme', 'dark');
+            //     } else if (theme === 'light') {
+            //         document.documentElement.classList.remove('bg-gray-100 text-gray-900 h-screen');
+            //         localStorage.setItem('theme', 'light');
+            //     } else {
+            //         // System preference
+            //         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            //         if (prefersDark) {
+            //             document.documentElement.classList.add('bg-gray-900 text-gray-100 h-screen');
+            //         } else {
+            //             document.documentElement.classList.remove('bg-gray-900 text-gray-100 h-screen');
+            //         }
+            //         localStorage.setItem('theme', 'system');
+            //     }
+            // }
+
+            // Font Size Management
+            function applyFontSize(size) {
+                const sizes = {
+                    'small': 'font-size-small',
+                    'medium': 'font-size-medium',
+                    'large': 'font-size-large'
+                };
+                
+                // Remove all font size classes first
+                document.documentElement.classList.remove(
+                    'font-size-small', 
+                    'font-size-medium', 
+                    'font-size-large'
+                );
+                
+                // Apply selected size
+                if (sizes[size]) {
+                    document.documentElement.classList.add(sizes[size]);
+                    localStorage.setItem('fontSize', size);
+                }
+            }
+
+            // Initialize from localStorage
+            const savedTheme = localStorage.getItem('theme');
+            // if (savedTheme) {
+            //     applyTheme(savedTheme);
+            // } else {
+            //     // Default to dark theme if no preference saved
+            //     applyTheme('dark');
+            // }
+
+            const savedFontSize = localStorage.getItem('fontSize') || 'medium';
+            applyFontSize(savedFontSize);
+
+            // Theme toggle functionality (if you want to add a quick toggle button)
+            const themeToggle = document.createElement('button');
+            themeToggle.className = 'theme-toggle fixed bottom-20 right-4 z-50 w-12 h-12 rounded-full bg-primary flex items-center justify-center shadow-lg';
+            themeToggle.innerHTML = '<i class="ri-contrast-2-line text-white text-xl"></i>';
+            themeToggle.title = 'Toggle theme';
+            themeToggle.addEventListener('click', function() {
+                const currentTheme = localStorage.getItem('theme');
+                // if (currentTheme === 'light') {
+                //     applyTheme('dark');
+                // } else {
+                //     applyTheme('light');
+                // }
+            });
+            document.body.appendChild(themeToggle);
+
+            // Listen for system theme changes
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+                // if (localStorage.getItem('theme') === 'system') {
+                //     applyTheme('system');
+                // }
+            });
+
+            // For settings page functionality
+            if (window.location.pathname === "{{ settings_url }}") {
+                // Theme selection
+                const themeOptions = document.querySelectorAll('.theme-option');
+                themeOptions.forEach(option => {
+                    option.addEventListener('click', function() {
+                        themeOptions.forEach(opt => opt.classList.remove('ring-2', 'ring-primary'));
+                        this.classList.add('ring-2', 'ring-primary');
+                        
+                        const theme = this.id.replace('Theme', '');
+                        // applyTheme(theme);
+                    });
+                });
+
+                // Font size selection
+                const fontSizeButtons = document.querySelectorAll('.font-size-btn');
+                fontSizeButtons.forEach(button => {
+                    button.addEventListener('click', function() {
+                        fontSizeButtons.forEach(btn => {
+                            btn.classList.remove('bg-primary', 'text-white');
+                            btn.classList.add('bg-gray-700', 'text-gray-300');
+                        });
+                        this.classList.add('bg-primary', 'text-white');
+                        this.classList.remove('bg-gray-700', 'text-gray-300');
+                        
+                        const size = this.dataset.size;
+                        applyFontSize(size);
+                    });
+                });
+
+                // Initialize UI to match current settings
+                const currentTheme = localStorage.getItem('theme') || 'dark';
+                document.getElementById(currentTheme + 'Theme')?.classList.add('ring-2', 'ring-primary');
+                
+                const currentFontSize = localStorage.getItem('fontSize') || 'medium';
+                document.querySelector(`.font-size-btn[data-size="${currentFontSize}"]`)?.classList.add(
+                    'bg-primary', 'text-white'
+                );
+                document.querySelector(`.font-size-btn[data-size="${currentFontSize}"]`)?.classList.remove(
+                    'bg-gray-700', 'text-gray-300'
+                );
+            }
+        });
+    </script> -->
 </body>
 
 </html>

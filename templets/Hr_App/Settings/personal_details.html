@@ -1,156 +1,410 @@
-{% extends 'Employee_App/Settings/base.html' %}
+{% extends 'Hr_app/Settings/base.html' %}
+{% block title %}Personal Details{% endblock %}
+{% load static %}
 
 {% block content %}
-<div id="SettingsContainer" class="fixed top-0 left-full w-full h-screen bg-gray-900 text-white shadow-lg transform transition-transform duration-500 ease-in-out">
-    <div id="settingsPanel" class="h-full w-full bg-[#111827] text-white shadow-lg p-6 overflow-y-auto">
-        <!-- Back button -->
-        <div class="flex items-center mb-6">
-            <a href="{% url 'HrApp:profile_settings' %}" class="mr-4">
+<div id="SettingsContainer" class="fixed top-0 left-full w-full h-screen bg-gray-900 text-white shadow-lg transform transition-transform duration-300 ease-in-out">
+    <div id="settingsPanel" class="h-full w-full bg-gray-900 shadow-sm p-6 overflow-y-auto">
+        <!-- Header with back button and title -->
+        <div class="flex items-center mb-8 pb-4 border-b border-gray-700">
+            <a href="{{ back_url }}" class="mr-4 text-gray-400 hover:text-white transition-colors">
                 <i class="ri-arrow-left-line text-2xl"></i>
             </a>
-            <h2 class="text-2xl font-semibold">Personal Details</h2>
+            <div>
+                <h2 class="text-2xl font-bold text-white">Personal Details</h2>
+                <p class="text-sm text-gray-400">Manage your personal information</p>
+            </div>
         </div>
 
-        <!-- Profile Information -->
-        <div class="bg-gray-800 rounded-lg p-4 mb-4">
-            <h3 class="font-medium mb-4">Profile Information</h3>
-            
-            <!-- Name -->
-            <div class="mb-4">
-                <div class="flex justify-between items-center mb-2">
-                    <label class="text-gray-400">Full Name</label>
-                    <button class="text-primary hover:text-primary-dark text-sm font-medium" onclick="showEditForm('nameForm')">Edit</button>
+        <!-- Profile Card -->
+        <div class="bg-gray-800 rounded-xl shadow border border-gray-700 p-6 mb-6">
+            <form method="POST" enctype="multipart/form-data" action="{% url 'HrApp:update_profile' %}">
+                {% csrf_token %}
+                <div class="flex items-center mb-6">
+                    <div class="w-16 h-16 rounded-full bg-gradient-to-br from-blue-900 to-purple-900 flex items-center justify-center mr-4">
+                        <div class="relative w-full h-full mx-auto">
+                            <div id="largeAvatarContainer"
+                                class="w-full h-full rounded-full flex items-center justify-center overflow-hidden relative">
+                                {% if employee_dets.image %}
+                                <img src="{{ employee_dets.image.url }}" id="avatarImage"
+                                    class="w-full h-full object-cover object-top">
+                                {% else %}
+                                <i class="ri-user-3-line text-2xl text-white" id="avatarPlaceholder"></i>
+                                {% endif %}
+
+                            </div>
+
+                            <div id="smallAvatarContainer" class="w-full h-full rounded-full bg-gray-700 flex items-center justify-center overflow-hidden absolute top-0 left-0 hidden">
+                                <img src="" id="samllAvatarImage"
+                                    class="w-full h-full object-cover object-top">
+                            </div>
+
+                            <label for="avatarInput"
+                                class="absolute bottom-0 z-20 right-0 w-6 h-6 bg-primary rounded-full flex items-center justify-center cursor-pointer">
+                                <i class="ri-camera-line text-white text-sm"></i>
+                            </label>
+
+                            <input type="file" id="avatarInput" name="avatarInput" class="hidden" accept="image/*">
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold text-white">{{ employee_dets.username|default:"Your Username" }}</h3>
+                        <p class="text-sm text-gray-400">{{ employee_dets.role|default:"Your Position" }}</p>
+                    </div>
                 </div>
-                <p class="font-medium">{{ employee_dets.username }}</p>
-                
-                <!-- Edit Name Form (Hidden by default) -->
-                <form id="nameForm" class="hidden mt-4">
-                    <div class="mb-4">
-                        <label class="block text-gray-400 text-sm mb-2">First Name</label>
-                        <input type="text" value="{{ employee_dets.first_name }}" class="w-full bg-gray-700 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-primary">
+            </form>
+
+            <!-- Basic Info Section -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Left Column -->
+                <div>
+                    <!-- FullName -->
+                    <div class="mb-5">
+                        <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-1">Full Name</label>
+                        <div class="flex justify-between items-center">
+                            <p class="text-gray-300">{{ employee_dets.full_name|default:'' }}</p>
+                            <button class="text-blue-400 hover:text-blue-300 text-sm font-medium flex items-center" onclick="showEditForm('nameForm')">
+                                <i class="ri-pencil-line mr-1"></i> Edit Name
+                            </button>
+                        </div>
                     </div>
-                    <div class="mb-4">
-                        <label class="block text-gray-400 text-sm mb-2">Last Name</label>
-                        <input type="text" value="{{ employee_dets.last_name }}" class="w-full bg-gray-700 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-primary">
+
+                    <!-- Name Form (Hidden) -->
+                    <form id="nameForm" class="hidden mt-4 bg-gray-800 p-4 rounded-lg mb-5 border border-gray-700" method="post" action="{% url 'HrApp:persional_details_updates' employee_dets.id %}">
+                        {% csrf_token %}
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-300 mb-1">First Name</label>
+                            <input type="text" value="{{ employee_dets.first_name|default:'' }}" 
+                                   class="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-white" 
+                                   name="first_name">
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-300 mb-1">Last Name</label>
+                            <input type="text" value="{{ employee_dets.last_name|default:'' }}" 
+                                   class="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-white" 
+                                   name="last_name">
+                        </div>
+                        <div class="flex justify-end gap-3">
+                            <button type="button" 
+                                    class="px-4 py-2 text-sm font-medium text-gray-300 bg-gray-700 border border-gray-600 rounded-lg hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    onclick="hideEditForm('nameForm')">
+                                Cancel
+                            </button>
+                            <button type="submit" 
+                                    class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                Save Changes
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- Personal Email -->
+                    <div class="mb-5">
+                        <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-1">Personal Email</label>
+                        <div class="flex justify-between items-center">
+                            <p class="text-gray-300">{{ employee_dets.persional_email|default:"Not provided" }}</p>
+                            <button class="text-blue-400 hover:text-blue-300 text-sm font-medium flex items-center" onclick="showEditForm('emailForm')">
+                                <i class="ri-pencil-line mr-1"></i> Edit
+                            </button>
+                        </div>
                     </div>
-                    <div class="flex justify-end gap-2">
-                        <button type="button" class="px-4 py-2 rounded-lg border border-gray-600 hover:bg-gray-700" onclick="hideEditForm('nameForm')">Cancel</button>
-                        <button type="submit" class="px-4 py-2 rounded-lg bg-primary hover:bg-primary-dark">Save Changes</button>
+
+                    <!-- Email Form (Hidden) -->
+                    <form id="emailForm" class="hidden mt-4 bg-gray-800 p-4 rounded-lg mb-5 border border-gray-700" method="post" action="{% url 'HrApp:persional_details_updates' employee_dets.id %}">
+                        {% csrf_token %}
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-300 mb-1">Personal Email</label>
+                            <input type="email" value="{{ employee_dets.persional_email|default:'' }}" 
+                                   class="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-white" 
+                                   name="persional_email">
+                        </div>
+                        <div class="flex justify-end gap-3">
+                            <button type="button" 
+                                    class="px-4 py-2 text-sm font-medium text-gray-300 bg-gray-700 border border-gray-600 rounded-lg hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    onclick="hideEditForm('emailForm')">
+                                Cancel
+                            </button>
+                            <button type="submit" 
+                                    class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                Save Changes
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- Phone -->
+                    <div class="mb-5">
+                        <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-1">Phone Number</label>
+                        <div class="flex justify-between items-center">
+                            <p class="text-gray-300">{{ employee_dets.phone_number|default:"Not provided" }}</p>
+                            <button class="text-blue-400 hover:text-blue-300 text-sm font-medium flex items-center" onclick="showEditForm('phoneForm')">
+                                <i class="ri-pencil-line mr-1"></i> Edit
+                            </button>
+                        </div>
                     </div>
-                </form>
+
+                    <!-- Phone Form (Hidden) -->
+                    <form id="phoneForm" class="hidden mt-4 bg-gray-800 p-4 rounded-lg border border-gray-700" method="post" action="{% url 'HrApp:persional_details_updates' employee_dets.id %}">
+                        {% csrf_token %}
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-300 mb-1">Phone Number</label>
+                            <input type="tel" value="{{ employee_dets.phone_number|default:'' }}" 
+                                   class="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-white" 
+                                   placeholder="+1 (___) ___-____" 
+                                   name="phone_number">
+                        </div>
+                        <div class="flex justify-end gap-3">
+                            <button type="button" 
+                                    class="px-4 py-2 text-sm font-medium text-gray-300 bg-gray-700 border border-gray-600 rounded-lg hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    onclick="hideEditForm('phoneForm')">
+                                Cancel
+                            </button>
+                            <button type="submit" 
+                                    class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Right Column -->
+                <div>
+                    <!-- Date of Birth -->
+                    <div class="mb-5">
+                        <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-1">Date of Birth</label>
+                        <div class="flex justify-between items-center">
+                            <p class="text-gray-300">{{ employee_dets.date_of_birth|date:"F d, Y"|default:"Not provided" }}</p>
+                            <button class="text-blue-400 hover:text-blue-300 text-sm font-medium flex items-center" onclick="showEditForm('dobForm')">
+                                <i class="ri-pencil-line mr-1"></i> Edit
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- DOB Form (Hidden) -->
+                    <form id="dobForm" class="hidden mt-4 bg-gray-800 p-4 rounded-lg mb-5 border border-gray-700" method="post" action="{% url 'HrApp:persional_details_updates' employee_dets.id %}">
+                        {% csrf_token %}
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-300 mb-1">Date of Birth</label>
+                            <input type="date" value="{{ employee_dets.date_of_birth|date:'Y-m-d'|default:'' }}" 
+                                   class="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-white" 
+                                   name="date_of_birth">
+                        </div>
+                        <div class="flex justify-end gap-3">
+                            <button type="button" 
+                                    class="px-4 py-2 text-sm font-medium text-gray-300 bg-gray-700 border border-gray-600 rounded-lg hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    onclick="hideEditForm('dobForm')">
+                                Cancel
+                            </button>
+                            <button type="submit" 
+                                    class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                Save Changes
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- Gender -->
+                    <div class="mb-5">
+                        <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-1">Gender</label>
+                        <div class="flex justify-between items-center">
+                            <p class="text-gray-300">{{ employee_dets.get_gender_display|default:"Not specified" }}</p>
+                            <button class="text-blue-400 hover:text-blue-300 text-sm font-medium flex items-center" onclick="showEditForm('genderForm')">
+                                <i class="ri-pencil-line mr-1"></i> Edit
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Gender Form (Hidden) -->
+                    <form id="genderForm" class="hidden mt-4 bg-gray-800 p-4 rounded-lg mb-5 border border-gray-700" method="post" action="{% url 'HrApp:persional_details_updates' employee_dets.id %}">
+                        {% csrf_token %}
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-300 mb-1">Gender</label>
+                            <select class="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-white" name="gender">
+                                <option value="">Select Gender</option>
+                                <option value="Male" {% if employee_dets.gender == "Male" %}selected{% endif %}>Male</option>
+                                <option value="Female" {% if employee_dets.gender == "Female" %}selected{% endif %}>Female</option>
+                                <option value="Other" {% if employee_dets.gender == "Other" %}selected{% endif %}>Other</option>
+                                <option value="Undisclosed" {% if employee_dets.gender == "Undisclosed" %}selected{% endif %}>Prefer not to say</option>
+                            </select>
+                        </div>
+                        <div class="flex justify-end gap-3">
+                            <button type="button" 
+                                    class="px-4 py-2 text-sm font-medium text-gray-300 bg-gray-700 border border-gray-600 rounded-lg hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    onclick="hideEditForm('genderForm')">
+                                Cancel
+                            </button>
+                            <button type="submit" 
+                                    class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                Save Changes
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- Emergency Contact -->
+                    <div>
+                        <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-1">Emergency Contact</label>
+                        <div class="flex justify-between items-center">
+                            <p class="text-gray-300">{{ employee_dets.emergency_contact|default:"Not provided" }}</p>
+                            <button class="text-blue-400 hover:text-blue-300 text-sm font-medium flex items-center" onclick="showEditForm('emergencyForm')">
+                                <i class="ri-pencil-line mr-1"></i> Edit
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Emergency Contact Form (Hidden) -->
+                    <form id="emergencyForm" class="hidden mt-4 bg-gray-800 p-4 rounded-lg border border-gray-700" method="post" action="{% url 'HrApp:persional_details_updates' employee_dets.id %}">
+                        {% csrf_token %}
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-300 mb-1">Emergency Contact</label>
+                            <input type="tel" value="{{ employee_dets.emergency_contact|default:'' }}" 
+                                   class="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-white" 
+                                   placeholder="Emergency contact number" 
+                                   name="emergency_contact">
+                        </div>
+                        <div class="flex justify-end gap-3">
+                            <button type="button" 
+                                    class="px-4 py-2 text-sm font-medium text-gray-300 bg-gray-700 border border-gray-600 rounded-lg hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    onclick="hideEditForm('emergencyForm')">
+                                Cancel
+                            </button>
+                            <button type="submit" 
+                                    class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- About Section -->
+        <div class="bg-gray-800 rounded-xl shadow border border-gray-700 p-6 mb-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold text-white">About</h3>
+                <button class="text-blue-400 hover:text-blue-300 text-sm font-medium flex items-center" onclick="showEditForm('aboutForm')">
+                    <i class="ri-pencil-line mr-1"></i> Edit Bio
+                </button>
             </div>
             
-            <!-- Email -->
-            <div class="mb-4">
-                <div class="flex justify-between items-center mb-2">
-                    <label class="text-gray-400">Email</label>
-                    <button class="text-primary hover:text-primary-dark text-sm font-medium" onclick="showEditForm('emailForm')">Edit</button>
-                </div>
-                <p class="font-medium">{{ employee_dets.email }}</p>
-                
-                <!-- Edit Email Form (Hidden by default) -->
-                <form id="emailForm" class="hidden mt-4">
-                    <div class="mb-4">
-                        <label class="block text-gray-400 text-sm mb-2">Email Address</label>
-                        <input type="email" value="{{ employee_dets.email }}" class="w-full bg-gray-700 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-primary">
-                    </div>
-                    <div class="flex justify-end gap-2">
-                        <button type="button" class="px-4 py-2 rounded-lg border border-gray-600 hover:bg-gray-700" onclick="hideEditForm('emailForm')">Cancel</button>
-                        <button type="submit" class="px-4 py-2 rounded-lg bg-primary hover:bg-primary-dark">Save Changes</button>
-                    </div>
-                </form>
+            <div class="bg-gray-700 rounded-lg p-4">
+                <p class="text-gray-300 whitespace-pre-line">{{ employee_dets.about|default:"Tell us something about yourself" }}</p>
             </div>
             
-            <!-- Phone -->
-            <div>
-                <div class="flex justify-between items-center mb-2">
-                    <label class="text-gray-400">Phone Number</label>
-                    <button class="text-primary hover:text-primary-dark text-sm font-medium" onclick="showEditForm('phoneForm')">Edit</button>
+            <!-- Edit About Form (Hidden) -->
+            <form id="aboutForm" class="hidden mt-4 bg-gray-800 p-4 rounded-lg border border-gray-700" method="post" action="{% url 'HrApp:persional_details_updates' employee_dets.id %}">
+                {% csrf_token %}
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-300 mb-2">About You</label>
+                    <textarea class="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-white" 
+                              name="about"
+                              rows="5">{{ employee_dets.about|default:"" }}</textarea>
                 </div>
-                <p class="font-medium">{{ employee_dets.phone_number|default:"Not provided" }}</p>
-                
-                <!-- Edit Phone Form (Hidden by default) -->
-                <form id="phoneForm" class="hidden mt-4">
-                    <div class="mb-4">
-                        <label class="block text-gray-400 text-sm mb-2">Phone Number</label>
-                        <input type="tel" value="{{ employee_dets.phone_number }}" class="w-full bg-gray-700 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-primary" placeholder="+1 (___) ___-____">
-                    </div>
-                    <div class="flex justify-end gap-2">
-                        <button type="button" class="px-4 py-2 rounded-lg border border-gray-600 hover:bg-gray-700" onclick="hideEditForm('phoneForm')">Cancel</button>
-                        <button type="submit" class="px-4 py-2 rounded-lg bg-primary hover:bg-primary-dark">Save Changes</button>
-                    </div>
-                </form>
-            </div>
+                <div class="flex justify-end gap-3">
+                    <button type="button" 
+                            class="px-4 py-2 text-sm font-medium text-gray-300 bg-gray-700 border border-gray-600 rounded-lg hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            onclick="hideEditForm('aboutForm')">
+                        Cancel
+                    </button>
+                    <button type="submit" 
+                            class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        Save Changes
+                    </button>
+                </div>
+            </form>
         </div>
 
         <!-- Work Information -->
-        <div class="bg-gray-800 rounded-lg p-4 mb-4">
-            <h3 class="font-medium mb-4">Work Information</h3>
+        <div class="bg-gray-800 rounded-xl shadow border border-gray-700 p-6 mb-6">
+            <h3 class="text-lg font-semibold text-white mb-4">Work Information</h3>
             
-            <!-- Position -->
-            <div class="mb-4">
-                <label class="text-gray-400 block mb-2">Position</label>
-                <p class="font-medium">{{ employee_dets.position|default:"Not specified" }}</p>
-            </div>
-            
-            <!-- Department -->
-            <div class="mb-4">
-                <label class="text-gray-400 block mb-2">Department</label>
-                <p class="font-medium">{{ employee_dets.department|default:"Not specified" }}</p>
-            </div>
-            
-            <!-- Employee ID -->
-            <div>
-                <label class="text-gray-400 block mb-2">Employee ID</label>
-                <p class="font-medium">{{ employee_dets.employee_id|default:"Not assigned" }}</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <div class="mb-5">
+                        <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-1">Position</label>
+                        <p class="text-gray-300">{{ employee_dets.role|default:"Not specified" }}</p>
+                    </div>
+                    
+                    <div class="mb-5">
+                        <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-1">Employee ID</label>
+                        <p class="text-gray-300">{{ employee_dets.teamLead_id|default:"Not assigned" }}</p>
+                    </div>
+                </div>
+                
+                <div>
+                    <div class="mb-5">
+                        <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-1">Department</label>
+                        <p class="text-gray-300">{{ employee_dets.get_department_display|default:"Not specified" }}</p>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-1">Joining Date</label>
+                        <p class="text-gray-300">{{ employee_dets.joining_date|date:"F d, Y" }}</p>
+                    </div>
+                </div>
             </div>
         </div>
 
         <!-- Address -->
-        <div class="bg-gray-800 rounded-lg p-4">
-            <h3 class="font-medium mb-4">Address</h3>
-            
-            <div class="flex justify-between items-center mb-2">
-                <label class="text-gray-400">Current Address</label>
-                <button class="text-primary hover:text-primary-dark text-sm font-medium" onclick="showEditForm('addressForm')">Edit</button>
+        <div class="bg-gray-800 rounded-xl shadow border border-gray-700 p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold text-white">Address</h3>
+                <button class="text-blue-400 hover:text-blue-300 text-sm font-medium flex items-center" onclick="showEditForm('addressForm')">
+                    <i class="ri-pencil-line mr-1"></i> Edit Address
+                </button>
             </div>
-            <p class="font-medium">{{ employee_dets.address|default:"Not provided" }}</p>
             
-            <!-- Edit Address Form (Hidden by default) -->
-            <form id="addressForm" class="hidden mt-4">
+            <div class="bg-gray-700 rounded-lg p-4 mb-4">
+                <p class="text-gray-300">{{ employee_dets.address|default:"Not provided" }}</p>
+            </div>
+            
+            <!-- Edit Address Form (Hidden) -->
+            <form id="addressForm" class="hidden mt-4 bg-gray-800 p-4 rounded-lg border border-gray-700" method="post" action="{% url 'HrApp:persional_details_updates' employee_dets.id %}">
+                {% csrf_token %}
                 <div class="mb-4">
-                    <label class="block text-gray-400 text-sm mb-2">Street Address</label>
-                    <input type="text" value="{{ employee_dets.address }}" class="w-full bg-gray-700 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-primary">
+                    <label class="block text-sm font-medium text-gray-300 mb-1">Street Address</label>
+                    <input type="text" value="{{ employee_dets.street_address|default:'' }}" 
+                           class="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-white" 
+                           name="street_address">
                 </div>
-                <div class="grid grid-cols-2 gap-4 mb-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                     <div>
-                        <label class="block text-gray-400 text-sm mb-2">City</label>
-                        <input type="text" value="{{ employee_dets.city }}" class="w-full bg-gray-700 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-primary">
+                        <label class="block text-sm font-medium text-gray-300 mb-1">City</label>
+                        <input type="text" value="{{ employee_dets.city|default:'' }}" 
+                               class="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-white" 
+                               name="city">
                     </div>
                     <div>
-                        <label class="block text-gray-400 text-sm mb-2">State/Province</label>
-                        <input type="text" value="{{ employee_dets.state }}" class="w-full bg-gray-700 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-primary">
+                        <label class="block text-sm font-medium text-gray-300 mb-1">State/Province</label>
+                        <input type="text" value="{{ employee_dets.state|default:'' }}" 
+                               class="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-white" 
+                               name="state">
                     </div>
                 </div>
-                <div class="grid grid-cols-2 gap-4 mb-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                     <div>
-                        <label class="block text-gray-400 text-sm mb-2">Postal Code</label>
-                        <input type="text" value="{{ employee_dets.postal_code }}" class="w-full bg-gray-700 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-primary">
+                        <label class="block text-sm font-medium text-gray-300 mb-1">Postal Code</label>
+                        <input type="text" value="{{ employee_dets.postal_code|default:'' }}" 
+                               class="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-white" 
+                               name="postal_code">
                     </div>
                     <div>
-                        <label class="block text-gray-400 text-sm mb-2">Country</label>
-                        <select class="w-full bg-gray-700 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-primary">
-                            <option>{{ employee_dets.country|default:"Select country" }}</option>
-                            <option>United States</option>
-                            <option>Canada</option>
-                            <option>United Kingdom</option>
-                            <!-- More countries -->
+                        <label class="block text-sm font-medium text-gray-300 mb-1">Country</label>
+                        <select class="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-white" name="country">
+                            <option value="">Select country</option>
+                            <option value="United States" {% if employee_dets.country == "United States" %}selected{% endif %}>United States</option>
+                            <option value="India" {% if employee_dets.country == "India" %}selected{% endif %}>India</option>
+                            <option value="Canada" {% if employee_dets.country == "Canada" %}selected{% endif %}>Canada</option>
+                            <option value="United Kingdom" {% if employee_dets.country == "United Kingdom" %}selected{% endif %}>United Kingdom</option>
                         </select>
                     </div>
                 </div>
-                <div class="flex justify-end gap-2">
-                    <button type="button" class="px-4 py-2 rounded-lg border border-gray-600 hover:bg-gray-700" onclick="hideEditForm('addressForm')">Cancel</button>
-                    <button type="submit" class="px-4 py-2 rounded-lg bg-primary hover:bg-primary-dark">Save Changes</button>
+                <div class="flex justify-end gap-3">
+                    <button type="button" 
+                            class="px-4 py-2 text-sm font-medium text-gray-300 bg-gray-700 border border-gray-600 rounded-lg hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            onclick="hideEditForm('addressForm')">
+                        Cancel
+                    </button>
+                    <button type="submit" 
+                            class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        Save Changes
+                    </button>
                 </div>
             </form>
         </div>
@@ -158,27 +412,135 @@
 </div>
 
 <script>
+    // Enhanced form toggling with animations
     function showEditForm(formId) {
-        document.getElementById(formId).classList.remove('hidden');
+        const form = document.getElementById(formId);
+        form.classList.remove('hidden');
+        form.style.opacity = '0';
+        form.style.transform = 'translateY(10px)';
+        
+        setTimeout(() => {
+            form.style.opacity = '1';
+            form.style.transform = 'translateY(0)';
+            form.style.transition = 'all 0.3s ease';
+        }, 10);
+        
+        // Smooth scroll to the form
+        form.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
     
     function hideEditForm(formId) {
-        document.getElementById(formId).classList.add('hidden');
+        const form = document.getElementById(formId);
+        form.style.opacity = '0';
+        form.style.transform = 'translateY(10px)';
+        
+        setTimeout(() => {
+            form.classList.add('hidden');
+            form.style.removeProperty('opacity');
+            form.style.removeProperty('transform');
+            form.style.removeProperty('transition');
+        }, 300);
     }
     
+    // Panel animation
     document.addEventListener("DOMContentLoaded", function () {
+        const settingsPanel = document.getElementById("SettingsContainer");
+        
         if (!localStorage.getItem("SettingsAnimationPlayed")) {
             setTimeout(() => {
-                gsap.to("#SettingsContainer", {
-                    left: 0,
-                    duration: .3,
-                    ease: "power2.out"
-                });
+                settingsPanel.style.left = "0";
+                settingsPanel.style.transition = "left 0.3s ease-out";
                 localStorage.setItem("SettingsAnimationPlayed", "true");
-            }, 200);
+            }, 100);
         } else {
-            document.getElementById("SettingsContainer").style.left = "0";
+            settingsPanel.style.left = "0";
         }
+        
+        // Add hover effects to all edit buttons
+        const editButtons = document.querySelectorAll('[onclick^="showEditForm"]');
+        editButtons.forEach(button => {
+            button.addEventListener('mouseenter', () => {
+                button.classList.add('transform', 'scale-105');
+            });
+            button.addEventListener('mouseleave', () => {
+                button.classList.remove('transform', 'scale-105');
+            });
+        });
+
+        const smallContainer = document.getElementById("smallAvatarContainer");
+        const largeContainer = document.getElementById("largeAvatarContainer");
+        const Input = document.getElementById("avatarInput");
+
+        Input.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) { // Ensure a file is selected
+                const file = e.target.files[0]; 
+                const fileURL = URL.createObjectURL(file); // Generate URL for preview
+
+                // ✅ Preview image in containers
+                smallContainer.classList.remove("hidden") 
+                document.getElementById('samllAvatarImage').src = fileURL
+                largeContainer.classList.add("hidden")
+            }
+            confirm("Are You sure wants to update the profile Image ?");
+            if (confirm) {
+                // Submit the form to update the profile image
+                document.querySelector('form').submit();
+            } else {
+                // Reset the input if user cancels
+                Input.value = '';
+                smallContainer.classList.add("hidden");
+                largeContainer.classList.remove("hidden");
+            }
+
+        });
     });
 </script>
+
+<style>
+    /* Custom scrollbar for the settings panel */
+    #settingsPanel::-webkit-scrollbar {
+        width: 6px;
+    }
+    #settingsPanel::-webkit-scrollbar-track {
+        background: #374151;
+        border-radius: 10px;
+    }
+    #settingsPanel::-webkit-scrollbar-thumb {
+        background: #4B5563;
+        border-radius: 10px;
+    }
+    #settingsPanel::-webkit-scrollbar-thumb:hover {
+        background: #6B7280;
+    }
+    
+    /* Smooth transitions for interactive elements */
+    button, input, select, textarea {
+        transition: all 0.2s ease;
+    }
+    
+    /* Focus styles */
+    input:focus, select:focus, textarea:focus {
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+    }
+    
+    /* Dark theme form inputs */
+    input, select, textarea {
+        background-color: #374151;
+        border-color: #4B5563;
+        color: white;
+    }
+    
+    /* Placeholder text color */
+    ::placeholder {
+        color: #9CA3AF;
+        opacity: 1;
+    }
+    
+    /* Card hover effects */
+    .bg-gray-800:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+    }
+</style>
 {% endblock %}

@@ -1,0 +1,393 @@
+{% extends 'Hr_app/Settings/base.html' %}
+{% block title %}Password & Security{% endblock %}
+{% load static %}
+
+{% block content %}
+<div id="SettingsContainer" class="fixed top-0 left-full w-full h-screen bg-gray-900 text-white shadow-lg transform transition-transform duration-300 ease-in-out">
+    <div id="settingsPanel" class="h-full w-full bg-gray-900 shadow-sm p-6 overflow-y-auto">
+        <!-- Header with back button and title -->
+        <div class="flex items-center mb-8 pb-4 border-b border-gray-700">
+            <a href="{{ back_url }}" class="mr-4 text-gray-400 hover:text-white transition-colors">
+                <i class="ri-arrow-left-line text-2xl"></i>
+            </a>
+            <div>
+                <h2 class="text-2xl font-bold text-white">Password & Security</h2>
+                <p class="text-sm text-gray-400">Manage your login credentials and security settings</p>
+            </div>
+        </div>
+
+        <!-- Change Username Section -->
+        <div class="bg-gray-800 rounded-xl shadow border border-gray-700 p-6 mb-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold text-white">Login Username</h3>
+                <button class="text-blue-400 hover:text-blue-300 text-sm font-medium flex items-center" onclick="showEditForm('usernameForm')">
+                    <i class="ri-pencil-line mr-1"></i> Change Username
+                </button>
+            </div>
+            
+            <div class="flex justify-between items-center">
+                <div>
+                    <p class="text-gray-400 text-sm mb-1">Current Username</p>
+                    <p class="text-gray-300">{{ employee_dets.username }}</p>
+                </div>
+            </div>
+            
+            <!-- Change Username Form (Hidden) -->
+            <form id="usernameForm" class="hidden mt-4 bg-gray-800 p-4 rounded-lg border border-gray-700" method="post" action="{% url 'HrApp:update_profile' %}">
+                {% csrf_token %}
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-300 mb-1">New Username</label>
+                    <input type="text" 
+                           class="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-white" 
+                           name="new_username"
+                           placeholder="Enter new username"
+                           required>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-300 mb-1">Confirm Password</label>
+                    <input type="password" 
+                           class="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-white" 
+                           name="current_password"
+                           placeholder="Enter your current password"
+                           required>
+                </div>
+                <div class="flex justify-end gap-3">
+                    <button type="button" 
+                            class="px-4 py-2 text-sm font-medium text-gray-300 bg-gray-700 border border-gray-600 rounded-lg hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            onclick="hideEditForm('usernameForm')">
+                        Cancel
+                    </button>
+                    <button type="submit" 
+                            class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        Update Username
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Change Password Section -->
+        <div class="bg-gray-800 rounded-xl shadow border border-gray-700 p-6 mb-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold text-white">Password</h3>
+                <button class="text-blue-400 hover:text-blue-300 text-sm font-medium flex items-center" onclick="showEditForm('passwordForm')">
+                    <i class="ri-pencil-line mr-1"></i> Change Password
+                </button>
+            </div>
+            
+            <div class="flex justify-between items-center">
+                <div>
+                    <p class="text-gray-400 text-sm mb-1">Create your password wisely!</p>
+                    <p class="text-gray-300">Password is a Curisla Credential so don't share it with any one.</p>
+                </div>
+            </div>
+            
+            <!-- Change Password Form (Hidden) -->
+            <form id="passwordForm" class="hidden mt-4 bg-gray-800 p-4 rounded-lg border border-gray-700" method="post" action="{% url 'HrApp:update_profile' %}">
+                {% csrf_token %}
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-300 mb-1">Current Password</label>
+                    <input type="password" 
+                           class="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-white" 
+                           name="current_password"
+                           placeholder="Enter current password"
+                           required>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-300 mb-1">New Password</label>
+                    <input type="password" 
+                           class="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-white" 
+                           name="new_password"
+                           placeholder="Enter new password"
+                           required>
+                    <p class="text-xs text-gray-400 mt-1">Minimum 8 characters with at least one number and special character</p>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-300 mb-1">Confirm New Password</label>
+                    <input type="password" 
+                           class="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-white" 
+                           name="confirm_password"
+                           placeholder="Confirm new password"
+                           required>
+                </div>
+                <div class="flex justify-end gap-3">
+                    <button type="button" 
+                            class="px-4 py-2 text-sm font-medium text-gray-300 bg-gray-700 border border-gray-600 rounded-lg hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            onclick="hideEditForm('passwordForm')">
+                        Cancel
+                    </button>
+                    <button type="submit" 
+                            class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        Update Password
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Two-Factor Authentication -->
+        <div class="bg-gray-800 rounded-xl shadow border border-gray-700 p-6 mb-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold text-white">Two-Factor Authentication</h3>
+                <button class="text-blue-400 hover:text-blue-300 text-sm font-medium flex items-center" onclick="showEditForm('twoFactorForm')">
+                    <i class="ri-pencil-line mr-1"></i> Manage
+                </button>
+            </div>
+            
+            <div class="flex justify-between items-center">
+                <div>
+                    <p class="text-gray-400 text-sm mb-1">Current Status</p>
+                    <p class="text-gray-300">{% if employee_dets.enable_two_factor %}Enable{% else %}Diabled{% endif %}</p>
+                </div>
+            </div>
+            
+            <!-- Two-Factor Form (Hidden) -->
+            <form id="twoFactorForm" class="hidden mt-4 bg-gray-800 p-4 rounded-lg border border-gray-700" method="post" action="{% url 'HrApp:update_profile' %}">
+                {% csrf_token %}
+                <div class="mb-4">
+                    <label class="inline-flex items-center">
+                        <input type="checkbox" 
+                            class="form-checkbox h-5 w-5 text-blue-600 rounded focus:ring-blue-500" 
+                            name="enable_two_factor"
+                            {% if employee_dets.enable_two_factor %}checked{% endif %}>
+                        <span class="ml-2 text-gray-300">Enable Two-Factor Authentication</span>
+                    </label>
+                    <p class="text-xs text-gray-400 mt-1">Add an extra layer of security to your account</p>
+                </div>
+                {% if not employee_dets.enable_two_factor %}
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-300 mb-1">Authentication Method</label>
+                    <select class="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-white" 
+                            name="auth_method">
+                        <option value="sms">SMS Text Message</option>
+                        <option value="authenticator">Authenticator App</option>
+                        <option value="email">Email</option>
+                    </select>
+                </div>
+                {% endif %}
+                <div class="flex justify-end gap-3">
+                    <button type="button" 
+                            class="px-4 py-2 text-sm font-medium text-gray-300 bg-gray-700 border border-gray-600 rounded-lg hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            onclick="hideEditForm('twoFactorForm')">
+                        Cancel
+                    </button>
+                    <button type="submit" 
+                            class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        Save Settings
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Login History -->
+        <div class="bg-gray-800 rounded-xl shadow border border-gray-700 p-6 mb-6">
+            <h3 class="text-lg font-semibold text-white mb-4">Recent Login Activity</h3>
+            
+            <div class="space-y-4">
+            {% if employee_dets.last_login %}
+                <div class="flex items-start">
+                    <div class="flex-shrink-0 mr-3 mt-1">
+                        <i class="ri-login-box-line text-gray-400"></i>
+                    </div>
+                    <div>
+                        <p class="text-gray-300">{{ login_info.device_type }} • {{ login_info.ip_address }}</p>
+                        <p class="text-xs text-gray-400">{{ employee_dets.last_login|date:"F j, Y g:i A" }}</p>
+                    </div>
+                </div>
+            {% else %}
+                <p class="text-gray-400">No recent login activity found</p>
+            {% endif %}
+            </div>
+            
+            <a href="{ url 'HrApp:update_profile' }" class="inline-block mt-4 text-blue-400 hover:text-blue-300 text-sm font-medium">
+                View full login history <i class="ri-arrow-right-line"></i>
+            </a>
+        </div>
+
+        <!-- Connected Devices -->
+        <div class="bg-gray-800 rounded-xl shadow border border-gray-700 p-6">
+            <h3 class="text-lg font-semibold text-white mb-4">Connected Devices</h3>
+            
+            <div class="space-y-4">
+                {% for device in connected_devices %}
+                <div class="flex items-center justify-between">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0 mr-3 mt-1">
+                            <i class="ri-smartphone-line text-gray-400"></i>
+                        </div>
+                        <div>
+                            <p class="text-gray-300">{{ device.device_name }}</p>
+                            <p class="text-xs text-gray-400">Last active: {{ device.last_used|date:"F j, Y g:i A" }}</p>
+                        </div>
+                    </div>
+                    <button class="text-red-400 hover:text-red-300 text-sm font-medium" onclick="showConfirmModal('{{ device.id }}')">
+                        <i class="ri-close-line"></i>
+                    </button>
+                </div>
+                {% empty %}
+                <p class="text-gray-400">No active devices found</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Confirmation Modal -->
+<div id="confirmModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div class="bg-gray-800 rounded-lg p-6 max-w-md w-full border border-gray-700">
+        <h3 class="text-lg font-semibold text-white mb-4">Remove Device</h3>
+        <p class="text-gray-300 mb-6">Are you sure you want to remove this device? You'll need to log in again on this device.</p>
+        <div class="flex justify-end gap-3">
+            <button type="button" 
+                    class="px-4 py-2 text-sm font-medium text-gray-300 bg-gray-700 border border-gray-600 rounded-lg hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    onclick="hideConfirmModal()">
+                Cancel
+            </button>
+            <button type="button" 
+                    class="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
+                    onclick="removeDevice()">
+                Remove Device
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Form toggling functions
+    function showEditForm(formId) {
+        const form = document.getElementById(formId);
+        form.classList.remove('hidden');
+        form.style.opacity = '0';
+        form.style.transform = 'translateY(10px)';
+        
+        setTimeout(() => {
+            form.style.opacity = '1';
+            form.style.transform = 'translateY(0)';
+            form.style.transition = 'all 0.3s ease';
+        }, 10);
+        
+        form.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+    
+    function hideEditForm(formId) {
+        const form = document.getElementById(formId);
+        form.style.opacity = '0';
+        form.style.transform = 'translateY(10px)';
+        
+        setTimeout(() => {
+            form.classList.add('hidden');
+            form.style.removeProperty('opacity');
+            form.style.removeProperty('transform');
+            form.style.removeProperty('transition');
+        }, 300);
+    }
+
+    // Device management
+    let currentDeviceId = null;
+    
+    function showConfirmModal(deviceId) {
+        currentDeviceId = deviceId;
+        document.getElementById('confirmModal').classList.remove('hidden');
+    }
+    
+    function hideConfirmModal() {
+        document.getElementById('confirmModal').classList.add('hidden');
+    }
+    
+    function removeDevice() {
+        if (currentDeviceId) {
+            // Submit form to remove device
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = "{% url 'HrApp:update_profile' %}";
+            
+            const csrf = document.createElement('input');
+            csrf.type = 'hidden';
+            csrf.name = 'csrfmiddlewaretoken';
+            csrf.value = '{{ csrf_token }}';
+            form.appendChild(csrf);
+            
+            const deviceInput = document.createElement('input');
+            deviceInput.type = 'hidden';
+            deviceInput.name = 'device_id';
+            deviceInput.value = currentDeviceId;
+            form.appendChild(deviceInput);
+            
+            document.body.appendChild(form);
+            form.submit();
+        }
+        hideConfirmModal();
+    }
+    
+    // Panel animation
+    document.addEventListener("DOMContentLoaded", function () {
+        const settingsPanel = document.getElementById("SettingsContainer");
+        
+        if (!localStorage.getItem("SecurityAnimationPlayed")) {
+            setTimeout(() => {
+                settingsPanel.style.left = "0";
+                settingsPanel.style.transition = "left 0.3s ease-out";
+                localStorage.setItem("SecurityAnimationPlayed", "true");
+            }, 100);
+        } else {
+            settingsPanel.style.left = "0";
+        }
+        
+        // Add hover effects to all edit buttons
+        const editButtons = document.querySelectorAll('[onclick^="showEditForm"]');
+        editButtons.forEach(button => {
+            button.addEventListener('mouseenter', () => {
+                button.classList.add('transform', 'scale-105');
+            });
+            button.addEventListener('mouseleave', () => {
+                button.classList.remove('transform', 'scale-105');
+            });
+        });
+    });
+</script>
+
+<style>
+    /* Custom scrollbar */
+    #settingsPanel::-webkit-scrollbar {
+        width: 6px;
+    }
+    #settingsPanel::-webkit-scrollbar-track {
+        background: #374151;
+        border-radius: 10px;
+    }
+    #settingsPanel::-webkit-scrollbar-thumb {
+        background: #4B5563;
+        border-radius: 10px;
+    }
+    #settingsPanel::-webkit-scrollbar-thumb:hover {
+        background: #6B7280;
+    }
+    
+    /* Form styling */
+    input, select, textarea {
+        background-color: #374151;
+        border-color: #4B5563;
+        color: white;
+        transition: all 0.2s ease;
+    }
+    
+    input:focus, select:focus, textarea:focus {
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+    }
+    
+    /* Checkbox styling */
+    .form-checkbox {
+        border-color: #4B5563;
+        background-color: #1F2937;
+    }
+    
+    .form-checkbox:checked {
+        border-color: #3B82F6;
+        background-color: #3B82F6;
+    }
+    
+    /* Modal animation */
+    #confirmModal {
+        transition: opacity 0.3s ease;
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,131 @@
+{% extends 'Hr_App/Settings/base.html' %}
+{% load static %}
+{% block title %}
+Help Center
+{% endblock %}
+{% block content %}
+<div class="min-h-screen bg-gray-900 p-4 md:p-8">  <!-- Removed light theme class -->
+    <div class="max-w-6xl mx-auto">
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-8">
+            <h1 class="text-3xl font-bold text-white">Help Center</h1>  <!-- Removed light theme class -->
+            <a href="{{ back_url }}" class="flex items-center text-blue-400 hover:underline">  <!-- Changed to dark theme blue -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
+                </svg>
+                Back to Dashboard
+            </a>
+        </div>
+
+        <div class="bg-gray-800 rounded-xl shadow-md overflow-hidden border border-gray-700">  <!-- Removed light theme classes -->
+            <div class="p-6">
+                <!-- Search Bar -->
+                <div class="mb-8">
+                    <div class="relative">
+                        <input type="text" placeholder="Search help articles..." 
+                               class="w-full p-4 pl-12 rounded-lg border border-gray-600 bg-gray-700 text-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder-gray-500">
+                        <div class="absolute left-4 top-4 text-gray-500">
+                            <i class="ri-search-line ri-lg"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Categories -->
+                <div class="mb-8">
+                    <h2 class="text-xl font-semibold text-white mb-6">Browse by Category</h2>  <!-- Removed light theme class -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <!-- Category 1 -->
+                        <div class="p-6 bg-gray-700 rounded-lg border border-gray-600 hover:border-blue-400 transition">
+                            <div class="flex items-center mb-4">
+                                <div class="p-3 bg-blue-900 rounded-lg mr-4">
+                                    <i class="ri-user-line text-blue-400 ri-xl"></i>
+                                </div>
+                                <h3 class="text-lg font-medium text-white">Getting Started</h3>  <!-- Removed light theme class -->
+                            </div>
+                            <p class="text-gray-400 mb-4">Learn how to set up your account and navigate the platform.</p>  <!-- Removed light theme class -->
+                            <a href="#" class="text-blue-400 hover:underline flex items-center">
+                                View articles <i class="ri-arrow-right-line ml-1"></i>
+                            </a>
+                        </div>
+
+                        <!-- Category 2 -->
+                        <div class="p-6 bg-gray-700 rounded-lg border border-gray-600 hover:border-purple-400 transition">
+                            <div class="flex items-center mb-4">
+                                <div class="p-3 bg-purple-900 rounded-lg mr-4">
+                                    <i class="ri-task-line text-purple-400 ri-xl"></i>
+                                </div>
+                                <h3 class="text-lg font-medium text-white">Tasks & Projects</h3>  <!-- Removed light theme class -->
+                            </div>
+                            <p class="text-gray-400 mb-4">Manage your tasks, projects, and deadlines effectively.</p>  <!-- Removed light theme class -->
+                            <a href="#" class="text-purple-400 hover:underline flex items-center">
+                                View articles <i class="ri-arrow-right-line ml-1"></i>
+                            </a>
+                        </div>
+
+                        <!-- Category 3 -->
+                        <div class="p-6 bg-gray-700 rounded-lg border border-gray-600 hover:border-green-400 transition">
+                            <div class="flex items-center mb-4">
+                                <div class="p-3 bg-green-900 rounded-lg mr-4">
+                                    <i class="ri-team-line text-green-400 ri-xl"></i>
+                                </div>
+                                <h3 class="text-lg font-medium text-white">Team Management</h3>  <!-- Removed light theme class -->
+                            </div>
+                            <p class="text-gray-400 mb-4">Add team members, assign roles, and manage permissions.</p>  <!-- Removed light theme class -->
+                            <a href="#" class="text-green-400 hover:underline flex items-center">
+                                View articles <i class="ri-arrow-right-line ml-1"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Popular Articles -->
+                <div class="mb-8">
+                    <h2 class="text-xl font-semibold text-white mb-6">Popular Articles</h2>  <!-- Removed light theme class -->
+                    <div class="space-y-4">
+                        <!-- Article 1 -->
+                        <div class="p-5 bg-gray-700 rounded-lg border border-gray-600 hover:shadow-lg hover:shadow-gray-700/50 transition">
+                            <h3 class="text-lg font-medium text-white mb-2">How to create and assign tasks</h3>  <!-- Removed light theme class -->
+                            <p class="text-gray-400 mb-3">Step-by-step guide to creating tasks and assigning them to team members.</p>  <!-- Removed light theme class -->
+                            <a href="#" class="text-blue-400 hover:underline flex items-center text-sm">
+                                Read more <i class="ri-arrow-right-line ml-1"></i>
+                            </a>
+                        </div>
+
+                        <!-- Article 2 -->
+                        <div class="p-5 bg-gray-700 rounded-lg border border-gray-600 hover:shadow-lg hover:shadow-gray-700/50 transition">
+                            <h3 class="text-lg font-medium text-white mb-2">Setting up your company profile</h3>  <!-- Removed light theme class -->
+                            <p class="text-gray-400 mb-3">Complete guide to configuring your company settings and preferences.</p>  <!-- Removed light theme class -->
+                            <a href="#" class="text-blue-400 hover:underline flex items-center text-sm">
+                                Read more <i class="ri-arrow-right-line ml-1"></i>
+                            </a>
+                        </div>
+
+                        <!-- Article 3 -->
+                        <div class="p-5 bg-gray-700 rounded-lg border border-gray-600 hover:shadow-lg hover:shadow-gray-700/50 transition">
+                            <h3 class="text-lg font-medium text-white mb-2">Troubleshooting common issues</h3>  <!-- Removed light theme class -->
+                            <p class="text-gray-400 mb-3">Solutions for the most frequently encountered problems.</p>  <!-- Removed light theme class -->
+                            <a href="#" class="text-blue-400 hover:underline flex items-center text-sm">
+                                Read more <i class="ri-arrow-right-line ml-1"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Still Need Help? -->
+                <div class="bg-blue-900/20 rounded-lg p-6 border border-blue-800">
+                    <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+                        <div class="mb-4 md:mb-0">
+                            <h3 class="text-lg font-semibold text-white mb-2">Still need help?</h3>  <!-- Removed light theme class -->
+                            <p class="text-gray-400">Can't find what you're looking for? Contact our support team.</p>  <!-- Removed light theme class -->
+                        </div>
+                        <a href="{% url 'HrApp:customer_support' %}" class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-md transition duration-300 flex items-center justify-center">
+                            <i class="ri-customer-service-2-line mr-2"></i>
+                            Contact Support
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

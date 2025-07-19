@@ -1,0 +1,1263 @@
+{% extends "Hr_App/Settings/base.html" %}
+{% load static %}
+{% block title %}
+Profile Setup - Add Skills, Education & More
+{% endblock %}
+{% block content %}
+<style>
+    .step-nav-item {
+        transition: all 0.3s ease;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .step-nav-item.active {
+        background: rgba(79, 70, 229, 0.2);
+        border-color: rgba(99, 102, 241, 0.5);
+    }
+
+    .step-nav-item.completed {
+        background: rgba(16, 185, 129, 0.1);
+        border-color: rgba(16, 185, 129, 0.3);
+    }
+
+    .form-input {
+        transition: all 0.3s ease;
+        background: rgba(30, 41, 59, 0.5);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .form-input:focus {
+        border-color: #6366f1;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+    }
+
+    .btn-primary {
+        background: linear-gradient(to right, #6366f1, #8b5cf6);
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.3);
+    }
+
+    .section-card {
+        background: rgba(30, 41, 59, 0.5);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .progress-ring {
+        transition: stroke-dashoffset 0.8s ease-out;
+    }
+</style>
+
+<div class="min-h-screen bg-slate-900 text-gray-100 p-4 md:p-8">
+    <!-- Header with back button and title -->
+    <div class="flex items-center mb-8 pb-4 border-b border-gray-700">
+        <a href="{{ back_url }}" class="mr-4 text-gray-400 hover:text-white transition-colors">
+            <i class="ri-arrow-left-line text-2xl"></i>
+        </a>
+        <div>
+            <h2 class="text-2xl font-bold text-white">Complete Your Profile</h2>
+            <p class="text-sm text-gray-400">Fill in your details to build a strong and visible professional profile.
+            </p>
+        </div>
+    </div>
+    <div class="max-w-5xl mx-auto">
+        <!-- Progress Steps -->
+        <div class="mb-8">
+            <div class="flex flex-wrap gap-4 mb-4">
+                <a href="?step=1"
+                    class="step-nav-item flex-1 min-w-[120px] rounded-lg p-3 text-center {% if current_step == 1 %}active{% elif current_step > 1 %}completed{% endif %}">
+                    <div class="flex items-center justify-center gap-2">
+                        {% if current_step > 1 %}
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-400" viewBox="0 0 20 20"
+                            fill="currentColor">
+                            <path fill-rule="evenodd"
+                                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                clip-rule="evenodd" />
+                        </svg>
+                        {% else %}
+                        <span
+                            class="w-5 h-5 rounded-full flex items-center justify-center text-xs {% if current_step == 1 %}bg-indigo-600{% else %}bg-slate-700{% endif %}">
+                            1
+                        </span>
+                        {% endif %}
+                        <span>Personal</span>
+                    </div>
+                </a>
+
+                <a href="?step=2"
+                    class="step-nav-item flex-1 min-w-[120px] rounded-lg p-3 text-center {% if current_step == 2 %}active{% elif current_step > 2 %}completed{% endif %}">
+                    <div class="flex items-center justify-center gap-2">
+                        {% if current_step > 2 %}
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-400" viewBox="0 0 20 20"
+                            fill="currentColor">
+                            <path fill-rule="evenodd"
+                                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                clip-rule="evenodd" />
+                        </svg>
+                        {% else %}
+                        <span
+                            class="w-5 h-5 rounded-full flex items-center justify-center text-xs {% if current_step == 2 %}bg-indigo-600{% else %}bg-slate-700{% endif %}">
+                            2
+                        </span>
+                        {% endif %}
+                        <span>Education</span>
+                    </div>
+                </a>
+
+                <a href="?step=3"
+                    class="step-nav-item flex-1 min-w-[120px] rounded-lg p-3 text-center {% if current_step == 3 %}active{% elif current_step > 3 %}completed{% endif %}">
+                    <div class="flex items-center justify-center gap-2">
+                        {% if current_step > 3 %}
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-400" viewBox="0 0 20 20"
+                            fill="currentColor">
+                            <path fill-rule="evenodd"
+                                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                clip-rule="evenodd" />
+                        </svg>
+                        {% else %}
+                        <span
+                            class="w-5 h-5 rounded-full flex items-center justify-center text-xs {% if current_step == 3 %}bg-indigo-600{% else %}bg-slate-700{% endif %}">
+                            3
+                        </span>
+                        {% endif %}
+                        <span>Experience</span>
+                    </div>
+                </a>
+
+                <a href="?step=4"
+                    class="step-nav-item flex-1 min-w-[120px] rounded-lg p-3 text-center {% if current_step == 4 %}active{% elif current_step > 4 %}completed{% endif %}">
+                    <div class="flex items-center justify-center gap-2">
+                        {% if current_step > 4 %}
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-400" viewBox="0 0 20 20"
+                            fill="currentColor">
+                            <path fill-rule="evenodd"
+                                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                clip-rule="evenodd" />
+                        </svg>
+                        {% else %}
+                        <span
+                            class="w-5 h-5 rounded-full flex items-center justify-center text-xs {% if current_step == 4 %}bg-indigo-600{% else %}bg-slate-700{% endif %}">
+                            4
+                        </span>
+                        {% endif %}
+                        <span>Skills</span>
+                    </div>
+                </a>
+                <a href="?step=5"
+                    class="step-nav-item flex-1 min-w-[120px] rounded-lg p-3 text-center {% if current_step == 5 %}active{% elif current_step > 5 %}completed{% endif %}">
+                    <div class="flex items-center justify-center gap-2">
+                        {% if current_step > 5 %}
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-400" viewBox="0 0 20 20"
+                            fill="currentColor">
+                            <path fill-rule="evenodd"
+                                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                clip-rule="evenodd" />
+                        </svg>
+                        {% else %}
+                        <span
+                            class="w-5 h-5 rounded-full flex items-center justify-center text-xs {% if current_step == 5 %}bg-indigo-600{% else %}bg-slate-700{% endif %}">
+                            5
+                        </span>
+                        {% endif %}
+                        <span>Co_Curricular</span>
+                    </div>
+                </a>
+                <a href="?step=6"
+                    class="step-nav-item flex-1 min-w-[120px] rounded-lg p-3 text-center {% if current_step == 6 %}active{% elif current_step > 6 %}completed{% endif %}">
+                    <div class="flex items-center justify-center gap-2">
+                        {% if current_step > 6 %}
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-400" viewBox="0 0 20 20"
+                            fill="currentColor">
+                            <path fill-rule="evenodd"
+                                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                clip-rule="evenodd" />
+                        </svg>
+                        {% else %}
+                        <span
+                            class="w-5 h-5 rounded-full flex items-center justify-center text-xs {% if current_step == 6 %}bg-indigo-600{% else %}bg-slate-700{% endif %}">
+                            6
+                        </span>
+                        {% endif %}
+                        <span>Certi & Link</span>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="flex justify-between items-center mb-2">
+                <span class="text-sm font-medium text-slate-400">Step {{ current_step }} of 4</span>
+                <span class="text-sm font-medium text-indigo-400">{{ progress_percent }}% Complete</span>
+            </div>
+            <div class="w-full bg-slate-800 rounded-full h-2.5">
+                <div class="bg-gradient-to-r from-indigo-500 to-purple-500 h-2.5 rounded-full transition-all duration-500 ease-in-out"
+                    style="width: {{ progress_percent }}%"></div>
+            </div>
+        </div>
+
+        <!-- Form Container -->
+        <div class="bg-slate-800/50 rounded-xl shadow-lg overflow-hidden border border-slate-700/50">
+            <div class="p-1 bg-gradient-to-r from-indigo-500 to-purple-500"></div>
+
+            <form method="POST" class="p-6 md:p-8" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                <!-- Form Header -->
+                <div class="mb-8 text-center">
+                    <h2 class="text-2xl md:text-3xl font-bold text-white mb-2">
+                        {% if current_step == 1 %}Personal Information
+                        {% elif current_step == 2 %}Education Details
+                        {% elif current_step == 3 %}Work Experience
+                        {% elif current_step == 4 %}Skills & Expertise
+                        {% elif current_step == 5 %}Co-Curricular Activities
+                        {% elif current_step == 6 %}Certificates & Social Links
+                        {% endif %}
+                    </h2>
+                    <p class="text-slate-400">
+                        {% if current_step == 1 %}Tell us about yourself.
+                        {% elif current_step == 2 %}Add your academic
+                        background.
+                        {% elif current_step == 3 %}Add your professional
+                        journey.
+                        {% elif current_step == 4 %}Add your skills and
+                        expertise.
+                        {% elif current_step == 5 %}Add your extracurricular
+                        activities, hobbies, or volunteer work.
+                        {% elif current_step == 6 %}Add your achivments
+                        certificate and the professional links.
+                        {% endif %}
+                    </p>
+                </div>
+
+                <!-- Messages -->
+                {% if messages %}
+                {% for message in messages %}
+                <div class="mb-6 p-4 rounded-lg border-l-4 
+                            {% if message.tags == 'success' %}bg-green-900/10 border-green-500 text-green-400
+                            {% elif message.tags == 'error' %}bg-red-900/10 border-red-500 text-red-400
+                            {% elif message.tags == 'warning' %}bg-yellow-900/10 border-yellow-500 text-yellow-400
+                            {% else %}bg-blue-900/10 border-blue-500 text-blue-400{% endif %}">
+                    {{ message }}
+                </div>
+                {% endfor %}
+                {% endif %}
+
+                <!-- Form Fields -->
+                <div class="space-y-6">
+                    <!-- Step 1: Personal Information -->
+                    {% if current_step == 1 %}
+                    <div class="grid md:grid-cols-2 gap-5">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-400 mb-2">Full
+                                Name</label>
+                            <input type="text" name="full_name" value="{{ profile.full_name }}"
+                                class="form-input w-full px-4 py-3 rounded-lg focus:ring-2 focus:ring-indigo-500 text-white placeholder-slate-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-400 mb-2">Email</label>
+                            <input type="email" name="email" value="{{ profile.persional_email }}"
+                                class="form-input w-full px-4 py-3 rounded-lg focus:ring-2 focus:ring-indigo-500 text-white placeholder-slate-500">
+                        </div>
+                    </div>
+
+                    <div class="grid md:grid-cols-2 gap-5 mt-5">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-400 mb-2">Phone
+                                Number</label>
+                            <input type="tel" name="phone" value="{{ profile.phone_number }}"
+                                class="form-input w-full px-4 py-3 rounded-lg focus:ring-2 focus:ring-indigo-500 text-white placeholder-slate-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-400 mb-2">Date
+                                of Birth</label>
+                            <input type="date" name="dob" value="{{ profile.date_of_birth|date:'Y-m-d' }}"
+                                class="form-input w-full px-4 py-3 rounded-lg focus:ring-2 focus:ring-indigo-500 text-white">
+                        </div>
+                    </div>
+
+                    <div class="mt-5">
+                        <label class="block text-sm font-medium text-slate-400 mb-2">Street
+                            Address</label>
+                        <input type="text" name="address" value="{{ profile.street_address }}"
+                            class="form-input w-full px-4 py-3 rounded-lg focus:ring-2 focus:ring-indigo-500 text-white placeholder-slate-500">
+                    </div>
+
+                    <div class="grid md:grid-cols-3 gap-5 mt-5">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-400 mb-2">City</label>
+                            <input type="text" name="city" value="{{ profile.city }}"
+                                class="form-input w-full px-4 py-3 rounded-lg focus:ring-2 focus:ring-indigo-500 text-white placeholder-slate-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-400 mb-2">State</label>
+                            <input type="text" name="state" value="{{ profile.state }}"
+                                class="form-input w-full px-4 py-3 rounded-lg focus:ring-2 focus:ring-indigo-500 text-white placeholder-slate-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-400 mb-2">Country</label>
+                            <input type="text" name="country" value="{{ profile.country }}"
+                                class="form-input w-full px-4 py-3 rounded-lg focus:ring-2 focus:ring-indigo-500 text-white placeholder-slate-500">
+                        </div>
+                    </div>
+
+                    <div class="mt-5">
+                        <label class="block text-sm font-medium text-slate-400 mb-2">Postal
+                            Code</label>
+                        <input type="text" name="pincode" value="{{ profile.postal_code }}"
+                            class="form-input w-full px-4 py-3 rounded-lg focus:ring-2 focus:ring-indigo-500 text-white placeholder-slate-500">
+                    </div>
+
+                    <div class="mt-5">
+                        <label class="block text-sm font-medium text-slate-400 mb-2">About
+                            You</label>
+                        <textarea name="about" rows="4"
+                            class="form-input w-full px-4 py-3 rounded-lg focus:ring-2 focus:ring-indigo-500 text-white placeholder-slate-500">{{ profile.about }}</textarea>
+                    </div>
+
+                    <!-- Step 2: Education -->
+                    {% elif current_step == 2 %}
+                    <div class="space-y-6">
+                        <!-- 10th Education -->
+                        <div class="section-card p-5 rounded-lg">
+                            <h3 class="text-lg font-medium text-white mb-4">10th
+                                Standard</h3>
+                            <div class="grid md:grid-cols-2 gap-5">
+                                <div class="col-span-full">
+                                    <label class="block text-sm font-medium text-slate-400 mb-2">School
+                                        Name</label>
+                                    <input type="text" name="tenth_school" value="{{ education.school_10 }}"
+                                        class="form-input w-full px-4 py-3 rounded-lg focus:ring-2 focus:ring-indigo-500 text-white placeholder-slate-500">
+                                </div>
+                                <div class="grid gap-5 md:grid-cols-2">
+                                    <div>
+                                        <label class="block text-sm font-medium text-slate-400 mb-2">Started
+                                            Year</label>
+                                        <input type="date" name="tenth_year_start"
+                                            value="{{ education.school_10_year_start|date:'Y-m-d' }}"
+                                            class="form-input w-full px-4 py-3 rounded-lg focus:ring-2 focus:ring-indigo-500 text-white">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-slate-400 mb-2">Completion
+                                            Year</label>
+                                        <input type="date" name="tenth_year_end"
+                                            value="{{ education.school_10_year_end|date:'Y-m-d' }}"
+                                            class="form-input w-full px-4 py-3 rounded-lg focus:ring-2 focus:ring-indigo-500 text-white">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 12th Education -->
+                        <div class="section-card p-5 rounded-lg">
+                            <h3 class="text-lg font-medium text-white mb-4">12th
+                                Standard</h3>
+                            <div class="grid md:grid-cols-2 gap-5">
+                                <div class="col-span-full">
+                                    <label class="block text-sm font-medium text-slate-400 mb-2">School/Collage
+                                        Name</label>
+                                    <input type="text" name="twelfth_school" value="{{ education.school_12 }}"
+                                        class="form-input w-full px-4 py-3 rounded-lg focus:ring-2 focus:ring-indigo-500 text-white placeholder-slate-500">
+                                </div>
+                                <div class="grid gap-5 md:grid-cols-2">
+                                    <div>
+                                        <label class="block text-sm font-medium text-slate-400 mb-2">Started
+                                            Year</label>
+                                        <input type="date" name="twelfth_year_start"
+                                            value="{{ education.school_12_year_start|date:'Y-m-d' }}"
+                                            class="form-input w-full px-4 py-3 rounded-lg focus:ring-2 focus:ring-indigo-500 text-white">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-slate-400 mb-2">Completion
+                                            Year</label>
+                                        <input type="date" name="twelfth_year_end"
+                                            value="{{ education.school_12_year_end|date:'Y-m-d' }}"
+                                            class="form-input w-full px-4 py-3 rounded-lg focus:ring-2 focus:ring-indigo-500 text-white">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Higher Education -->
+                        <div class="section-card p-5 rounded-lg">
+                            <h3 class="text-lg font-medium text-white mb-4">Higher
+                                Education</h3>
+                            <div class="grid md:grid-cols-2 gap-5">
+                                <div>
+                                    <label
+                                        class="block text-sm font-medium text-slate-400 mb-2">College/University</label>
+                                    <input type="text" name="college" value="{{ education.college }}"
+                                        class="form-input w-full px-4 py-3 rounded-lg focus:ring-2 focus:ring-indigo-500 text-white placeholder-slate-500">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-400 mb-2">Degree</label>
+                                    <input type="text" name="degree" value="{{ education.degree }}"
+                                        class="form-input w-full px-4 py-3 rounded-lg focus:ring-2 focus:ring-indigo-500 text-white placeholder-slate-500">
+                                </div>
+                            </div>
+                            <div class="grid md:grid-cols-2 gap-5 mt-5">
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-400 mb-2">Field
+                                        of Study</label>
+                                    <input type="text" name="field" value="{{ education.field_of_study }}"
+                                        class="form-input w-full px-4 py-3 rounded-lg focus:ring-2 focus:ring-indigo-500 text-white placeholder-slate-500">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-400 mb-2">Graduation
+                                        Date</label>
+                                    <input type="date" name="graduation"
+                                        value="{{ education.graduation_date|date:'Y-m-d' }}"
+                                        class="form-input w-full px-4 py-3 rounded-lg focus:ring-2 focus:ring-indigo-500 text-white">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Work Experience -->
+                    {% elif current_step == 3 %}
+                    <div class="space-y-6">
+                        <div id="experience-container">
+                            {% for exp in experiences %}
+                            <div class="section-card p-5 rounded-lg mb-5">
+                                <div class="flex justify-between items-start mb-4">
+                                    <h3 class="text-lg font-medium text-white">Experience
+                                        #{{ forloop.counter }}</h3>
+                                    {% if not forloop.first %}
+                                    <button type="button"
+                                        class="remove-experience text-sm text-red-400 hover:text-red-300">
+                                        Remove
+                                    </button>
+                                    {% endif %}
+                                </div>
+
+                                <div class="grid md:grid-cols-2 gap-5">
+                                    <div>
+                                        <label class="block text-sm font-medium text-slate-400 mb-2">Job
+                                            Title</label>
+                                        <input type="text" name="position[]" value="{{ exp.job_title }}"
+                                            class="form-input w-full px-4 py-3 rounded-lg focus:ring-2 focus:ring-indigo-500 text-white placeholder-slate-500">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-slate-400 mb-2">Company
+                                            Name</label>
+                                        <input type="text" name="company[]" value="{{ exp.company_name }}"
+                                            class="form-input w-full px-4 py-3 rounded-lg focus:ring-2 focus:ring-indigo-500 text-white placeholder-slate-500">
+                                    </div>
+                                </div>
+
+                                <div class="grid md:grid-cols-2 gap-5 mt-5">
+                                    <div>
+                                        <label class="block text-sm font-medium text-slate-400 mb-2">Start
+                                            Date</label>
+                                        <input type="date" name="start_date[]" value="{{ exp.start_date|date:'Y-m-d' }}"
+                                            class="form-input w-full px-4 py-3 rounded-lg focus:ring-2 focus:ring-indigo-500 text-white">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-slate-400 mb-2">End
+                                            Date</label>
+                                        <input type="date" name="end_date[]" value="{{ exp.end_date|date:'Y-m-d' }}"
+                                            class="form-input w-full px-4 py-3 rounded-lg focus:ring-2 focus:ring-indigo-500 text-white">
+                                    </div>
+                                </div>
+
+                                <div class="mt-5">
+                                    <label class="block text-sm font-medium text-slate-400 mb-2">Description</label>
+                                    <textarea name="description[]" rows="3"
+                                        class="form-input w-full px-4 py-3 rounded-lg focus:ring-2 focus:ring-indigo-500 text-white placeholder-slate-500">{{ exp.description }}</textarea>
+                                </div>
+                            </div>
+                            {% empty %}
+                            <div class="section-card p-5 rounded-lg mb-5">
+                                <div class="flex justify-between items-start mb-4">
+                                    <h3 class="text-lg font-medium text-white">Experience
+                                        #1</h3>
+                                </div>
+
+                                <div class="grid md:grid-cols-2 gap-5">
+                                    <div>
+                                        <label class="block text-sm font-medium text-slate-400 mb-2">Job
+                                            Title</label>
+                                        <input type="text" name="position[]"
+                                            class="form-input w-full px-4 py-3 rounded-lg focus:ring-2 focus:ring-indigo-500 text-white placeholder-slate-500">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-slate-400 mb-2">Company
+                                            Name</label>
+                                        <input type="text" name="company[]"
+                                            class="form-input w-full px-4 py-3 rounded-lg focus:ring-2 focus:ring-indigo-500 text-white placeholder-slate-500">
+                                    </div>
+                                </div>
+
+                                <div class="grid md:grid-cols-2 gap-5 mt-5">
+                                    <div>
+                                        <label class="block text-sm font-medium text-slate-400 mb-2">Start
+                                            Date</label>
+                                        <input type="date" name="start_date[]"
+                                            class="form-input w-full px-4 py-3 rounded-lg focus:ring-2 focus:ring-indigo-500 text-white">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-slate-400 mb-2">End
+                                            Date</label>
+                                        <input type="date" name="end_date[]"
+                                            class="form-input w-full px-4 py-3 rounded-lg focus:ring-2 focus:ring-indigo-500 text-white">
+                                    </div>
+                                </div>
+
+                                <div class="mt-5">
+                                    <label class="block text-sm font-medium text-slate-400 mb-2">Description</label>
+                                    <textarea name="description[]" rows="3"
+                                        class="form-input w-full px-4 py-3 rounded-lg focus:ring-2 focus:ring-indigo-500 text-white placeholder-slate-500"></textarea>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                        <button type="button" id="add-experience"
+                            class="w-full py-3 border-2 border-dashed border-slate-600 hover:border-indigo-500 rounded-lg text-slate-400 hover:text-indigo-400 transition-all">
+                            <div class="flex items-center justify-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                </svg>
+                                Add Another Experience
+                            </div>
+                        </button>
+                    </div>
+
+                    <!-- Step 4: Skills -->
+                    {% elif current_step == 4 %}
+                    <div class="space-y-6">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-400 mb-2">Add Skills</label>
+                            <div class="flex gap-2">
+                                <input type="text" id="skill-input"
+                                    class="form-input flex-1 px-4 py-3 rounded-lg focus:ring-2 focus:ring-indigo-500 text-white placeholder-slate-500"
+                                    placeholder="Type a skill and press Enter">
+                                <button type="button" id="add-skill-btn"
+                                    class="px-4 bg-indigo-600 hover:bg-indigo-500 rounded-lg transition-colors flex items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                    </svg>
+                                    <span class="ml-1">Add</span>
+                                </button>
+                            </div>
+                            <p class="mt-2 text-xs text-slate-500">Type a skill and press Enter or click Add</p>
+                        </div>
+
+                        <!-- Proficiency Slider -->
+                        <div id="proficiency-container"
+                            class="transform scale-95 opacity-0 transition-all duration-300 pointer-events-none">
+                            <label class="block text-sm font-medium text-slate-400 mb-2">Skill Proficiency</label>
+                            <div class="flex items-center gap-4">
+                                <input type="range" id="proficiency-slider" min="0" max="5" step="0.5" value="2.5"
+                                    class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-indigo-500">
+                                <div id="proficiency-value"
+                                    class="w-12 text-center text-indigo-400 font-medium text-sm px-2 py-1 bg-indigo-900/20 rounded-full transition-all duration-300">
+                                    2.5
+                                </div>
+                            </div>
+                            <div class="flex justify-between text-xs text-slate-500 mt-1">
+                                <span>Novice</span>
+                                <span>Beginner</span>
+                                <span>Intermediate</span>
+                                <span>Advanced</span>
+                                <span>Expert</span>
+                            </div>
+                        </div>
+
+
+                        <!-- Hidden inputs for skills and proficiencies -->
+                        <input type="hidden" name="skill_names" id="skill-names-data" value="">
+                        <input type="hidden" name="skill_proficiencies" id="skill-proficiencies-data" value="">
+
+                        <!-- Recently Added Skills -->
+                        <div>
+                            <h3 class="text-sm font-medium text-slate-400 mb-2">Recently Added Skills</h3>
+                            <div id="skills-container"
+                                class="flex flex-wrap gap-2 min-h-10 p-2 bg-slate-800/30 rounded-lg">
+                                {% for skill in skill_list %}
+                                <span
+                                    class="skill-tag bg-indigo-900/20 text-indigo-300 px-3 py-1 rounded-full text-sm flex items-center">
+                                    {{ skill.name }} <span class="text-xs ml-1 text-indigo-400">({{ skill.proficiency}})</span>
+                                    <button type="button" data-skill="{{ skill.name }}"
+                                        class="remove-skill ml-2 text-indigo-400 hover:text-indigo-200">
+                                        <i class="ri-close-line"></i>
+                                    </button>
+                                </span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 5: Co-Curricular Activities -->
+                    {% elif current_step == 5 %}
+                    <div class="space-y-6">
+                        <div id="co-curricular-container">
+                            {% for activity in co_curricular %}
+                            <div class="section-card p-5 rounded-lg mb-5">
+                                <div class="flex justify-between items-start mb-4">
+                                    <h3 class="text-lg font-medium text-white">Activity #{{ forloop.counter }}</h3>
+                                    {% if not forloop.first %}
+                                    <button type="button" class="remove-activity text-sm text-red-400 hover:text-red-300">
+                                        Remove
+                                    </button>
+                                    {% endif %}
+                                </div>
+
+                                <div class="grid md:grid-cols-1 gap-5">
+                                    <div>
+                                        <label class="block text-sm font-medium text-slate-400 mb-2">Activity Name</label>
+                                        <input type="text" name="name[]" value="{{ activity.name }}"
+                                            class="form-input w-full p-2 bg-slate-700 rounded-lg appearance-none accent-indigo-500">
+                                    </div>
+
+                                    <!-- Animated Proficiency Slider -->
+                                    <div class="mt-4">
+                                        <label class="block text-sm font-medium text-slate-400 mb-2">Proficiency</label>
+                                        <div class="flex items-center gap-4">
+                                            <input 
+                                                type="range" 
+                                                min="0" 
+                                                max="5" 
+                                                step="0.5" 
+                                                name="proficiency[]"
+                                                value="{{ activity.proficiency }}"
+                                                class="proficiency-slider w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-indigo-500 transition-all"
+                                            />
+                                            <div 
+                                                class="proficiency-bubble min-w-[3rem] text-center font-semibold text-sm px-3 py-1 rounded-full transition-all duration-300"
+                                                data-value="{{ activity.proficiency }}"
+                                            >
+                                                {{ activity.proficiency }}
+                                            </div>
+                                        </div>
+
+                                        <div class="flex justify-between text-xs text-slate-500 mt-2 font-medium w-[75%]">
+                                            <span>Novice</span>
+                                            <span>Beginner</span>
+                                            <span>Intermediate</span>
+                                            <span>Advanced</span>
+                                            <span>Expert</span>
+                                        </div>
+                                        <div class="text-xs text-indigo-400 mt-1 text-right font-semibold" id="proficiency-label">
+                                            {{ activity.proficiency|default:"0" }}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mt-5">
+                                    <label class="block text-sm font-medium text-slate-400 mb-2">Description</label>
+                                    <textarea name="description[]" rows="6"
+                                        class="form-input w-full px-4 py-3 rounded-lg focus:ring-2 focus:ring-indigo-500 text-white">{{ activity.discription }}</textarea>
+                                </div>
+                            </div>
+                            {% empty %}
+                            <!-- Initial empty state... (you can copy from above if needed) -->
+                            {% endfor %}
+                        </div>
+
+                        <button type="button" id="add-activity"
+                            class="w-full py-3 border-2 border-dashed border-slate-600 hover:border-indigo-500 rounded-lg text-slate-400 hover:text-indigo-400 transition-all">
+                            <div class="flex items-center justify-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                </svg>
+                                Add Another Activity
+                            </div>
+                        </button>
+                    </div>
+
+                    {% elif current_step == 6 %}
+                    <div class="space-y-6">
+                        <!-- Certificates Section -->
+                        <div>
+                            <h2 class="text-2xl font-bold text-white mb-2">Certificates</h2>
+                            <p class="text-slate-400">Upload your certificates (PDF or images)</p>
+
+                            <div id="certificates-container" class="mt-5 space-y-5">
+                                {% for cert in certificates %}
+                                <div class="section-card p-5 rounded-lg">
+                                    <div class="flex justify-between items-start mb-4">
+                                        <h3 class="text-lg font-medium text-white">Certificate #{{ forloop.counter }}
+                                        </h3>
+                                        {% if not forloop.first %}
+                                        <button type="button"
+                                            class="remove-certificate text-sm text-red-400 hover:text-red-300">
+                                            Remove
+                                        </button>
+                                        {% endif %}
+                                    </div>
+
+                                    <!-- Hidden ID to track existing certificate -->
+                                    <input type="hidden" name="certificate_id[]" value="{{ cert.id }}">
+
+                                    <div class="grid md:grid-cols-2 gap-5">
+                                        <div>
+                                            <label class="block text-sm font-medium text-slate-400 mb-2">Title</label>
+                                            <input type="text" name="certificate_title[]" value="{{ cert.title }}"
+                                                class="form-input w-full px-4 py-3 rounded-lg focus:ring-2 focus:ring-indigo-500 text-white">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-slate-400 mb-2">Issuing
+                                                Organization</label>
+                                            <input type="text" name="certificate_org[]" value="{{ cert.organization }}"
+                                                class="form-input w-full px-4 py-3 rounded-lg focus:ring-2 focus:ring-indigo-500 text-white">
+                                        </div>
+                                    </div>
+
+                                    <div class="mt-5 grid md:grid-cols-2 gap-5">
+                                        <div>
+                                            <label class="block text-sm font-medium text-slate-400 mb-2">Issue
+                                                Date</label>
+                                            <input type="date" name="certificate_issue_date[]"
+                                                value="{{ cert.issue_date|date:'Y-m-d' }}"
+                                                class="form-input w-full px-4 py-3 rounded-lg focus:ring-2 focus:ring-indigo-500 text-white">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-slate-400 mb-2">Certificate
+                                                File</label>
+                                            <input type="file" name="certificate_file_{{ forloop.counter }}"
+                                                accept=".pdf,.jpg,.jpeg,.png"
+                                                class="form-input w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-indigo-500 text-white">
+                                            {% if cert.file %}
+                                            <div class="mt-2">
+                                                <span class="text-xs text-slate-400">Current file: </span>
+                                                <a href="{{ cert.file.url }}" target="_blank"
+                                                    class="text-indigo-400 hover:text-indigo-300 hover:underline text-xs">
+                                                    {{ cert.file.name }}
+                                                </a>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+
+                                    <div class="mt-5">
+                                        <label class="block text-sm font-medium text-slate-400 mb-2">Description</label>
+                                        <textarea name="certificate_description[]" rows="2"
+                                            class="form-input w-full px-4 py-3 rounded-lg focus:ring-2 focus:ring-indigo-500 text-white">{{ cert.description }}</textarea>
+                                    </div>
+                                </div>
+
+
+                                {% empty %}
+                                <div class="section-card p-5 rounded-lg">
+                                    <div class="flex justify-between items-start mb-4">
+                                        <h3 class="text-lg font-medium text-white">Certificate
+                                            #1</h3>
+                                    </div>
+
+                                    <div class="grid md:grid-cols-2 gap-5">
+                                        <div>
+                                            <label class="block text-sm font-medium text-slate-400 mb-2">Title</label>
+                                            <input type="text" name="certificate_title[]"
+                                                class="form-input w-full px-4 py-3 rounded-lg focus:ring-2 focus:ring-indigo-500 text-white">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-slate-400 mb-2">Issuing
+                                                Organization</label>
+                                            <input type="text" name="certificate_org[]"
+                                                class="form-input w-full px-4 py-3 rounded-lg focus:ring-2 focus:ring-indigo-500 text-white">
+                                        </div>
+                                    </div>
+
+                                    <div class="mt-5 grid md:grid-cols-2 gap-5">
+                                        <div>
+                                            <label class="block text-sm font-medium text-slate-400 mb-2">Issue
+                                                Date</label>
+                                            <input type="date" name="certificate_issue_date[]"
+                                                class="form-input w-full px-4 py-3 rounded-lg focus:ring-2 focus:ring-indigo-500 text-white">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-slate-400 mb-2">Certificate
+                                                File</label>
+                                            <input type="file" name="certificate_file_1" accept=".pdf,.jpg,.jpeg,.png"
+                                                class="form-input w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-indigo-500 text-white">
+                                        </div>
+                                    </div>
+
+                                    <div class="mt-5">
+                                        <label class="block text-sm font-medium text-slate-400 mb-2">Description</label>
+                                        <textarea name="certificate_description[]" rows="2"
+                                            class="form-input w-full px-4 py-3 rounded-lg focus:ring-2 focus:ring-indigo-500 text-white"></textarea>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+
+                            <button type="button" id="add-certificate"
+                                class="w-full py-3 mt-4 border-2 border-dashed border-slate-600 hover:border-indigo-500 rounded-lg text-slate-400 hover:text-indigo-400 transition-all">
+                                <div class="flex items-center justify-center gap-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                    </svg>
+                                    Add Another Certificate
+                                </div>
+                            </button>
+                        </div>
+
+                        <!-- Social Links Section -->
+                        <div class="mt-8">
+                            <h2 class="text-2xl font-bold text-white mb-2">Social
+                                Links</h2>
+                            <p class="text-slate-400">Add links to your
+                                professional profiles</p>
+
+                            {% for link in social_links %}
+                            <div class="section-card p-5 rounded-lg mt-5">
+                                <div class="grid md:grid-cols-2 gap-5">
+                                    <div>
+                                        <label class="block text-sm font-medium text-slate-400 mb-2">GitHub</label>
+                                        <input type="url" name="github_url" value="{{ link.github_link }}"
+                                            class="form-input w-full px-4 py-3 rounded-lg focus:ring-2 focus:ring-indigo-500 text-white"
+                                            placeholder="https://github.com/username">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-slate-400 mb-2">LinkedIn</label>
+                                        <input type="url" name="linkedin_url" value="{{ link.linkdin_link }}"
+                                            class="form-input w-full px-4 py-3 rounded-lg focus:ring-2 focus:ring-indigo-500 text-white"
+                                            placeholder="https://linkedin.com/in/username">
+                                    </div>
+                                </div>
+
+                                <div class="mt-5">
+                                    <label
+                                        class="block text-sm font-medium text-slate-400 mb-2">Portfolio/Website</label>
+                                    <input type="url" name="portfolio_url" value="{{ link.portfolio_link }}"
+                                        class="form-input w-full px-4 py-3 rounded-lg focus:ring-2 focus:ring-indigo-500 text-white"
+                                        placeholder="https://yourwebsite.com">
+                                </div>
+                            </div>
+                            {% empty %}
+                            <div class="section-card p-5 rounded-lg mt-5">
+                                <div class="grid md:grid-cols-2 gap-5">
+                                    <div>
+                                        <label class="block text-sm font-medium text-slate-400 mb-2">GitHub</label>
+                                        <input type="url" name="github_url"
+                                            class="form-input w-full px-4 py-3 rounded-lg focus:ring-2 focus:ring-indigo-500 text-white"
+                                            placeholder="https://github.com/username">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-slate-400 mb-2">LinkedIn</label>
+                                        <input type="url" name="linkedin_url"
+                                            class="form-input w-full px-4 py-3 rounded-lg focus:ring-2 focus:ring-indigo-500 text-white"
+                                            placeholder="https://linkedin.com/in/username">
+                                    </div>
+                                </div>
+
+                                <div class="mt-5">
+                                    <label
+                                        class="block text-sm font-medium text-slate-400 mb-2">Portfolio/Website</label>
+                                    <input type="url" name="portfolio_url"
+                                        class="form-input w-full px-4 py-3 rounded-lg focus:ring-2 focus:ring-indigo-500 text-white"
+                                        placeholder="https://yourwebsite.com">
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    {% endif %}
+                </div>
+
+                <!-- Navigation Buttons -->
+                <div class="mt-10 flex flex-col-reverse sm:flex-row justify-between items-center gap-4">
+                    {% if current_step != 1 %}
+                    <a href="?step={{ current_step|add:'-1' }}"
+                        class="w-full sm:w-auto px-6 py-3 border border-slate-600 text-slate-300 hover:text-white hover:border-slate-500 font-medium rounded-lg transition-all text-center">
+                        &larr; Previous Step
+                    </a>
+                    {% else %}
+                    <div></div> <!-- Empty div for flex spacing -->
+                    {% endif %}
+
+                    <div
+                        class="w-full sm:w-auto {% if profile.is_basic_settings_set and current_step != 6 %} grid md:grid-cols-2 gap-5 {% endif %}">
+                        {% if profile.is_basic_settings_set and current_step != 6 %}
+                        <button type="submit" name="action" value="update_only"
+                            class="w-full px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-medium rounded-lg transition-all hover:shadow-lg hover:shadow-indigo-500/30">
+                            Update Only
+                        </button>
+                        {% endif %}
+                        <button type="submit" name="action" value="next_step"
+                            class="w-full px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-medium rounded-lg transition-all hover:shadow-lg hover:shadow-indigo-500/30">
+                            {% if current_step == 6 %}Complete Profile{% else %}Next Step &rarr;{% endif %}
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Add Experience
+        document.getElementById('add-experience')?.addEventListener('click', function () {
+            const container = document.getElementById('experience-container');
+            const count = container.querySelectorAll('.section-card').length + 1;
+
+            const newExperience = document.createElement('div');
+            newExperience.className = 'section-card p-5 rounded-lg mb-5';
+            newExperience.innerHTML = `
+            <div class="flex justify-between items-start mb-4">
+                <h3 class="text-lg font-medium text-white">Experience #${count}</h3>
+                <button type="button" class="remove-experience text-sm text-red-400 hover:text-red-300">
+                    Remove
+                </button>
+            </div>
+            
+            <div class="grid md:grid-cols-2 gap-5">
+                <div>
+                    <label class="block text-sm font-medium text-slate-400 mb-2">Job Title</label>
+                    <input type="text" name="position[]"
+                        class="form-input w-full px-4 py-3 rounded-lg focus:ring-2 focus:ring-indigo-500 text-white placeholder-slate-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-400 mb-2">Company Name</label>
+                    <input type="text" name="company[]"
+                        class="form-input w-full px-4 py-3 rounded-lg focus:ring-2 focus:ring-indigo-500 text-white placeholder-slate-500">
+                </div>
+            </div>
+            
+            <div class="grid md:grid-cols-2 gap-5 mt-5">
+                <div>
+                    <label class="block text-sm font-medium text-slate-400 mb-2">Start Date</label>
+                    <input type="date" name="start_date[]"
+                        class="form-input w-full px-4 py-3 rounded-lg focus:ring-2 focus:ring-indigo-500 text-white">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-400 mb-2">End Date</label>
+                    <input type="date" name="end_date[]"
+                        class="form-input w-full px-4 py-3 rounded-lg focus:ring-2 focus:ring-indigo-500 text-white">
+                </div>
+            </div>
+            
+            <div class="mt-5">
+                <label class="block text-sm font-medium text-slate-400 mb-2">Description</label>
+                <textarea name="description[]" rows="3"
+                    class="form-input w-full px-4 py-3 rounded-lg focus:ring-2 focus:ring-indigo-500 text-white placeholder-slate-500"></textarea>
+            </div>
+        `;
+
+            container.appendChild(newExperience);
+        });
+
+        // Event delegation for remove buttons
+        document.addEventListener('click', function (e) {
+            if (e.target.classList.contains('remove-experience') ||
+                e.target.closest('.remove-experience')) {
+                const experience = e.target.closest('.section-card');
+                experience.remove();
+                updateExperienceNumbers();
+            }
+        });
+
+        function updateExperienceNumbers() {
+            document.querySelectorAll('#experience-container .section-card').forEach((exp, index) => {
+                exp.querySelector('h3').textContent = `Experience #${index + 1}`;
+            });
+        }
+
+
+        // Skills Section
+        if (window.location.href.includes('?step=4')) {
+            const skillInput = document.getElementById('skill-input');
+            const addSkillBtn = document.getElementById('add-skill-btn');
+            const skillsContainer = document.getElementById('skills-container');
+            const skillNamesData = document.getElementById('skill-names-data');
+            const skillProficienciesData = document.getElementById('skill-proficiencies-data');
+            const proficiencyContainer = document.getElementById('proficiency-container');
+            const proficiencySlider = document.getElementById('proficiency-slider');
+            const proficiencyValue = document.getElementById('proficiency-value');
+            
+            // Show proficiency slider when input is focused
+        // Show proficiency slider with animation
+        skillInput.addEventListener('focus', function () {
+            proficiencyContainer.classList.remove('opacity-0', 'pointer-events-none', 'scale-95');
+            proficiencyContainer.classList.add('opacity-100', 'pointer-events-auto', 'scale-100');
+        });
+
+            
+            // Update proficiency value display
+            proficiencySlider.addEventListener('input', function() {
+                const value = parseFloat(this.value);
+                proficiencyValue.textContent = value.toFixed(1);
+                
+                // Animate the value display
+                proficiencyValue.classList.add('scale-110');
+                setTimeout(() => {
+                    proficiencyValue.classList.remove('scale-110');
+                }, 200);
+                
+                // Color changes based on value
+                if (value < 1.5) {
+                    proficiencyValue.className = 'w-12 text-center font-medium text-sm px-2 py-1 bg-indigo-900/20 rounded-full transition-all duration-300 text-red-400';
+                } else if (value < 3) {
+                    proficiencyValue.className = 'w-12 text-center font-medium text-sm px-2 py-1 bg-indigo-900/20 rounded-full transition-all duration-300 text-yellow-400';
+                } else {
+                    proficiencyValue.className = 'w-12 text-center font-medium text-sm px-2 py-1 bg-indigo-900/20 rounded-full transition-all duration-300 text-indigo-400';
+                }
+            });
+            
+            // Add skill function
+            function addSkill() {
+                const skillName = skillInput.value.trim();
+                if (skillName) {
+                    // Create skill tag
+                    const skillTag = document.createElement('span');
+                    skillTag.className = 'skill-tag bg-indigo-900/20 text-indigo-300 px-3 py-1 rounded-full text-sm flex items-center';
+                    skillTag.innerHTML = `
+                        ${skillName} <span class="text-xs ml-1 text-indigo-400">(${proficiencySlider.value})</span>
+                        <button type="button" data-skill="${ skillName }"
+                            class="remove-skill ml-2 text-indigo-400 hover:text-indigo-200">
+                            <i class="ri-close-line"></i>
+                        </button>
+                    `;
+                    
+                    // Add remove functionality
+                    skillTag.querySelector('.remove-skill').addEventListener('click', function() {
+                        skillTag.remove();
+                        updateSkillsData();
+                    });
+                    
+                    skillsContainer.appendChild(skillTag);
+                    skillInput.value = '';
+                    updateSkillsData();
+                }
+            }
+            
+            // Update hidden inputs with all skills data
+            function updateSkillsData() {
+                const skillTags = document.querySelectorAll('.skill-tag');
+                const names = [];
+                const proficiencies = [];
+                
+                skillTags.forEach(tag => {
+                    const textParts = tag.textContent.split('(');
+                    names.push(textParts[0].trim());
+                    proficiencies.push(parseFloat(textParts[1].match(/(\d+(\.\d+)?)/)[0]));
+                });
+                
+                skillNamesData.value = names.join(',');
+                skillProficienciesData.value = proficiencies.join(',');
+            }
+            
+            // Add skill on button click
+            addSkillBtn.addEventListener('click', addSkill);
+            
+            // Add skill on Enter key
+            skillInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    addSkill();
+                }
+            });
+            
+            // Initialize with existing skills
+            document.querySelectorAll('.remove-skill').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    this.parentElement.remove();
+                    updateSkillsData();
+                });
+            });
+            
+            // Initialize hidden inputs with existing data
+            updateSkillsData();
+        }
+
+
+        // Add Co-Curricular Activity
+        if (window.location.href.includes('?step=5')){
+            const levels = ['Novice', 'Beginner', 'Intermediate', 'Advanced', 'Expert'];
+
+            function getLevelLabel(value) {
+                const index = Math.min(Math.floor(value), levels.length - 1);
+                return levels[index];
+            }
+
+            function getBubbleColor(value) {
+                if (value <= 1.5) return ['bg-red-500', 'text-white'];
+                if (value <= 3) return ['bg-yellow-400', 'text-black'];
+                return ['bg-green-500', 'text-white'];
+            }
+
+            function updateProficiencyDisplay(slider) {
+                const bubble = slider.parentElement.querySelector('.proficiency-bubble');
+                const label = slider.parentElement.parentElement.querySelector('#proficiency-label');
+                const value = parseFloat(slider.value).toFixed(1);
+
+                // Set the value in bubble and label
+                bubble.textContent = value;
+                label.textContent = getLevelLabel(value);
+
+                // Animate scale
+                bubble.classList.add('scale-110');
+                setTimeout(() => bubble.classList.remove('scale-110'), 150);
+
+                // Set color based on value
+                const [bg, text] = getBubbleColor(value);
+                bubble.className = `proficiency-bubble min-w-[3rem] text-center font-semibold text-sm px-3 py-1 rounded-full transition-all duration-300 ${bg} ${text}`;
+            }
+
+            function initProficiencySliders() {
+                document.querySelectorAll('.proficiency-slider').forEach(slider => {
+                    updateProficiencyDisplay(slider);
+                    slider.addEventListener('input', () => updateProficiencyDisplay(slider));
+                });
+            }
+
+            initProficiencySliders();
+
+            // Add Activity
+            document.getElementById('add-activity')?.addEventListener('click', function () {
+                const container = document.getElementById('co-curricular-container');
+                const count = container.querySelectorAll('.section-card').length + 1;
+
+                const newActivity = document.createElement('div');
+                newActivity.className = 'section-card p-5 rounded-lg mb-5';
+                newActivity.innerHTML = `
+                    <div class="flex justify-between items-start mb-4">
+                        <h3 class="text-lg font-medium text-white">Activity #${count}</h3>
+                        <button type="button" class="remove-activity text-sm text-red-400 hover:text-red-300">Remove</button>
+                    </div>
+
+                    <div class="grid md:grid-cols-1 gap-5">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-400 mb-2">Activity Name</label>
+                            <input type="text" name="name[]" class="form-input w-full px-4 py-3 rounded-lg focus:ring-2 focus:ring-indigo-500 text-white" />
+                        </div>
+
+                        <div class="mt-4">
+                            <label class="block text-sm font-medium text-slate-400 mb-2">Proficiency</label>
+                            <div class="flex items-center gap-4">
+                                <input 
+                                    type="range" 
+                                    min="0" 
+                                    max="5" 
+                                    step="0.5" 
+                                    name="proficiency[]"
+                                    class="proficiency-slider w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-indigo-500 transition-all"
+                                    value="0"
+                                />
+                                <div class="proficiency-bubble min-w-[3rem] text-center font-semibold text-sm px-3 py-1 rounded-full transition-all duration-300">
+                                    0.0
+                                </div>
+                            </div>
+                            <div class="flex justify-between text-xs text-slate-500 mt-2 font-medium">
+                                <span>Novice</span>
+                                <span>Beginner</span>
+                                <span>Intermediate</span>
+                                <span>Advanced</span>
+                                <span>Expert</span>
+                            </div>
+                            <div class="text-xs text-indigo-400 mt-1 text-right font-semibold" id="proficiency-label">Novice</div>
+                        </div>
+                    </div>
+
+                    <div class="mt-5">
+                        <label class="block text-sm font-medium text-slate-400 mb-2">Description</label>
+                        <textarea name="description[]" rows="6" class="form-input w-full px-4 py-3 rounded-lg focus:ring-2 focus:ring-indigo-500 text-white"></textarea>
+                    </div>
+                `;
+                container.appendChild(newActivity);
+                initProficiencySliders();
+                updateActivityNumbers();
+            });
+
+            // Remove Activity
+            document.addEventListener('click', function (e) {
+                if (e.target.classList.contains('remove-activity')) {
+                    e.target.closest('.section-card').remove();
+                    updateActivityNumbers();
+                }
+            });
+
+            // Update numbering
+            function updateActivityNumbers() {
+                document.querySelectorAll('#co-curricular-container .section-card').forEach((card, index) => {
+                    const title = card.querySelector('h3');
+                    if (title) title.textContent = `Activity #${index + 1}`;
+                });
+            }        
+        }
+
+
+        // Add Certificates
+        if (window.location.href.includes('?step=6')) {
+            // Add Certificate
+            document.getElementById('add-certificate')?.addEventListener('click', function () {
+                const container = document.getElementById('certificates-container');
+                const count = container.querySelectorAll('.section-card').length + 1;
+
+                const newCertificate = document.createElement('div');
+                newCertificate.className = 'section-card p-5 rounded-lg';
+                newCertificate.innerHTML = `
+                                <div class="flex justify-between items-start mb-4">
+                                    <h3 class="text-lg font-medium text-white">Certificate #${count}</h3>
+                                    <button type="button" class="remove-certificate text-sm text-red-400 hover:text-red-300">
+                                        Remove
+                                    </button>
+                                </div>
+                                
+                                <div class="grid md:grid-cols-2 gap-5">
+                                    <div>
+                                        <label class="block text-sm font-medium text-slate-400 mb-2">Title</label>
+                                        <input type="text" name="certificate_title[]"
+                                            class="form-input w-full px-4 py-3 rounded-lg focus:ring-2 focus:ring-indigo-500 text-white">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-slate-400 mb-2">Issuing Organization</label>
+                                        <input type="text" name="certificate_org[]"
+                                            class="form-input w-full px-4 py-3 rounded-lg focus:ring-2 focus:ring-indigo-500 text-white">
+                                    </div>
+                                </div>
+                                
+                                <div class="mt-5 grid md:grid-cols-2 gap-5">
+                                    <div>
+                                        <label class="block text-sm font-medium text-slate-400 mb-2">Issue Date</label>
+                                        <input type="date" name="certificate_issue_date[]"
+                                            class="form-input w-full px-4 py-3 rounded-lg focus:ring-2 focus:ring-indigo-500 text-white">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-slate-400 mb-2">Certificate File</label>
+                                        <input type="file" name="certificate_file_${count}" accept=".pdf,.jpg,.jpeg,.png"
+                                            class="form-input w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-indigo-500 text-white">
+                                    </div>
+                                </div>
+                                
+                                <div class="mt-5">
+                                    <label class="block text-sm font-medium text-slate-400 mb-2">Description</label>
+                                    <textarea name="certificate_description[]" rows="2"
+                                            class="form-input w-full px-4 py-3 rounded-lg focus:ring-2 focus:ring-indigo-500 text-white"></textarea>
+                                </div>
+                            `;
+
+                container.appendChild(newCertificate);
+            });
+
+            // Event delegation for remove buttons
+            document.addEventListener('click', function (e) {
+                if (e.target.classList.contains('remove-certificate') || e.target.closest('.remove-certificate')) {
+                    e.target.closest('.section-card').remove();
+                    updateCertificateNumbers();
+                }
+            });
+
+            function updateActivityNumbers() {
+                document.querySelectorAll('#co-curricular-container .section-card').forEach((activity, index) => {
+                    activity.querySelector('h3').textContent = `Activity #${index + 1}`;
+                });
+            }
+        }
+    
+    });
+
+</script>
+
+{% endblock %}
