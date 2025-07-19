@@ -12,8 +12,8 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 import os
-from decouple import config, Csv  # If using python-decouple
-
+from decouple import config, Csv # If using python-decouple
+import dj_database_url # Add this import for PostgreSQL on Render
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -23,12 +23,19 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-k=b-$@q#=__0qyl!df6-755()%cty!d%)=8%#^ekf%xz0upu0k'
+# Load SECRET_KEY from environment variable
+SECRET_KEY = config('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# Set DEBUG based on environment variable, default to False for production
+DEBUG = config('DEBUG', default=False, cast=bool)
 
-ALLOWED_HOSTS = []
+# ALLOWED_HOSTS for production. Get from environment or specify your Render URL.
+# Example: ALLOWED_HOSTS = ['.render.com', 'your-custom-domain.com']
+# Use Csv for multiple hosts from a comma-separated string
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', cast=Csv())
+# If you just have one, or want to explicitly list them:
+# ALLOWED_HOSTS = ['your-app-name.onrender.com', 'www.your-custom-domain.com']
 
 
 # Application definition
@@ -63,7 +70,7 @@ ROOT_URLCONF = 'MyProject.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': ['templets'],
+        'DIRS': [BASE_DIR / 'templets'], # Use Pathlib for DIRS
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -81,23 +88,25 @@ ASGI_APPLICATION = 'MyProject.asgi.application'
 
 CHANNEL_LAYERS = {
     "default": {
-        "BACKEND": "channels.layers.InMemoryChannelLayer"
-        # For production:
-        # "BACKEND": "channels_redis.core.RedisChannelLayer",
-        # "CONFIG": {
-        #     "hosts": [("localhost", 6379)],
-        # },
+        # For production, use Redis. Render provides managed Redis.
+        # You'll get a REDIS_URL environment variable from Render Redis.
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "URL": config('REDIS_URL', default='redis://localhost:6379'), # Use environment variable
+        },
     },
 }
+
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
+# Use PostgreSQL for production on Render
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    'default': dj_database_url.config(
+        default='sqlite:///' + os.path.join(BASE_DIR, 'db.sqlite3'),
+        conn_max_age=600
+    )
 }
 
 
@@ -135,15 +144,18 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
-import os
+# Simplified static file serving.
+# https://warehouse.python.org/project/whitenoise/
+STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles' # Collect static files here for WhiteNoise
 
-# ✅ Static Files
-STATIC_URL = '/static/'  # Must be a string
-STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]  # List of static directories
+STATICFILES_DIRS = [
+    BASE_DIR / 'static',
+]
 
-# ✅ Media Files
+# Media Files
 MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')  # Correct
+MEDIA_ROOT = BASE_DIR / 'media'
 
 
 # Default primary key field type
@@ -152,6 +164,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')  # Correct
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Email settings
+# These are fine as they are, assuming your .env/Render environment has them
 EMAIL_BACKEND = config('EMAIL_BACKEND')
 EMAIL_HOST = config('EMAIL_HOST')
 EMAIL_PORT = config('EMAIL_PORT', cast=int)
@@ -160,4 +173,3 @@ EMAIL_USE_SSL = config('EMAIL_USE_SSL', cast=bool)
 EMAIL_HOST_USER = config('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
-
