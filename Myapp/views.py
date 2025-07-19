@@ -309,4 +309,4 @@ def login_view(request):
         messages.error(request, f"Invalid credentials! Attempts left: {attempts_left}")
         return redirect("Myapp:login")  # Replace with your actual login page name
 
-    return render(request, "login.html")
+    return render(request, "index.html")
