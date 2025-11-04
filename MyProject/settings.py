@@ -37,7 +37,7 @@ DEBUG = config('DEBUG', default=False, cast=bool)
 ALLOWED_HOSTS = ['.onrender.com', 'localhost', '127.0.0.1']
 # If you just have one, or want to explicitly list them:
 # ALLOWED_HOSTS = ['your-app-name.onrender.com', 'www.your-custom-domain.com']
-
+CSRF_TRUSTED_ORIGINS = ['https://talent-twister-1.onrender.com']
 
 # Application definition
 
