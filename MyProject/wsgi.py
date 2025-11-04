@@ -15,7 +15,16 @@
 
 # application = get_wsgi_application()
 # Temporary code to auto-create superuser (remove after 1st deployment)
+# try:
+#     from Myapp.create_admin import *
+# except Exception as e:
+#     print("Superuser creation skipped:", e)
+import os
+from django.core.management import call_command
+
+# Temporary migration runner for Render
 try:
-    from Myapp.create_admin import *
+    call_command("migrate")
+    print("✅ Database migrated successfully!")
 except Exception as e:
-    print("Superuser creation skipped:", e)
+    print("Migration failed:", e)
